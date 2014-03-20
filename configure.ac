@@ -9,8 +9,14 @@ AM_INIT_AUTOMAKE([1.10 -Wall no-define])
 AC_CONFIG_HEADERS([config.h])
 AC_PROG_CXX
 LT_INIT([disable-static])
-C_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_MACRO_DIR([m4])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+
+#
+# Gettext
+#
+AM_GNU_GETTEXT([external],[need-ngettext])
+AM_GNU_GETTEXT_VERSION([0.18.1])
 
 # Define these substitions here to keep all version information in one place.
 # For information on how to properly maintain the library version information,
@@ -44,6 +50,7 @@ AC_CONFIG_FILES([Makefile
                  include/Makefile
                  src/Makefile
                  po/Makefile.in
+                 data/Makefile
                  tests/Makefile
                  libpsl-${LIBPSL_API_VERSION}.pc:libpsl.pc.in])
 AC_OUTPUT

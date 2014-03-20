@@ -9,7 +9,7 @@ Building from git
 
 Download project and prepare sources with
 
-		git clone http://github.com/rockdaboot/mget
+		git clone http://github.com/rockdaboot/libpsl
 		./autogen.sh
 		./configure
 		make

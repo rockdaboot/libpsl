@@ -1,7 +1,7 @@
 # got some hints from https://gitorious.org/openismus-playground/examplelib/source
 
-SUBDIRS = po include libpsl src examples tests
-ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS}
+SUBDIRS = po include src tests
+ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
 # Enable GTK-Doc during make distcheck
 #DISTCHECK_CONFIGURE_FLAGS = --enable-gtk-doc --enable-man
@@ -12,3 +12,5 @@ ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS}
 ## in which case the correct install location would be $(datadir)/pkgconfig.
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libpsl-$(LIBPSL_API_VERSION).pc
+
+EXTRA_DIST = config.rpath
