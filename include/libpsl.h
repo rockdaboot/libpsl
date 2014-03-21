@@ -55,6 +55,14 @@ psl_ctx_t *
 int
 	psl_is_tld(const psl_ctx_t *psl, const char *domain);
 
+/* does not include exceptions */
+int
+	psl_suffix_count(const psl_ctx_t *psl);
+/* just counts exceptions */
+int
+	psl_suffix_exception_count(const psl_ctx_t *psl);
+
+
 PSL_END_DECLS
 
 #endif /* _LIBPSL_LIBPSL_H */

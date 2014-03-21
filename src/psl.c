@@ -275,13 +275,13 @@ psl_ctx_t *psl_load_file(const char *fname)
 	if (!(psl = calloc(1, sizeof(psl_ctx_t))))
 		return NULL;
 
-	// as of 02.11.2012, the list at http://publicsuffix.org/list/ contains ~6000 rules and 40 exceptions.
-	// as of 19.02.2014, the list at http://publicsuffix.org/list/ contains ~6500 rules and 19 exceptions.
-	psl->suffixes = _vector_alloc(8*1024, _suffix_compare);
-	psl->suffix_exceptions = _vector_alloc(64, _suffix_compare);
-
 	if ((fp = fopen(fname, "r"))) {
-		while ((linep = fgets(&buf, sizeof(buf), fp))) {
+		// as of 02.11.2012, the list at http://publicsuffix.org/list/ contains ~6000 rules and 40 exceptions.
+		// as of 19.02.2014, the list at http://publicsuffix.org/list/ contains ~6500 rules and 19 exceptions.
+		psl->suffixes = _vector_alloc(8*1024, _suffix_compare);
+		psl->suffix_exceptions = _vector_alloc(64, _suffix_compare);
+
+		while ((linep = fgets(buf, sizeof(buf), fp))) {
 			while (isspace(*linep)) linep++; // ignore leading whitespace
 			if (!*linep) continue; // skip empty lines
 
@@ -312,13 +312,26 @@ psl_ctx_t *psl_load_file(const char *fname)
 		_vector_sort(psl->suffix_exceptions);
 		_vector_sort(psl->suffixes);
 
-		printf("loaded %d (%d/%d) suffixes\n", nsuffixes, psl->suffixes->cur, psl->suffix_exceptions->cur);
-
-	} else
-		fprintf(stderr, _("Failed to open PSL file '%s'\n"), fname);
+	} else {
+		free(psl);
+		return NULL;
+	}
 
 	return psl;
 }
+
+
+/* does not include exceptions */
+int psl_suffix_count(const psl_ctx_t *psl)
+{
+	return psl->suffixes->cur;
+}
+/* just counts exceptions */
+int psl_suffix_exception_count(const psl_ctx_t *psl)
+{
+	return psl->suffix_exceptions->cur;
+}
+
 
 void psl_free(psl_ctx_t **psl)
 {
