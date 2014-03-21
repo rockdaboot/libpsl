@@ -312,13 +312,24 @@ psl_ctx_t *psl_load_file(const char *fname)
 		_vector_sort(psl->suffix_exceptions);
 		_vector_sort(psl->suffixes);
 
-		printf("loaded %d (%d/%d) suffixes\n", nsuffixes, psl->suffixes->cur, psl->suffix_exceptions->cur);
-
 	} else
 		fprintf(stderr, _("Failed to open PSL file '%s'\n"), fname);
 
 	return psl;
 }
+
+
+/* does not include exceptions */
+int psl_suffix_count(const psl_ctx_t *psl)
+{
+	return psl->suffixes->cur;
+}
+/* just counts exceptions */
+int psl_suffix_exception_count(const psl_ctx_t *psl)
+{
+	return psl->suffix_exceptions->cur;
+}
+
 
 void psl_free(psl_ctx_t **psl)
 {

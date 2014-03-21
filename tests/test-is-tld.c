@@ -64,6 +64,9 @@ static void test_psl(void)
 
 	psl = psl_load_file(DATADIR "/effective_tld_names.dat");
 
+        printf("loaded %d suffixes and %d exceptions\n", psl_suffix_count(psl), psl_suffix_exception_count(psl));
+
+
 	for (it = 0; it < countof(test_data); it++) {
 		const struct test_data *t = &test_data[it];
 		int result = psl_is_tld(psl, t->domain);
