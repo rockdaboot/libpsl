@@ -1,0 +1,9 @@
+language: c
+compiler:
+  - gcc
+  - clang
+# Change this to your needs
+script: ./autogen.sh && ./configure && make && make check && make distcheck
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get -q install autoconf automake autopoint libtool gettext
