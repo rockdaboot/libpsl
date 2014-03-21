@@ -1,6 +1,6 @@
 # got some hints from https://gitorious.org/openismus-playground/examplelib/source
 
-SUBDIRS = po include src tests
+SUBDIRS = po include src tests data
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
 # Enable GTK-Doc during make distcheck
