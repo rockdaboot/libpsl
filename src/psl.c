@@ -281,7 +281,7 @@ psl_ctx_t *psl_load_file(const char *fname)
 	psl->suffix_exceptions = _vector_alloc(64, _suffix_compare);
 
 	if ((fp = fopen(fname, "r"))) {
-		while ((linep = fgets(&buf, sizeof(buf), fp))) {
+		while ((linep = fgets(buf, sizeof(buf), fp))) {
 			while (isspace(*linep)) linep++; // ignore leading whitespace
 			if (!*linep) continue; // skip empty lines
 
