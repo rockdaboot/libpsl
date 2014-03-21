@@ -270,9 +270,7 @@ psl_ctx_t *psl_load_file(const char *fname)
 	_psl_entry_t suffix, *suffixp;
 	FILE *fp;
 	int nsuffixes = 0;
-	char *buf = NULL, *linep, *p;
-	size_t bufsize = 0;
-	ssize_t buflen;
+	char buf[256], *linep, *p;
 
 	if (!(psl = calloc(1, sizeof(psl_ctx_t))))
 		return NULL;
@@ -283,9 +281,7 @@ psl_ctx_t *psl_load_file(const char *fname)
 	psl->suffix_exceptions = _vector_alloc(64, _suffix_compare);
 
 	if ((fp = fopen(fname, "r"))) {
-		while ((buflen = getline(&buf, &bufsize, fp)) >= 0) {
-			linep = buf;
-
+		while ((linep = fgets(&buf, sizeof(buf), fp))) {
 			while (isspace(*linep)) linep++; // ignore leading whitespace
 			if (!*linep) continue; // skip empty lines
 
@@ -311,7 +307,6 @@ psl_ctx_t *psl_load_file(const char *fname)
 			nsuffixes++;;
 		}
 
-		free(buf);
 		fclose(fp);
 
 		_vector_sort(psl->suffix_exceptions);
