@@ -28,6 +28,7 @@
 # include <config.h>
 #endif
 
+// # include <idn2.h>
 #include "psl.c"
 
 static void _print_psl_entries(_psl_vector_t *v, const char *varname)
@@ -42,6 +43,17 @@ static void _print_psl_entries(_psl_vector_t *v, const char *varname)
 
 		printf("\t{ \"%s\", NULL, %hd, %hhd, %hhd },\n",
 			e->label_buf, e->length, e->nlabels, e->wildcard);
+/*
+		if (str_needs_encoding(e->label_buf)) {
+			char *asc = NULL;
+			int rc;
+
+			if ((rc = idn2_lookup_u8((uint8_t *)e->label_buf, (uint8_t **)&asc, 0)) == IDN2_OK) {
+				fprintf(stderr, "idn2 '%s' -> '%s'\n", e->label_buf, asc);
+			} else
+				fprintf(stderr, "toASCII(%s) failed (%d): %s\n", e->label_buf, rc, idn2_strerror(rc));
+		}
+*/
 	}
 
 	printf("};\n");

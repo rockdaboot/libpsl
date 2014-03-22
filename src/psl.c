@@ -231,15 +231,15 @@ int psl_is_public(const psl_ctx_t *psl, const char *domain)
 		if (*p == '.')
 			suffix.nlabels++;
 
-	// if domain has enough labels, it won't match
+	// if domain has enough labels, it is public
 	rule = _vector_get(psl->suffixes, 0);
 	if (!rule || rule->nlabels < suffix.nlabels - 1)
-		return 0;
+		return 1;
 
 	rule = _vector_get(psl->suffixes, _vector_find(psl->suffixes, &suffix));
 	if (rule) {
 		// definitely a match, no matter if the found rule is a wildcard or not
-		return 1;
+		return 0;
 	}
 
 	label_bak = suffix.label;
@@ -259,14 +259,14 @@ int psl_is_public(const psl_ctx_t *psl, const char *domain)
 				suffix.nlabels++;
 
 				if (_vector_get(psl->suffix_exceptions, _vector_find(psl->suffix_exceptions, &suffix)) != 0)
-					return 0;
+					return 1; // found an exception, so 'domain' is public
 
-				return 1;
+				return 0;
 			}
 		}
 	}
 
-	return 0;
+	return 1;
 }
 
 psl_ctx_t *psl_load_file(const char *fname)
