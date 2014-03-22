@@ -53,7 +53,7 @@ void
 psl_ctx_t *
 	psl_load_file(const char *fname);
 int
-	psl_is_tld(const psl_ctx_t *psl, const char *domain);
+	psl_is_public(const psl_ctx_t *psl, const char *domain);
 
 /* does not include exceptions */
 int

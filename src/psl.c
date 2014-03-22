@@ -210,7 +210,7 @@ static void _suffix_init(_psl_entry_t *suffix, const char *rule, size_t length)
 	*dst = 0;
 }
 
-int psl_is_tld(const psl_ctx_t *psl, const char *domain)
+int psl_is_public(const psl_ctx_t *psl, const char *domain)
 {
 	_psl_entry_t suffix, *rule;
 	const char *p, *label_bak;

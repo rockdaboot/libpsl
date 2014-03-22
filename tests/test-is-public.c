@@ -69,7 +69,7 @@ static void test_psl(void)
 
 	for (it = 0; it < countof(test_data); it++) {
 		const struct test_data *t = &test_data[it];
-		int result = psl_is_tld(psl, t->domain);
+		int result = psl_is_public(psl, t->domain);
 
 		if (result == t->result) {
 			ok++;
