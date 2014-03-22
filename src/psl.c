@@ -158,6 +158,11 @@ static void _vector_sort(_psl_vector_t *v)
 		qsort_r(v->entry, v->cur, sizeof(_psl_vector_t *), _compare, v);
 }
 
+static inline int _vector_size(_psl_vector_t *v)
+{
+	return v ? v->cur : 0;
+}
+
 // by this kind of sorting, we can easily see if a domain matches or not (match = supercookie !)
 
 static int _suffix_compare(const _psl_entry_t *s1, const _psl_entry_t *s2)
@@ -167,7 +172,7 @@ static int _suffix_compare(const _psl_entry_t *s1, const _psl_entry_t *s2)
 	if ((n = s2->nlabels - s1->nlabels))
 		return n; // most labels first
 
-	if ((n=s1->length - s2->length))
+	if ((n = s1->length - s2->length))
 		return n;  // shorter rules first
 
 	return strcmp(s1->label, s2->label);
@@ -216,7 +221,7 @@ int psl_is_public(const psl_ctx_t *psl, const char *domain)
 	const char *p, *label_bak;
 	unsigned short length_bak;
 
-	// this function should be called without leading dots, just make shure
+	// this function should be called without leading dots, just make sure
 	suffix.label = domain + (*domain == '.');
 	suffix.length = strlen(suffix.label);
 	suffix.wildcard = 0;
@@ -327,18 +332,17 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 	return psl;
 }
 
-
 /* does not include exceptions */
 int psl_suffix_count(const psl_ctx_t *psl)
 {
-	return psl->suffixes->cur;
+	return _vector_size(psl->suffixes);
 }
+
 /* just counts exceptions */
 int psl_suffix_exception_count(const psl_ctx_t *psl)
 {
-	return psl->suffix_exceptions->cur;
+	return _vector_size(psl->suffix_exceptions);
 }
-
 
 void psl_free(psl_ctx_t **psl)
 {
