@@ -6,4 +6,4 @@ compiler:
 script: ./autogen.sh && ./configure && make && make check && make distcheck
 before_install:
   - sudo apt-get -qq update
-  - sudo apt-get -q install autoconf automake autopoint libtool gettext
+  - sudo apt-get -q install autoconf automake autopoint libtool gettext libidn2-0 libidn2-0-dev
