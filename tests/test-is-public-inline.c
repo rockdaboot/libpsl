@@ -42,6 +42,8 @@ static int
 
 static void test_psl(void)
 {
+	// punycode generation: idn 商标
+	// octal code generation: echo -n "商标" | od -b
 	static const struct test_data {
 		const char
 			*domain;
@@ -58,6 +60,10 @@ static void test_psl(void)
 		{ "abc.www.ck", 0 },
 		{ "xxx.ck", 1 },
 		{ "www.xxx.ck", 0 },
+		{ "\345\225\206\346\240\207", 1 }, // xn--czr694b oder 商标
+		{ "www.\345\225\206\346\240\207", 0 },
+//		{ "xn--czr694b", 1 },
+//		{ "www.xn--czr694b", 1 },
 	};
 	unsigned it;
 
