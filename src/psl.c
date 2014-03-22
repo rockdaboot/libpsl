@@ -266,56 +266,63 @@ int psl_is_public(const psl_ctx_t *psl, const char *domain)
 
 psl_ctx_t *psl_load_file(const char *fname)
 {
+	FILE *fp;
+	psl_ctx_t *psl = NULL;
+
+	if ((fp = fopen(fname, "r"))) {
+		psl = psl_load_fp(fp);
+		fclose(fp);
+	}
+
+	return psl;
+}
+
+psl_ctx_t *psl_load_fp(FILE *fp)
+{
 	psl_ctx_t *psl;
 	_psl_entry_t suffix, *suffixp;
-	FILE *fp;
 	int nsuffixes = 0;
 	char buf[256], *linep, *p;
+
+	if (!fp)
+		return NULL;
 
 	if (!(psl = calloc(1, sizeof(psl_ctx_t))))
 		return NULL;
 
-	if ((fp = fopen(fname, "r"))) {
-		// as of 02.11.2012, the list at http://publicsuffix.org/list/ contains ~6000 rules and 40 exceptions.
-		// as of 19.02.2014, the list at http://publicsuffix.org/list/ contains ~6500 rules and 19 exceptions.
-		psl->suffixes = _vector_alloc(8*1024, _suffix_compare);
-		psl->suffix_exceptions = _vector_alloc(64, _suffix_compare);
+	// as of 02.11.2012, the list at http://publicsuffix.org/list/ contains ~6000 rules and 40 exceptions.
+	// as of 19.02.2014, the list at http://publicsuffix.org/list/ contains ~6500 rules and 19 exceptions.
+	psl->suffixes = _vector_alloc(8*1024, _suffix_compare);
+	psl->suffix_exceptions = _vector_alloc(64, _suffix_compare);
 
-		while ((linep = fgets(buf, sizeof(buf), fp))) {
-			while (isspace(*linep)) linep++; // ignore leading whitespace
-			if (!*linep) continue; // skip empty lines
+	while ((linep = fgets(buf, sizeof(buf), fp))) {
+		while (isspace(*linep)) linep++; // ignore leading whitespace
+		if (!*linep) continue; // skip empty lines
 
-			if (*linep == '/' && linep[1] == '/')
-				continue; // skip comments
+		if (*linep == '/' && linep[1] == '/')
+			continue; // skip comments
 
-			// parse suffix rule
-			for (p = linep; *linep && !isspace(*linep);) linep++;
-			*linep = 0;
+		// parse suffix rule
+		for (p = linep; *linep && !isspace(*linep);) linep++;
+		*linep = 0;
 
-			if (*p == '!') {
-				// add to exceptions
-				_suffix_init(&suffix, p + 1, linep - p - 1);
-				suffixp = _vector_get(psl->suffix_exceptions, _vector_add(psl->suffix_exceptions, &suffix));
-			} else {
-				_suffix_init(&suffix, p, linep - p);
-				suffixp = _vector_get(psl->suffixes, _vector_add(psl->suffixes, &suffix));
-			}
-
-			if (suffixp)
-				suffixp->label = suffixp->label_buf; // set label to changed address
-
-			nsuffixes++;;
+		if (*p == '!') {
+			// add to exceptions
+			_suffix_init(&suffix, p + 1, linep - p - 1);
+			suffixp = _vector_get(psl->suffix_exceptions, _vector_add(psl->suffix_exceptions, &suffix));
+		} else {
+			_suffix_init(&suffix, p, linep - p);
+			suffixp = _vector_get(psl->suffixes, _vector_add(psl->suffixes, &suffix));
 		}
 
-		fclose(fp);
+		if (suffixp)
+			suffixp->label = suffixp->label_buf; // set label to changed address
 
-		_vector_sort(psl->suffix_exceptions);
-		_vector_sort(psl->suffixes);
-
-	} else {
-		free(psl);
-		return NULL;
+		nsuffixes++;;
 	}
+
+	_vector_sort(psl->suffix_exceptions);
+	_vector_sort(psl->suffixes);
 
 	return psl;
 }

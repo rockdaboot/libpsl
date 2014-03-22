@@ -27,6 +27,8 @@
 #ifndef _LIBPSL_LIBPSL_H
 #define _LIBPSL_LIBPSL_H
 
+#include <stdio.h>
+
 // Let C++ include C headers
 #ifdef  __cplusplus
 #	define PSL_BEGIN_DECLS  extern "C" {
@@ -52,6 +54,8 @@ void
 	psl_free(psl_ctx_t **psl);
 psl_ctx_t *
 	psl_load_file(const char *fname);
+psl_ctx_t *
+	psl_load_fp(FILE *fp);
 int
 	psl_is_public(const psl_ctx_t *psl, const char *domain);
 
