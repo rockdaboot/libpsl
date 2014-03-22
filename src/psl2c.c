@@ -72,7 +72,7 @@ static void _add_punycode_if_needed(_psl_vector_t *v)
 
 
 			if ((rc = idn2_lookup_u8((uint8_t *)e->label_buf, (uint8_t **)&asc, 0)) == IDN2_OK) {
-				fprintf(stderr, "idn2 '%s' -> '%s'\n", e->label_buf, asc);
+				// fprintf(stderr, "idn2 '%s' -> '%s'\n", e->label_buf, asc);
 				_suffix_init(&suffix, asc, strlen(asc));
 				suffix.wildcard = e->wildcard;
 				_vector_add(v, &suffix);
