@@ -16,3 +16,16 @@ Download project and prepare sources with
 		./configure
 		make
 		make check
+
+Mailing List
+------------
+
+[Mailing List](https://groups.google.com/forum/#!forum/libpsl-bugs)
+
+To join the mailing list send an email to
+
+<libpsl-bugs+subscribe@googlegroups.com>
+
+and follow the instructions provided by the answer mail.
+
+Or click [join](https://groups.google.com/forum/#!forum/libpsl-bugs/join).
