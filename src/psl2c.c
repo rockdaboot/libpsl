@@ -28,7 +28,10 @@
 # include <config.h>
 #endif
 
-// # include <idn2.h>
+//#ifdef WITH_LIBIDN2
+#	include <idn2.h>
+//#endif
+
 #include "psl.c"
 
 static void _print_psl_entries(_psl_vector_t *v, const char *varname)
@@ -43,20 +46,42 @@ static void _print_psl_entries(_psl_vector_t *v, const char *varname)
 
 		printf("\t{ \"%s\", NULL, %hd, %hhd, %hhd },\n",
 			e->label_buf, e->length, e->nlabels, e->wildcard);
-/*
-		if (str_needs_encoding(e->label_buf)) {
-			char *asc = NULL;
-			int rc;
-
-			if ((rc = idn2_lookup_u8((uint8_t *)e->label_buf, (uint8_t **)&asc, 0)) == IDN2_OK) {
-				fprintf(stderr, "idn2 '%s' -> '%s'\n", e->label_buf, asc);
-			} else
-				fprintf(stderr, "toASCII(%s) failed (%d): %s\n", e->label_buf, rc, idn2_strerror(rc));
-		}
-*/
 	}
 
 	printf("};\n");
+}
+
+static int _str_needs_encoding(const char *s)
+{
+	while (*s > 0) s++;
+
+	return !!*s;
+}
+
+static void _add_punycode_if_needed(_psl_vector_t *v)
+{
+	int it;
+
+	for (it = 0; it < v->cur; it++) {
+		_psl_entry_t *e = _vector_get(v, it);
+
+		if (_str_needs_encoding(e->label_buf)) {
+			_psl_entry_t suffix;
+			char *asc = NULL;
+			int rc;
+
+
+			if ((rc = idn2_lookup_u8((uint8_t *)e->label_buf, (uint8_t **)&asc, 0)) == IDN2_OK) {
+				fprintf(stderr, "idn2 '%s' -> '%s'\n", e->label_buf, asc);
+				_suffix_init(&suffix, asc, strlen(asc));
+				suffix.wildcard = e->wildcard;
+				_vector_add(v, &suffix);
+			} else
+				fprintf(stderr, "toASCII(%s) failed (%d): %s\n", e->label_buf, rc, idn2_strerror(rc));
+		}
+	}
+
+	_vector_sort(v);
 }
 
 // int main(int argc, const char **argv)
@@ -66,6 +91,9 @@ int main(void)
 
 	if (!(psl = psl_load_fp(stdin)))
 		return 1;
+
+	_add_punycode_if_needed(psl->suffixes);
+	_add_punycode_if_needed(psl->suffix_exceptions);
 
 	_print_psl_entries(psl->suffixes, "suffixes");
 	_print_psl_entries(psl->suffix_exceptions, "suffix_exceptions");

@@ -44,7 +44,7 @@
 
 typedef struct {
 	char
-		label_buf[42];
+		label_buf[48];
 	const char *
 		label;
 	unsigned short
@@ -187,7 +187,7 @@ static void _suffix_init(_psl_entry_t *suffix, const char *rule, size_t length)
 
 	if (length >= sizeof(suffix->label_buf) - 1) {
 		suffix->nlabels = 0;
-		fprintf(stderr, _("Suffix rule too long (ignored): %s\n"), rule);
+		fprintf(stderr, _("Suffix rule too long (%zd, ignored): %s\n"), length, rule);
 		return;
 	}
 

@@ -42,6 +42,8 @@ static int
 
 static void test_psl(void)
 {
+	// punycode generation: idn 商标
+	// octal code generation: echo -n "商标" | od -b
 	static const struct test_data {
 		const char
 			*domain;
@@ -58,6 +60,8 @@ static void test_psl(void)
 		{ "abc.www.ck", 1 },
 		{ "xxx.ck", 0 },
 		{ "www.xxx.ck", 1 },
+		{ "\345\225\206\346\240\207", 0 }, // xn--czr694b oder 商标
+		{ "www.\345\225\206\346\240\207", 1 },
 	};
 	unsigned it;
 	psl_ctx_t *psl;
@@ -74,7 +78,7 @@ static void test_psl(void)
 			ok++;
 		} else {
 			failed++;
-			printf("psl_is_tld(%s)=%d (expected %d)\n", t->domain, result, t->result);
+			printf("psl_is_public(%s)=%d (expected %d)\n", t->domain, result, t->result);
 		}
 	}
 

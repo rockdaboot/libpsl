@@ -62,8 +62,8 @@ static void test_psl(void)
 		{ "www.xxx.ck", 1 },
 		{ "\345\225\206\346\240\207", 0 }, // xn--czr694b oder 商标
 		{ "www.\345\225\206\346\240\207", 1 },
-//		{ "xn--czr694b", 1 },
-//		{ "www.xn--czr694b", 1 },
+		{ "xn--czr694b", 0 },
+		{ "www.xn--czr694b", 1 },
 	};
 	unsigned it;
 
@@ -79,7 +79,7 @@ static void test_psl(void)
 			ok++;
 		} else {
 			failed++;
-			printf("psl_is_tld(%s)=%d (expected %d)\n", t->domain, result, t->result);
+			printf("psl_is_public(%s)=%d (expected %d)\n", t->domain, result, t->result);
 		}
 	}
 

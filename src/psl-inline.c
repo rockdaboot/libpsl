@@ -44,7 +44,7 @@
 
 typedef struct {
 	char
-		label_buf[42];
+		label_buf[48];
 	const char *
 		label;
 	unsigned short
@@ -102,15 +102,15 @@ int psl_inline_is_public(const char *domain)
 		if (*p == '.')
 			suffix.nlabels++;
 
-	// if domain has enough labels, it won't match
+	// if domain has enough labels, it is public
 	rule = &suffixes[0];
 	if (!rule || rule->nlabels < suffix.nlabels - 1)
-		return 0;
+		return 1;
 
 	rule = bsearch(&suffix, suffixes, countof(suffixes), sizeof(suffixes[0]), (int(*)(const void *, const void *))_suffix_compare);
 	if (rule) {
 		// definitely a match, no matter if the found rule is a wildcard or not
-		return 1;
+		return 0;
 	}
 
 	label_bak = suffix.label;
@@ -130,14 +130,14 @@ int psl_inline_is_public(const char *domain)
 				suffix.nlabels++;
 
 				if (bsearch(&suffix, suffix_exceptions, countof(suffix_exceptions), sizeof(suffix_exceptions[0]), (int(*)(const void *, const void *))_suffix_compare))
-					return 0; // found an exception, so 'domain' is not a public suffix
+					return 1; // found an exception, so 'domain' is public
 
-				return 1;
+				return 0;
 			}
 		}
 	}
 
-	return 0;
+	return 1;
 }
 
 /* does not include exceptions */

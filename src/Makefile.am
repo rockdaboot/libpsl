@@ -21,8 +21,8 @@ libpsl_inline_@LIBPSL_API_VERSION@_la_LDFLAGS = -version-info $(LIBPSL_SO_VERSIO
 
 noinst_PROGRAMS = psl2c
 psl2c_SOURCES = psl2c.c
-psl2c_CPPFLAGS = -I$(top_srcdir)/include
-#psl2c_LDADD = libpsl-@LIBPSL_API_VERSION@.la
+psl2c_CPPFLAGS = -I$(top_srcdir)/include -D _GNU_SOURCE
+psl2c_LDADD = -lidn2
 #psl2c_LDFLAGS = -static
 
 # Build rule for suffix.c
