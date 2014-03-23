@@ -27,4 +27,4 @@ psl2c_LDADD = -lidn2
 
 # Build rule for suffix.c
 suffixes.c: $(top_srcdir)/data/effective_tld_names.dat psl2c$(EXEEXT)
-	./psl2c$(EXEEXT) <$(top_srcdir)/data/effective_tld_names.dat >suffixes.c
+	./psl2c$(EXEEXT) $(top_srcdir)/data/effective_tld_names.dat suffixes.c

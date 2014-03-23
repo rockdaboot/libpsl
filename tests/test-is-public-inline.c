@@ -83,6 +83,15 @@ static void test_psl(void)
 		}
 	}
 
+	printf("psl_builtin_compile_time()=%ld\n", psl_inline_builtin_compile_time());
+	psl_inline_builtin_compile_time() == 0 ? failed++ : ok++;
+
+	printf("psl_builtin_file_time()=%ld\n", psl_inline_builtin_file_time());
+	psl_inline_builtin_file_time() == 0 ? failed++ : ok++;
+
+	printf("psl_builtin_md5sum()=%s\n", psl_inline_builtin_md5sum());
+	*psl_inline_builtin_md5sum() == 0 ? failed++ : ok++;
+
 	psl_inline_deinit();
 }
 

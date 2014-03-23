@@ -62,6 +62,16 @@ int
 int
 	psl_inline_suffix_exception_count(void);
 
+// returns compilation time
+time_t
+	psl_inline_builtin_compile_time(void);
+// returns mtime of PSL source file
+time_t
+	psl_inline_builtin_file_time(void);
+// returns MD5 checksum of PSL source file
+const char *
+	psl_inline_builtin_md5sum(void);
+
 PSL_END_DECLS
 
 #endif /* _LIBPSL_LIBPSL_INLINE_H */

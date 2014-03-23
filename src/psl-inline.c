@@ -24,11 +24,6 @@
  *
  */
 
-// need _GNU_SOURCE for qsort_r()
-#ifndef _GNU_SOURCE
-#	define _GNU_SOURCE
-#endif
-
 #if HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -150,4 +145,22 @@ int psl_inline_suffix_count(void)
 int psl_inline_suffix_exception_count(void)
 {
 	return countof(suffix_exceptions);
+}
+
+// returns compilation time
+time_t psl_inline_builtin_compile_time(void)
+{
+	return _psl_compile_time;
+}
+
+// returns mtime of PSL source file
+time_t psl_inline_builtin_file_time(void)
+{
+	return _psl_file_time;
+}
+
+// returns MD5 checksum of PSL source file
+const char *psl_inline_builtin_md5sum(void)
+{
+	return _psl_md5_checksum;
 }
