@@ -66,23 +66,26 @@ static void test_psl(void)
 	unsigned it;
 	psl_ctx_t *psl;
 
-	psl = psl_load_file(DATADIR "/effective_tld_names.dat");
+	if (psl_global_init() == 0) {
+		psl = psl_load_file(DATADIR "/effective_tld_names.dat");
 
-	printf("loaded %d suffixes and %d exceptions\n", psl_suffix_count(psl), psl_suffix_exception_count(psl));
+		printf("loaded %d suffixes and %d exceptions\n", psl_suffix_count(psl), psl_suffix_exception_count(psl));
 
-	for (it = 0; it < countof(test_data); it++) {
-		const struct test_data *t = &test_data[it];
-		int result = psl_is_public(psl, t->domain);
+		for (it = 0; it < countof(test_data); it++) {
+			const struct test_data *t = &test_data[it];
+			int result = psl_is_public(psl, t->domain);
 
-		if (result == t->result) {
-			ok++;
-		} else {
-			failed++;
-			printf("psl_is_public(%s)=%d (expected %d)\n", t->domain, result, t->result);
+			if (result == t->result) {
+				ok++;
+			} else {
+				failed++;
+				printf("psl_is_public(%s)=%d (expected %d)\n", t->domain, result, t->result);
+			}
 		}
-	}
 
-	psl_free(&psl);
+		psl_free(&psl);
+		psl_global_deinit();
+	}
 }
 
 int main(int argc, const char * const *argv)

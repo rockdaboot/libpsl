@@ -1,21 +1,25 @@
 /*
  * Copyright(c) 2014 Tim Ruehsen
  *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
  * This file is part of libpsl.
- *
- * Libpsl is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Libpsl is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with libpsl.  If not, see <http://www.gnu.org/licenses/>.
- *
  *
  * Header file for libpsl library routines
  *
@@ -50,21 +54,35 @@ PSL_BEGIN_DECLS
 
 typedef struct _psl_ctx_st psl_ctx_t;
 
+int
+	psl_global_init(void);
+void
+	psl_global_deinit(void);
 void
 	psl_free(psl_ctx_t **psl);
 psl_ctx_t *
 	psl_load_file(const char *fname);
 psl_ctx_t *
 	psl_load_fp(FILE *fp);
+psl_ctx_t *
+	psl_builtin(void);
 int
 	psl_is_public(const psl_ctx_t *psl, const char *domain);
-
-/* does not include exceptions */
+// does not include exceptions
 int
 	psl_suffix_count(const psl_ctx_t *psl);
-/* just counts exceptions */
+// just counts exceptions
 int
 	psl_suffix_exception_count(const psl_ctx_t *psl);
+// returns compilation time
+time_t
+	psl_builtin_compile_time(void);
+// returns mtime of PSL source file
+time_t
+	psl_builtin_file_time(void);
+// returns MD5 checksum (hex-encoded, lowercase) of PSL source file
+const char *
+	psl_builtin_sha1sum(void);
 
 
 PSL_END_DECLS

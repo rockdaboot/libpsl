@@ -29,14 +29,253 @@
 #endif
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <time.h>
+#include <ctype.h>
 #include <sys/stat.h>
 
 //#ifdef WITH_LIBIDN2
-#	include <idn2.h>
+//#	include <idn2.h>
 //#endif
 
-#include "psl.c"
+#include <libpsl.h>
+
+typedef struct {
+	char
+		label_buf[48];
+	const char *
+		label;
+	unsigned short
+		length;
+	unsigned char
+		nlabels, // number of labels
+		wildcard; // this is a wildcard rule (e.g. *.sapporo.jp)
+} _psl_entry_t;
+
+// stripped down version libmget vector routines
+typedef struct {
+	int
+		(*cmp)(const _psl_entry_t *, const _psl_entry_t *); // comparison function
+	_psl_entry_t
+		**entry; // pointer to array of pointers to elements
+	int
+		max,     // allocated elements
+		cur;     // number of elements in use
+} _psl_vector_t;
+
+struct _psl_ctx_st {
+	_psl_vector_t
+		*suffixes,
+		*suffix_exceptions;
+};
+
+static _psl_vector_t *_vector_alloc(int max, int (*cmp)(const _psl_entry_t *, const _psl_entry_t *))
+{
+	_psl_vector_t *v;
+
+	if (!(v = calloc(1, sizeof(_psl_vector_t))))
+		return NULL;
+
+	if (!(v->entry = malloc(max * sizeof(_psl_entry_t *)))) {
+		free(v);
+		return NULL;
+	}
+
+	v->max = max;
+	v->cmp = cmp;
+	return v;
+}
+
+static void _vector_free(_psl_vector_t **v)
+{
+	if (v && *v) {
+		if ((*v)->entry) {
+			int it;
+
+			for (it = 0; it < (*v)->cur; it++)
+				free((*v)->entry[it]);
+
+			free((*v)->entry);
+		}
+		free(*v);
+	}
+}
+
+static _psl_entry_t *_vector_get(const _psl_vector_t *v, int pos)
+{
+	if (pos < 0 || !v || pos >= v->cur) return NULL;
+
+	return v->entry[pos];
+}
+
+// the entries must be sorted by
+static int _vector_find(const _psl_vector_t *v, const _psl_entry_t *elem)
+{
+	if (v) {
+		int l, r, m;
+		int res;
+
+		// binary search for element (exact match)
+		for (l = 0, r = v->cur - 1; l <= r;) {
+			m = (l + r) / 2;
+			if ((res = v->cmp(elem, v->entry[m])) > 0) l = m + 1;
+			else if (res < 0) r = m - 1;
+			else return m;
+		}
+	}
+
+	return -1; // not found
+}
+
+static int _vector_add(_psl_vector_t *v, const _psl_entry_t *elem)
+{
+	if (v) {
+		void *elemp;
+
+		elemp = malloc(sizeof(_psl_entry_t));
+		memcpy(elemp, elem, sizeof(_psl_entry_t));
+
+		if (v->max == v->cur)
+			v->entry = realloc(v->entry, (v->max *= 2) * sizeof(_psl_entry_t *));
+
+		v->entry[v->cur++] = elemp;
+		return v->cur - 1;
+	}
+
+	return -1;
+}
+
+static int _compare(const void *p1, const void *p2, void *v)
+{
+	return ((_psl_vector_t *)v)->cmp(*((_psl_entry_t **)p1), *((_psl_entry_t **)p2));
+}
+
+static void _vector_sort(_psl_vector_t *v)
+{
+	if (v && v->cmp)
+		qsort_r(v->entry, v->cur, sizeof(_psl_vector_t *), _compare, v);
+}
+
+static inline int _vector_size(_psl_vector_t *v)
+{
+	return v ? v->cur : 0;
+}
+
+// by this kind of sorting, we can easily see if a domain matches or not (match = supercookie !)
+
+static int _suffix_compare(const _psl_entry_t *s1, const _psl_entry_t *s2)
+{
+	int n;
+
+	if ((n = s2->nlabels - s1->nlabels))
+		return n; // most labels first
+
+	if ((n = s1->length - s2->length))
+		return n;  // shorter rules first
+
+	return strcmp(s1->label, s2->label);
+}
+
+static void _suffix_init(_psl_entry_t *suffix, const char *rule, size_t length)
+{
+	const char *src;
+	char *dst;
+
+	suffix->label = suffix->label_buf;
+
+	if (length >= sizeof(suffix->label_buf) - 1) {
+		suffix->nlabels = 0;
+		fprintf(stderr, "Suffix rule too long (%zd, ignored): %s\n", length, rule);
+		return;
+	}
+
+	if (*rule == '*') {
+		if (*++rule != '.') {
+			suffix->nlabels = 0;
+			fprintf(stderr, "Unsupported kind of rule (ignored): %s\n", rule);
+			return;
+		}
+		rule++;
+		suffix->wildcard = 1;
+		suffix->length = (unsigned char)length - 2;
+	} else {
+		suffix->wildcard = 0;
+		suffix->length = (unsigned char)length;
+	}
+
+	suffix->nlabels = 1;
+
+	for (dst = suffix->label_buf, src = rule; *src;) {
+		if (*src == '.')
+			suffix->nlabels++;
+		*dst++ = tolower(*src++);
+	}
+	*dst = 0;
+}
+
+psl_ctx_t *psl_load_file(const char *fname)
+{
+	FILE *fp;
+	psl_ctx_t *psl = NULL;
+
+	if ((fp = fopen(fname, "r"))) {
+		psl = psl_load_fp(fp);
+		fclose(fp);
+	}
+
+	return psl;
+}
+
+psl_ctx_t *psl_load_fp(FILE *fp)
+{
+	psl_ctx_t *psl;
+	_psl_entry_t suffix, *suffixp;
+	int nsuffixes = 0;
+	char buf[256], *linep, *p;
+
+	if (!fp)
+		return NULL;
+
+	if (!(psl = calloc(1, sizeof(psl_ctx_t))))
+		return NULL;
+
+	// as of 02.11.2012, the list at http://publicsuffix.org/list/ contains ~6000 rules and 40 exceptions.
+	// as of 19.02.2014, the list at http://publicsuffix.org/list/ contains ~6500 rules and 19 exceptions.
+	psl->suffixes = _vector_alloc(8*1024, _suffix_compare);
+	psl->suffix_exceptions = _vector_alloc(64, _suffix_compare);
+
+	while ((linep = fgets(buf, sizeof(buf), fp))) {
+		while (isspace(*linep)) linep++; // ignore leading whitespace
+		if (!*linep) continue; // skip empty lines
+
+		if (*linep == '/' && linep[1] == '/')
+			continue; // skip comments
+
+		// parse suffix rule
+		for (p = linep; *linep && !isspace(*linep);) linep++;
+		*linep = 0;
+
+		if (*p == '!') {
+			// add to exceptions
+			_suffix_init(&suffix, p + 1, linep - p - 1);
+			suffixp = _vector_get(psl->suffix_exceptions, _vector_add(psl->suffix_exceptions, &suffix));
+		} else {
+			_suffix_init(&suffix, p, linep - p);
+			suffixp = _vector_get(psl->suffixes, _vector_add(psl->suffixes, &suffix));
+		}
+
+		if (suffixp)
+			suffixp->label = suffixp->label_buf; // set label to changed address
+
+		nsuffixes++;;
+	}
+
+	_vector_sort(psl->suffix_exceptions);
+	_vector_sort(psl->suffixes);
+
+	return psl;
+}
 
 static void _print_psl_entries(FILE *fpout, const _psl_vector_t *v, const char *varname)
 {
@@ -53,6 +292,16 @@ static void _print_psl_entries(FILE *fpout, const _psl_vector_t *v, const char *
 	}
 
 	fprintf(fpout, "};\n");
+}
+
+void psl_free(psl_ctx_t **psl)
+{
+	if (psl && *psl) {
+		_vector_free(&(*psl)->suffixes);
+		_vector_free(&(*psl)->suffix_exceptions);
+		free(*psl);
+		*psl = NULL;
+	}
 }
 
 static int _str_needs_encoding(const char *s)
@@ -90,7 +339,8 @@ static void _add_punycode_if_needed(_psl_vector_t *v)
 			char cmd[16 + strlen(e->label_buf)],  lookupname[64] = "";
 			snprintf(cmd, sizeof(cmd), "idn2 '%s'", e->label_buf);
 			if ((pp = popen(cmd, "r"))) {
-				if (fscanf(pp, "%63s", lookupname) >= 1) {
+				if (fscanf(pp, "%63s", lookupname) >= 1 && strcmp(e->label_buf, lookupname)) {
+					// fprintf(stderr, "idn2 '%s' -> '%s'\n", e->label_buf, lookupname);
 					_suffix_init(&suffix, lookupname, strlen(lookupname));
 					suffix.wildcard = e->wildcard;
 					_vector_add(v, &suffix);

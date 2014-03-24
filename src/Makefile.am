@@ -7,17 +7,18 @@ BUILT_SOURCES = suffixes.c
 CLEANFILES = suffixes.c
 
 # build two libraries, 'inline' version with PSL entries compiled in
-lib_LTLIBRARIES = libpsl-@LIBPSL_API_VERSION@.la libpsl-inline-@LIBPSL_API_VERSION@.la
+#lib_LTLIBRARIES = libpsl-@LIBPSL_API_VERSION@.la libpsl-inline-@LIBPSL_API_VERSION@.la
+lib_LTLIBRARIES = libpsl-@LIBPSL_API_VERSION@.la
 
 libpsl_@LIBPSL_API_VERSION@_la_SOURCES = psl.c
 libpsl_@LIBPSL_API_VERSION@_la_CPPFLAGS = -I$(top_srcdir)/include
 # include ABI version information
 libpsl_@LIBPSL_API_VERSION@_la_LDFLAGS = -version-info $(LIBPSL_SO_VERSION)
 
-libpsl_inline_@LIBPSL_API_VERSION@_la_SOURCES = psl-inline.c
-libpsl_inline_@LIBPSL_API_VERSION@_la_CPPFLAGS = -I$(top_srcdir)/include
+#libpsl_inline_@LIBPSL_API_VERSION@_la_SOURCES = psl-inline.c
+#libpsl_inline_@LIBPSL_API_VERSION@_la_CPPFLAGS = -I$(top_srcdir)/include
 # include ABI version information
-libpsl_inline_@LIBPSL_API_VERSION@_la_LDFLAGS = -version-info $(LIBPSL_SO_VERSION)
+#libpsl_inline_@LIBPSL_API_VERSION@_la_LDFLAGS = -version-info $(LIBPSL_SO_VERSION)
 
 noinst_PROGRAMS = psl2c
 psl2c_SOURCES = psl2c.c

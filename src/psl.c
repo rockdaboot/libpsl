@@ -1,23 +1,27 @@
 /*
  * Copyright(c) 2014 Tim Ruehsen
  *
- * This file is part of MGet.
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ * 
+ * This file is part of libpsl.
  *
- * Mget is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Mget is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Mget.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * Public Suffix List routines (right now experimental)
+ * Public Suffix List routines
  *
  * Changelog
  * 19.03.2014  Tim Ruehsen  created from libmget/cookie.c
@@ -41,6 +45,9 @@
 #include <libpsl.h>
 
 #define countof(a) (sizeof(a)/sizeof(*(a)))
+
+// an invalid pointer
+#define _PSL_INTERNAL 1
 
 typedef struct {
 	char
@@ -70,6 +77,12 @@ struct _psl_ctx_st {
 		*suffixes,
 		*suffix_exceptions;
 };
+
+#include "suffixes.c"
+
+// references to this PSL will result in lookups to built-in data
+static psl_ctx_t
+	_builtin_psl;
 
 static _psl_vector_t *_vector_alloc(int max, int (*cmp)(const _psl_entry_t *, const _psl_entry_t *))
 {
@@ -232,11 +245,19 @@ int psl_is_public(const psl_ctx_t *psl, const char *domain)
 			suffix.nlabels++;
 
 	// if domain has enough labels, it is public
-	rule = _vector_get(psl->suffixes, 0);
+	if (psl == &_builtin_psl)
+		rule = &suffixes[0];
+	else
+		rule = _vector_get(psl->suffixes, 0);
+
 	if (!rule || rule->nlabels < suffix.nlabels - 1)
 		return 1;
 
-	rule = _vector_get(psl->suffixes, _vector_find(psl->suffixes, &suffix));
+	if (psl == &_builtin_psl)
+		rule = bsearch(&suffix, suffixes, countof(suffixes), sizeof(suffixes[0]), (int(*)(const void *, const void *))_suffix_compare);
+	else
+		rule = _vector_get(psl->suffixes, _vector_find(psl->suffixes, &suffix));
+
 	if (rule) {
 		// definitely a match, no matter if the found rule is a wildcard or not
 		return 0;
@@ -250,7 +271,11 @@ int psl_is_public(const psl_ctx_t *psl, const char *domain)
 		suffix.length = strlen(suffix.label);
 		suffix.nlabels--;
 
-		rule = _vector_get(psl->suffixes, _vector_find(psl->suffixes, &suffix));
+		if (psl == &_builtin_psl)
+			rule = bsearch(&suffix, suffixes, countof(suffixes), sizeof(suffixes[0]), (int(*)(const void *, const void *))_suffix_compare);
+		else
+			rule = _vector_get(psl->suffixes, _vector_find(psl->suffixes, &suffix));
+
 		if (rule) {
 			if (rule->wildcard) {
 				// now that we matched a wildcard, we have to check for an exception
@@ -258,8 +283,13 @@ int psl_is_public(const psl_ctx_t *psl, const char *domain)
 				suffix.length = length_bak;
 				suffix.nlabels++;
 
-				if (_vector_get(psl->suffix_exceptions, _vector_find(psl->suffix_exceptions, &suffix)) != 0)
-					return 1; // found an exception, so 'domain' is public
+				if (psl == &_builtin_psl) {
+					if (bsearch(&suffix, suffix_exceptions, countof(suffix_exceptions), sizeof(suffix_exceptions[0]), (int(*)(const void *, const void *))_suffix_compare))
+						return 1; // found an exception, so 'domain' is public
+				} else {
+					if (_vector_get(psl->suffix_exceptions, _vector_find(psl->suffix_exceptions, &suffix)) != 0)
+						return 1; // found an exception, so 'domain' is public
+				}
 
 				return 0;
 			}
@@ -267,6 +297,23 @@ int psl_is_public(const psl_ctx_t *psl, const char *domain)
 	}
 
 	return 1;
+}
+
+int psl_global_init(void)
+{
+	size_t it;
+
+	for (it = 0; it < countof(suffixes); it++)
+		suffixes[it].label = suffixes[it].label_buf;
+
+	for (it = 0; it < countof(suffix_exceptions); it++)
+		suffix_exceptions[it].label = suffix_exceptions[it].label_buf;
+
+	return 0; // 0 = OK
+}
+
+void psl_global_deinit(void)
+{
 }
 
 psl_ctx_t *psl_load_file(const char *fname)
@@ -332,24 +379,56 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 	return psl;
 }
 
-/* does not include exceptions */
-int psl_suffix_count(const psl_ctx_t *psl)
+// return built-in PSL structure
+psl_ctx_t *psl_builtin(void)
 {
-	return _vector_size(psl->suffixes);
-}
-
-/* just counts exceptions */
-int psl_suffix_exception_count(const psl_ctx_t *psl)
-{
-	return _vector_size(psl->suffix_exceptions);
+	return &_builtin_psl;
 }
 
 void psl_free(psl_ctx_t **psl)
 {
 	if (psl && *psl) {
-		_vector_free(&(*psl)->suffixes);
-		_vector_free(&(*psl)->suffix_exceptions);
+		if (*psl != &_builtin_psl) {
+			_vector_free(&(*psl)->suffixes);
+			_vector_free(&(*psl)->suffix_exceptions);
+		}
 		free(*psl);
 		*psl = NULL;
 	}
+}
+
+/* does not include exceptions */
+int psl_suffix_count(const psl_ctx_t *psl)
+{
+	if (psl == &_builtin_psl)
+		return countof(suffixes);
+	else
+		return _vector_size(psl->suffixes);
+}
+
+/* just counts exceptions */
+int psl_suffix_exception_count(const psl_ctx_t *psl)
+{
+	if (psl == &_builtin_psl)
+		return countof(suffix_exceptions);
+	else
+		return _vector_size(psl->suffix_exceptions);
+}
+
+// returns compilation time
+time_t psl_builtin_compile_time(void)
+{
+	return _psl_compile_time;
+}
+
+// returns mtime of PSL source file
+time_t psl_builtin_file_time(void)
+{
+	return _psl_file_time;
+}
+
+// returns MD5 checksum (hex-encoded, lowercase) of PSL source file
+const char *psl_builtin_sha1sum(void)
+{
+	return _psl_sha1_checksum;
 }

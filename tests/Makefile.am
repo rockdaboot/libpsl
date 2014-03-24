@@ -9,7 +9,7 @@ PSL_TESTS = test-is-public test-is-public-inline
 check_PROGRAMS = $(PSL_TESTS)
 
 #test_is_public_inline_SOURCES = test-is-public-inline.c
-test_is_public_inline_LDADD = ../src/libpsl-inline-@LIBPSL_API_VERSION@.la
+#test_is_public_inline_LDADD = ../src/libpsl-inline-@LIBPSL_API_VERSION@.la
 
 TESTS_ENVIRONMENT = TESTS_VALGRIND="@VALGRIND_ENVIRONMENT@"
 TESTS = $(PSL_TESTS)

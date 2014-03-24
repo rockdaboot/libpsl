@@ -32,7 +32,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <libpsl-inline.h>
+#include <libpsl.h>
 
 #define countof(a) (sizeof(a)/sizeof(*(a)))
 
@@ -66,33 +66,36 @@ static void test_psl(void)
 		{ "www.xn--czr694b", 1 },
 	};
 	unsigned it;
+	psl_ctx_t *psl;
 
-	psl_inline_init();
+	if (psl_global_init() == 0) {
+		psl = psl_builtin();
 
-	printf("have %d suffixes and %d exceptions\n", psl_inline_suffix_count(), psl_inline_suffix_exception_count());
+		printf("have %d suffixes and %d exceptions\n", psl_suffix_count(psl), psl_suffix_exception_count(psl));
 
-	for (it = 0; it < countof(test_data); it++) {
-		const struct test_data *t = &test_data[it];
-		int result = psl_inline_is_public(t->domain);
+		for (it = 0; it < countof(test_data); it++) {
+			const struct test_data *t = &test_data[it];
+			int result = psl_is_public(psl, t->domain);
 
-		if (result == t->result) {
-			ok++;
-		} else {
-			failed++;
-			printf("psl_is_public(%s)=%d (expected %d)\n", t->domain, result, t->result);
+			if (result == t->result) {
+				ok++;
+			} else {
+				failed++;
+				printf("psl_is_public(%s)=%d (expected %d)\n", t->domain, result, t->result);
+			}
 		}
+
+		printf("psl_builtin_compile_time()=%ld\n", psl_builtin_compile_time());
+		psl_builtin_compile_time() == 0 ? failed++ : ok++;
+
+		printf("psl_builtin_file_time()=%ld\n", psl_builtin_file_time());
+		psl_builtin_file_time() == 0 ? failed++ : ok++;
+
+		printf("psl_builtin_sha1sum()=%s\n", psl_builtin_sha1sum());
+		*psl_builtin_sha1sum() == 0 ? failed++ : ok++;
+
+		psl_global_deinit();
 	}
-
-	printf("psl_builtin_compile_time()=%ld\n", psl_inline_builtin_compile_time());
-	psl_inline_builtin_compile_time() == 0 ? failed++ : ok++;
-
-	printf("psl_builtin_file_time()=%ld\n", psl_inline_builtin_file_time());
-	psl_inline_builtin_file_time() == 0 ? failed++ : ok++;
-
-	printf("psl_builtin_sha1sum()=%s\n", psl_inline_builtin_sha1sum());
-	*psl_inline_builtin_sha1sum() == 0 ? failed++ : ok++;
-
-	psl_inline_deinit();
 }
 
 int main(int argc, const char * const *argv)
