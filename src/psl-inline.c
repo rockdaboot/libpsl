@@ -159,8 +159,8 @@ time_t psl_inline_builtin_file_time(void)
 	return _psl_file_time;
 }
 
-// returns MD5 checksum of PSL source file
-const char *psl_inline_builtin_md5sum(void)
+// returns MD5 checksum (hex-encoded, lowercase) of PSL source file
+const char *psl_inline_builtin_sha1sum(void)
 {
-	return _psl_md5_checksum;
+	return _psl_sha1_checksum;
 }

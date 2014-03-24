@@ -114,7 +114,7 @@ int main(int argc, const char **argv)
 		_print_psl_entries(fpout, psl->suffixes, "suffixes");
 		_print_psl_entries(fpout, psl->suffix_exceptions, "suffix_exceptions");
 
-		snprintf(cmd, sizeof(cmd), "md5sum %s", argv[1]);
+		snprintf(cmd, sizeof(cmd), "sha1sum %s", argv[1]);
 		if ((pp = popen(cmd, "r"))) {
 			if (fscanf(pp, "%63[0-9a-zA-Z]", checksum) < 1)
 				*checksum = 0;
@@ -125,7 +125,7 @@ int main(int argc, const char **argv)
 			st.st_mtime = 0;
 		fprintf(fpout, "static time_t _psl_file_time = %lu;\n", st.st_mtime);
 		fprintf(fpout, "static time_t _psl_compile_time = %lu;\n", time(NULL));
-		fprintf(fpout, "static char _psl_md5_checksum[] = \"%s\";\n", checksum);
+		fprintf(fpout, "static char _psl_sha1_checksum[] = \"%s\";\n", checksum);
 
 		if (fclose(fpout) != 0)
 			ret = 4;
