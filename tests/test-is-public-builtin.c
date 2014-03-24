@@ -70,7 +70,7 @@ static void test_psl(void)
 		{ "www.xn--czr694b", 1 },
 	};
 	unsigned it;
-	psl_ctx_t *psl;
+	const psl_ctx_t *psl;
 
 	if (psl_global_init() == 0) {
 		psl = psl_builtin();

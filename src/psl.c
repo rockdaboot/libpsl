@@ -81,8 +81,8 @@ struct _psl_ctx_st {
 #include "suffixes.c"
 
 // references to this PSL will result in lookups to built-in data
-static psl_ctx_t
-	_builtin_psl;
+static const psl_ctx_t
+	_builtin_psl = { .suffixes = NULL, .suffix_exceptions = NULL, };
 
 static _psl_vector_t *_vector_alloc(int max, int (*cmp)(const _psl_entry_t *, const _psl_entry_t *))
 {
@@ -380,7 +380,7 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 }
 
 // return built-in PSL structure
-psl_ctx_t *psl_builtin(void)
+const psl_ctx_t *psl_builtin(void)
 {
 	return &_builtin_psl;
 }
