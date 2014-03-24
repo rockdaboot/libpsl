@@ -71,7 +71,9 @@ static void _add_punycode_if_needed(_psl_vector_t *v)
 
 		if (_str_needs_encoding(e->label_buf)) {
 			_psl_entry_t suffix;
-			char *asc = NULL;
+
+			// the following lines will have GPL3+ license issues
+/*			char *asc = NULL;
 			int rc;
 
 			if ((rc = idn2_lookup_u8((uint8_t *)e->label_buf, (uint8_t **)&asc, 0)) == IDN2_OK) {
@@ -81,6 +83,21 @@ static void _add_punycode_if_needed(_psl_vector_t *v)
 				_vector_add(v, &suffix);
 			} else
 				fprintf(stderr, "toASCII(%s) failed (%d): %s\n", e->label_buf, rc, idn2_strerror(rc));
+*/
+
+			// this is much slower than the libidn2 API but should have no license issues
+			FILE *pp;
+			char cmd[16 + strlen(e->label_buf)],  lookupname[64] = "";
+			snprintf(cmd, sizeof(cmd), "idn2 '%s'", e->label_buf);
+			if ((pp = popen(cmd, "r"))) {
+				if (fscanf(pp, "%63s", lookupname) >= 1) {
+					_suffix_init(&suffix, lookupname, strlen(lookupname));
+					suffix.wildcard = e->wildcard;
+					_vector_add(v, &suffix);
+				}
+				pclose(pp);
+			} else
+				fprintf(stderr, "Failed to call popen(%s, \"r\")\n", cmd);
 		}
 	}
 
