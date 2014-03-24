@@ -52,7 +52,6 @@ static void test_psl(void)
 	unsigned it, result;
 	char buf[256], domain[64], *linep, *p;
 
-	if (psl_global_init() == 0) {
 		psl = psl_load_file(DATADIR "/effective_tld_names.dat");
 
 		printf("loaded %d suffixes and %d exceptions\n", psl_suffix_count(psl), psl_suffix_exception_count(psl));
@@ -113,9 +112,6 @@ static void test_psl(void)
 		}
 
 		psl_free(&psl);
-		psl_global_deinit();
-	} else
-		failed++;
 }
 
 int main(int argc, const char * const *argv)

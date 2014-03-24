@@ -72,7 +72,6 @@ static void test_psl(void)
 	unsigned it;
 	const psl_ctx_t *psl;
 
-	if (psl_global_init() == 0) {
 		psl = psl_builtin();
 
 		printf("have %d suffixes and %d exceptions\n", psl_suffix_count(psl), psl_suffix_exception_count(psl));
@@ -97,9 +96,6 @@ static void test_psl(void)
 
 		printf("psl_builtin_sha1sum()=%s\n", psl_builtin_sha1sum());
 		*psl_builtin_sha1sum() == 0 ? failed++ : ok++;
-
-		psl_global_deinit();
-	}
 }
 
 int main(int argc, const char * const *argv)

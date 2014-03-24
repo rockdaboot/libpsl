@@ -188,7 +188,7 @@ static int _suffix_compare(const _psl_entry_t *s1, const _psl_entry_t *s2)
 	if ((n = s1->length - s2->length))
 		return n;  // shorter rules first
 
-	return strcmp(s1->label, s2->label);
+	return strcmp(s1->label, s2->label ? s2->label : s2->label_buf);
 }
 
 static void _suffix_init(_psl_entry_t *suffix, const char *rule, size_t length)
@@ -297,23 +297,6 @@ int psl_is_public(const psl_ctx_t *psl, const char *domain)
 	}
 
 	return 1;
-}
-
-int psl_global_init(void)
-{
-	size_t it;
-
-	for (it = 0; it < countof(suffixes); it++)
-		suffixes[it].label = suffixes[it].label_buf;
-
-	for (it = 0; it < countof(suffix_exceptions); it++)
-		suffix_exceptions[it].label = suffix_exceptions[it].label_buf;
-
-	return 0; // 0 = OK
-}
-
-void psl_global_deinit(void)
-{
 }
 
 psl_ctx_t *psl_load_file(const char *fname)
