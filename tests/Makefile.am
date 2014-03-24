@@ -1,7 +1,5 @@
-#DEFS = @DEFS@ -DDATADIR=\"$(datadir)/@PACKAGE@\" -DSRCDIR=\"$(srcdir)\"
 DEFS = @DEFS@ -DDATADIR=\"$(top_srcdir)/data\" -DSRCDIR=\"$(srcdir)\"
 AM_CPPFLAGS = -I$(top_srcdir)/include
-#AM_LDFLAGS = -static
 LDADD = ../src/libpsl-@LIBPSL_API_VERSION@.la
 
 PSL_TESTS = test-is-public test-is-public-builtin
