@@ -64,7 +64,7 @@ psl_ctx_t *
 	psl_load_file(const char *fname);
 psl_ctx_t *
 	psl_load_fp(FILE *fp);
-psl_ctx_t *
+const psl_ctx_t *
 	psl_builtin(void);
 int
 	psl_is_public(const psl_ctx_t *psl, const char *domain);
