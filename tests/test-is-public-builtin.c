@@ -72,30 +72,30 @@ static void test_psl(void)
 	unsigned it;
 	const psl_ctx_t *psl;
 
-		psl = psl_builtin();
+	psl = psl_builtin();
 
-		printf("have %d suffixes and %d exceptions\n", psl_suffix_count(psl), psl_suffix_exception_count(psl));
+	printf("have %d suffixes and %d exceptions\n", psl_suffix_count(psl), psl_suffix_exception_count(psl));
 
-		for (it = 0; it < countof(test_data); it++) {
-			const struct test_data *t = &test_data[it];
-			int result = psl_is_public(psl, t->domain);
+	for (it = 0; it < countof(test_data); it++) {
+		const struct test_data *t = &test_data[it];
+		int result = psl_is_public(psl, t->domain);
 
-			if (result == t->result) {
-				ok++;
-			} else {
-				failed++;
-				printf("psl_is_public(%s)=%d (expected %d)\n", t->domain, result, t->result);
-			}
+		if (result == t->result) {
+			ok++;
+		} else {
+			failed++;
+			printf("psl_is_public(%s)=%d (expected %d)\n", t->domain, result, t->result);
 		}
+	}
 
-		printf("psl_builtin_compile_time()=%ld\n", psl_builtin_compile_time());
-		psl_builtin_compile_time() == 0 ? failed++ : ok++;
+	printf("psl_builtin_compile_time()=%ld\n", psl_builtin_compile_time());
+	psl_builtin_compile_time() == 0 ? failed++ : ok++;
 
-		printf("psl_builtin_file_time()=%ld\n", psl_builtin_file_time());
-		psl_builtin_file_time() == 0 ? failed++ : ok++;
+	printf("psl_builtin_file_time()=%ld\n", psl_builtin_file_time());
+	psl_builtin_file_time() == 0 ? failed++ : ok++;
 
-		printf("psl_builtin_sha1sum()=%s\n", psl_builtin_sha1sum());
-		*psl_builtin_sha1sum() == 0 ? failed++ : ok++;
+	printf("psl_builtin_sha1sum()=%s\n", psl_builtin_sha1sum());
+	*psl_builtin_sha1sum() == 0 ? failed++ : ok++;
 }
 
 int main(int argc, const char * const *argv)

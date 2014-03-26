@@ -52,66 +52,66 @@ static void test_psl(void)
 	unsigned it, result;
 	char buf[256], domain[64], *linep, *p;
 
-		psl = psl_load_file(DATADIR "/effective_tld_names.dat");
+	psl = psl_load_file(DATADIR "/effective_tld_names.dat");
 
-		printf("loaded %d suffixes and %d exceptions\n", psl_suffix_count(psl), psl_suffix_exception_count(psl));
+	printf("loaded %d suffixes and %d exceptions\n", psl_suffix_count(psl), psl_suffix_exception_count(psl));
 
-		if ((fp = fopen(DATADIR "/effective_tld_names.dat", "r"))) {
-			while ((linep = fgets(buf, sizeof(buf), fp))) {
-				while (isspace(*linep)) linep++; // ignore leading whitespace
-				if (!*linep) continue; // skip empty lines
+	if ((fp = fopen(DATADIR "/effective_tld_names.dat", "r"))) {
+		while ((linep = fgets(buf, sizeof(buf), fp))) {
+			while (isspace(*linep)) linep++; // ignore leading whitespace
+			if (!*linep) continue; // skip empty lines
 
-				if (*linep == '/' && linep[1] == '/')
-					continue; // skip comments
+			if (*linep == '/' && linep[1] == '/')
+				continue; // skip comments
 
-				// parse suffix rule
-				for (p = linep; *linep && !isspace(*linep);) linep++;
-				*linep = 0;
+			// parse suffix rule
+			for (p = linep; *linep && !isspace(*linep);) linep++;
+			*linep = 0;
 
-				if (*p == '!') { // an exception to a wildcard, e.g. !www.ck (wildcard is *.ck)
-					if (!(result = psl_is_public(psl, p + 1))) {
-						failed++;
-						printf("psl_is_public(%s)=%d (expected 1)\n", p, result);
-					} else ok++;
+			if (*p == '!') { // an exception to a wildcard, e.g. !www.ck (wildcard is *.ck)
+				if (!(result = psl_is_public(psl, p + 1))) {
+					failed++;
+					printf("psl_is_public(%s)=%d (expected 1)\n", p, result);
+				} else ok++;
 
-					if ((result = psl_is_public(psl, strchr(p, '.') + 1))) {
-						failed++;
-						printf("psl_is_public(%s)=%d (expected 0)\n", strchr(p, '.') + 1, result);
-					} else ok++;
-				}
-				else if (*p == '*') { // a wildcard, e.g. *.ck
-					if ((result = psl_is_public(psl, p + 1))) {
-						failed++;
-						printf("psl_is_public(%s)=%d (expected 0)\n", p + 1, result);
-					} else ok++;
-
-					*p = 'x';
-					if ((result = psl_is_public(psl, p))) {
-						failed++;
-						printf("psl_is_public(%s)=%d (expected 0)\n", p, result);
-					} else ok++;
-				}
-				else {
-					if ((result = psl_is_public(psl, p))) {
-						failed++;
-						printf("psl_is_public(%s)=%d (expected 0)\n", p, result);
-					} else ok++;
-
-					snprintf(domain, sizeof(domain), "xxxx.%s", p);
-					if (!(result = psl_is_public(psl, domain))) {
-						failed++;
-						printf("psl_is_public(%s)=%d (expected 1)\n", domain, result);
-					} else ok++;
-				}
+				if ((result = psl_is_public(psl, strchr(p, '.') + 1))) {
+					failed++;
+					printf("psl_is_public(%s)=%d (expected 0)\n", strchr(p, '.') + 1, result);
+				} else ok++;
 			}
+			else if (*p == '*') { // a wildcard, e.g. *.ck
+				if ((result = psl_is_public(psl, p + 1))) {
+					failed++;
+					printf("psl_is_public(%s)=%d (expected 0)\n", p + 1, result);
+				} else ok++;
 
-			fclose(fp);
-		} else {
-			printf("Failed to open %s\n", DATADIR "/effective_tld_names.dat");
-			failed++;
+				*p = 'x';
+				if ((result = psl_is_public(psl, p))) {
+					failed++;
+					printf("psl_is_public(%s)=%d (expected 0)\n", p, result);
+				} else ok++;
+			}
+			else {
+				if ((result = psl_is_public(psl, p))) {
+					failed++;
+					printf("psl_is_public(%s)=%d (expected 0)\n", p, result);
+				} else ok++;
+
+				snprintf(domain, sizeof(domain), "xxxx.%s", p);
+				if (!(result = psl_is_public(psl, domain))) {
+					failed++;
+					printf("psl_is_public(%s)=%d (expected 1)\n", domain, result);
+				} else ok++;
+			}
 		}
 
-		psl_free(&psl);
+		fclose(fp);
+	} else {
+		printf("Failed to open %s\n", DATADIR "/effective_tld_names.dat");
+		failed++;
+	}
+
+	psl_free(&psl);
 }
 
 int main(int argc, const char * const *argv)
