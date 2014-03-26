@@ -301,9 +301,12 @@ int psl_is_public(const psl_ctx_t *psl, const char *domain)
 
 // return NULL, if string domain does not contain a registered domain
 // else return a pointer to the longest registered domain within 'domain'
-const char *psl_registered_domain(const psl_ctx_t *psl, const char *domain)
+const char *psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain)
 {
 	const char *p, *ret_domain;
+
+	if (!psl || !domain)
+		return NULL;
 
 	// We check from right to left, e.g. in www.xxx.org we check org, xxx.org, www.xxx.org in this order
 	// for being a registered domain.
@@ -323,6 +326,30 @@ const char *psl_registered_domain(const psl_ctx_t *psl, const char *domain)
 		while (p > domain && *--p != '.')
 			;
 	}
+}
+
+// returns the shortest possible registrable domain part or NULL if domain is not registrable at all
+const char *psl_registrable_domain(const psl_ctx_t *psl, const char *domain)
+{
+	const char *p;
+	int ispublic;
+
+	if (!psl || !domain || *domain == '.')
+		return NULL;
+
+	// We check from right to left, e.g. in www.xxx.org we check org, xxx.org, www.xxx.org in this order
+	// for being a registrable domain.
+
+	if (!(p = strrchr(domain, '.')))
+		p = domain;
+
+	while (!(ispublic = psl_is_public(psl, p)) && p > domain) {
+		// go left to next dot
+		while (p > domain && *--p != '.')
+			;
+	}
+
+	return ispublic ? (*p == '.' ? p + 1 : p) : NULL;
 }
 
 psl_ctx_t *psl_load_file(const char *fname)

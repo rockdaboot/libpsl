@@ -21,10 +21,10 @@
  *
  * This file is part of the test suite of libpsl.
  *
- * Test psl_is_public() for all entries in effective_tld_names.dat
+ * Test psl_registered_domain() for all entries in test_psl.dat
  *
  * Changelog
- * 19.03.2014  Tim Ruehsen  created
+ * 26.03.2014  Tim Ruehsen  created
  *
  */
 
@@ -40,7 +40,7 @@
 #include <libpsl.h>
 
 #define countof(a) (sizeof(a)/sizeof(*(a)))
-
+#define TESTDATA DATADIR"/test_psl.txt"
 static int
 	ok,
 	failed;
@@ -48,70 +48,46 @@ static int
 static void test_psl(void)
 {
 	FILE *fp;
-	psl_ctx_t *psl;
-	int result;
-	char buf[256], domain[64], *linep, *p;
+	const psl_ctx_t *psl;
+	const char *result;
+	char buf[256], domain[128], expected_regdom[128], *p;
 
-	psl = psl_load_file(DATADIR "/effective_tld_names.dat");
+	psl = psl_builtin();
 
-	printf("loaded %d suffixes and %d exceptions\n", psl_suffix_count(psl), psl_suffix_exception_count(psl));
+	printf("have %d suffixes and %d exceptions\n", psl_suffix_count(psl), psl_suffix_exception_count(psl));
 
-	if ((fp = fopen(DATADIR "/effective_tld_names.dat", "r"))) {
-		while ((linep = fgets(buf, sizeof(buf), fp))) {
-			while (isspace(*linep)) linep++; // ignore leading whitespace
-			if (!*linep) continue; // skip empty lines
-
-			if (*linep == '/' && linep[1] == '/')
-				continue; // skip comments
-
-			// parse suffix rule
-			for (p = linep; *linep && !isspace(*linep);) linep++;
-			*linep = 0;
-
-			if (*p == '!') { // an exception to a wildcard, e.g. !www.ck (wildcard is *.ck)
-				if (!(result = psl_is_public(psl, p + 1))) {
-					failed++;
-					printf("psl_is_public(%s)=%d (expected 1)\n", p, result);
-				} else ok++;
-
-				if ((result = psl_is_public(psl, strchr(p, '.') + 1))) {
-					failed++;
-					printf("psl_is_public(%s)=%d (expected 0)\n", strchr(p, '.') + 1, result);
-				} else ok++;
+	if ((fp = fopen(TESTDATA, "r"))) {
+		while ((fgets(buf, sizeof(buf), fp))) {
+			if (sscanf(buf, " checkPublicSuffix('%127[^']' , '%127[^']", domain, expected_regdom) != 2) {
+				if (sscanf(buf, " checkPublicSuffix('%127[^']' , %127[nul]", domain, expected_regdom) != 2)
+					continue;
 			}
-			else if (*p == '*') { // a wildcard, e.g. *.ck
-				if ((result = psl_is_public(psl, p + 1))) {
-					failed++;
-					printf("psl_is_public(%s)=%d (expected 0)\n", p + 1, result);
-				} else ok++;
 
-				*p = 'x';
-				if ((result = psl_is_public(psl, p))) {
-					failed++;
-					printf("psl_is_public(%s)=%d (expected 0)\n", p, result);
-				} else ok++;
-			}
-			else {
-				if ((result = psl_is_public(psl, p))) {
-					failed++;
-					printf("psl_is_public(%s)=%d (expected 0)\n", p, result);
-				} else ok++;
+			// we have to lowercase the domain - the PSL API just takes lowercase
+			for (p = domain; *p; p++)
+				if (isupper(*p))
+					*p = tolower(*p);
 
-				snprintf(domain, sizeof(domain), "xxxx.%s", p);
-				if (!(result = psl_is_public(psl, domain))) {
+			result = psl_registrable_domain(psl, domain);
+			
+			if (result == NULL) {
+				if (strcmp(expected_regdom, "null")) {
 					failed++;
-					printf("psl_is_public(%s)=%d (expected 1)\n", domain, result);
+					printf("psl_registrable_domain(%s)=NULL (expected %s)\n", domain, expected_regdom);
+				} else ok++;
+			} else {
+				if (strcmp(expected_regdom, result)) {
+					failed++;
+					printf("psl_registrable_domain(%s)=%s (expected %s)\n", domain, result, expected_regdom);
 				} else ok++;
 			}
 		}
 
 		fclose(fp);
 	} else {
-		printf("Failed to open %s\n", DATADIR "/effective_tld_names.dat");
+		printf("Failed to open %s\n", TESTDATA);
 		failed++;
 	}
-
-	psl_free(&psl);
 }
 
 int main(int argc, const char * const *argv)
