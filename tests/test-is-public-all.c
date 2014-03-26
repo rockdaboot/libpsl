@@ -49,7 +49,7 @@ static void test_psl(void)
 {
 	FILE *fp;
 	psl_ctx_t *psl;
-	unsigned it, result;
+	int result;
 	char buf[256], domain[64], *linep, *p;
 
 	psl = psl_load_file(DATADIR "/effective_tld_names.dat");
