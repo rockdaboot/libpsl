@@ -299,6 +299,32 @@ int psl_is_public(const psl_ctx_t *psl, const char *domain)
 	return 1;
 }
 
+// return NULL, if string domain does not contain a registered domain
+// else return a pointer to the longest registered domain within 'domain'
+const char *psl_registered_domain(const psl_ctx_t *psl, const char *domain)
+{
+	const char *p, *ret_domain;
+
+	// We check from right to left, e.g. in www.xxx.org we check org, xxx.org, www.xxx.org in this order
+	// for being a registered domain.
+
+	if (!(p = strrchr(domain, '.')))
+		return psl_is_public(psl, domain) ? NULL : domain;
+
+	for (ret_domain = NULL; ;) {
+		if (psl_is_public(psl, p))
+			return ret_domain;
+		else if (p == domain)
+			return domain;
+
+		ret_domain = p + 1;
+
+		// go left to next dot
+		while (p > domain && *--p != '.')
+			;
+	}
+}
+
 psl_ctx_t *psl_load_file(const char *fname)
 {
 	FILE *fp;
