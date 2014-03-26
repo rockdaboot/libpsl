@@ -54,10 +54,6 @@ PSL_BEGIN_DECLS
 
 typedef struct _psl_ctx_st psl_ctx_t;
 
-int
-	psl_global_init(void);
-void
-	psl_global_deinit(void);
 void
 	psl_free(psl_ctx_t **psl);
 psl_ctx_t *
