@@ -48,7 +48,34 @@ static int
 
 static void test(const psl_ctx_t *psl, const char *domain, const char *expected_result)
 {
-	const char *result = psl_registrable_domain(psl, domain);
+	const char *result;
+	char lookupname[128];
+
+	// check if there might be some utf-8 characters
+	if (domain) {
+		int utf8;
+		const char *p;
+
+		for (p = domain, utf8 = 0; *p && !utf8; p++)
+			if (*p < 0)
+				utf8 = 1;
+
+		// if we found utf-8, make sure to convert domain correctly to lowercase
+		// does it work, if we are not in a utf-8 env ?
+		if (utf8) {
+			FILE *pp;
+			char cmd[48 + strlen(domain)];
+
+			snprintf(cmd, sizeof(cmd), "echo -n '%s' | sed -e 's/./\\L\\0/g'", domain);
+			if ((pp = popen(cmd, "r"))) {
+				if (fscanf(pp, "%127s", lookupname) >= 1)
+					domain = lookupname;
+				pclose(pp);
+			}
+		}
+	}
+
+	result = psl_registrable_domain(psl, domain);
 
 	if ((result && expected_result && !strcmp(result, expected_result)) || (!result && !expected_result)) {
 		ok++;
@@ -79,7 +106,7 @@ static void test_psl(void)
 	test(NULL, "com", NULL);
 
 	// Norwegian with uppercase oe
-	// test(psl, "www.\303\230yer.no", "www.\303\270yer.no");
+	test(psl, "www.\303\230yer.no", "www.\303\270yer.no");
 
 	// Norwegian with lowercase oe
 	test(psl, "www.\303\270yer.no", "www.\303\270yer.no");
@@ -93,7 +120,7 @@ static void test_psl(void)
 
 			// we have to lowercase the domain - the PSL API just takes lowercase
 			for (p = domain; *p; p++)
-				if (isupper(*p))
+				if (*p > 0 && isupper(*p))
 					*p = tolower(*p);
 
 			// there are test cases with 'example' unlisted TLD, unsure how to handle these, so skip for the moment
