@@ -298,13 +298,14 @@ static int _str_needs_encoding(const char *s)
 
 static void _add_punycode_if_needed(_psl_vector_t *v)
 {
-	int it;
+	int it, n;
 
-	for (it = 0; it < v->cur; it++) {
+	// do not use 'it < v->cur' since v->cur is changed by _vector_add() !
+	for (it = 0, n = v->cur; it < n; it++) {
 		_psl_entry_t *e = _vector_get(v, it);
 
 		if (_str_needs_encoding(e->label_buf)) {
-			_psl_entry_t suffix;
+			_psl_entry_t suffix, *suffixp;
 
 			// the following lines will have GPL3+ license issues
 /*			char *asc = NULL;
@@ -314,7 +315,8 @@ static void _add_punycode_if_needed(_psl_vector_t *v)
 				// fprintf(stderr, "idn2 '%s' -> '%s'\n", e->label_buf, asc);
 				_suffix_init(&suffix, asc, strlen(asc));
 				suffix.wildcard = e->wildcard;
-				_vector_add(v, &suffix);
+				suffixp = _vector_get(v, _vector_add(v, &suffix));
+				suffixp->label = suffixp->e_label_buf; // set label to changed address
 			} else
 				fprintf(stderr, "toASCII(%s) failed (%d): %s\n", e->label_buf, rc, idn2_strerror(rc));
 */
@@ -328,7 +330,8 @@ static void _add_punycode_if_needed(_psl_vector_t *v)
 					// fprintf(stderr, "idn2 '%s' -> '%s'\n", e->label_buf, lookupname);
 					_suffix_init(&suffix, lookupname, strlen(lookupname));
 					suffix.wildcard = e->wildcard;
-					_vector_add(v, &suffix);
+					suffixp = _vector_get(v, _vector_add(v, &suffix));
+					suffixp->label = suffixp->label_buf; // set label to changed address
 				}
 				pclose(pp);
 			} else
