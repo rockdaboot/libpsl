@@ -421,15 +421,12 @@ const psl_ctx_t *psl_builtin(void)
 	return &_builtin_psl;
 }
 
-void psl_free(psl_ctx_t **psl)
+void psl_free(psl_ctx_t *psl)
 {
-	if (psl && *psl) {
-		if (*psl != &_builtin_psl) {
-			_vector_free(&(*psl)->suffixes);
-			_vector_free(&(*psl)->suffix_exceptions);
-		}
-		free(*psl);
-		*psl = NULL;
+	if (psl && psl != &_builtin_psl) {
+		_vector_free(&psl->suffixes);
+		_vector_free(&psl->suffix_exceptions);
+		free(psl);
 	}
 }
 

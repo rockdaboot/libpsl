@@ -55,7 +55,7 @@ PSL_BEGIN_DECLS
 typedef struct _psl_ctx_st psl_ctx_t;
 
 void
-	psl_free(psl_ctx_t **psl);
+	psl_free(psl_ctx_t *psl);
 psl_ctx_t *
 	psl_load_file(const char *fname);
 psl_ctx_t *

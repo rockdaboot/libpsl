@@ -86,7 +86,7 @@ static void test_psl(void)
 		}
 	}
 
-	psl_free(&psl);
+	psl_free(psl);
 }
 
 int main(int argc, const char * const *argv)

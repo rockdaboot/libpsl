@@ -279,13 +279,12 @@ static void _print_psl_entries(FILE *fpout, const _psl_vector_t *v, const char *
 	fprintf(fpout, "};\n");
 }
 
-void psl_free(psl_ctx_t **psl)
+void psl_free(psl_ctx_t *psl)
 {
-	if (psl && *psl) {
-		_vector_free(&(*psl)->suffixes);
-		_vector_free(&(*psl)->suffix_exceptions);
-		free(*psl);
-		*psl = NULL;
+	if (psl) {
+		_vector_free(&psl->suffixes);
+		_vector_free(&psl->suffix_exceptions);
+		free(psl);
 	}
 }
 
@@ -389,6 +388,6 @@ int main(int argc, const char **argv)
 		ret = 3;
 	}
 
-	psl_free(&psl);
+	psl_free(psl);
 	return ret;
 }
