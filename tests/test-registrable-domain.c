@@ -123,14 +123,6 @@ static void test_psl(void)
 				if (*p > 0 && isupper(*p))
 					*p = tolower(*p);
 
-			// there are test cases with 'example' unlisted TLD, unsure how to handle these, so skip for the moment
-			{
-				size_t len;
-
-				if ((len = strlen(domain)) >= 7 && !strcmp(domain + len - 7, "example"))
-					continue;
-			}
-
 			if (!strcmp(expected_regdom, "null"))
 				test(psl, domain, NULL);
 			else

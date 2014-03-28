@@ -261,6 +261,9 @@ int psl_is_public(const psl_ctx_t *psl, const char *domain)
 	if (rule) {
 		// definitely a match, no matter if the found rule is a wildcard or not
 		return 0;
+	} else if (suffix.nlabels == 1) {
+		// unknown TLD, this is the prevailing '*' match
+		return 0;
 	}
 
 	label_bak = suffix.label;
