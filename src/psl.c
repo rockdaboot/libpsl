@@ -234,6 +234,9 @@ int psl_is_public(const psl_ctx_t *psl, const char *domain)
 	const char *p, *label_bak;
 	unsigned short length_bak;
 
+	if (!psl || !domain)
+		return 0;
+
 	// this function should be called without leading dots, just make sure
 	suffix.label = domain + (*domain == '.');
 	suffix.length = strlen(suffix.label);
@@ -360,6 +363,9 @@ psl_ctx_t *psl_load_file(const char *fname)
 	FILE *fp;
 	psl_ctx_t *psl = NULL;
 
+	if (!fname)
+		return NULL;
+
 	if ((fp = fopen(fname, "r"))) {
 		psl = psl_load_fp(fp);
 		fclose(fp);
@@ -438,7 +444,7 @@ int psl_suffix_count(const psl_ctx_t *psl)
 {
 	if (psl == &_builtin_psl)
 		return countof(suffixes);
-	else
+	else if (psl)
 		return _vector_size(psl->suffixes);
 }
 
@@ -447,7 +453,7 @@ int psl_suffix_exception_count(const psl_ctx_t *psl)
 {
 	if (psl == &_builtin_psl)
 		return countof(suffix_exceptions);
-	else
+	else if (psl)
 		return _vector_size(psl->suffix_exceptions);
 }
 
