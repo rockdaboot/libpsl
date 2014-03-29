@@ -191,7 +191,7 @@ static int _suffix_compare(const _psl_entry_t *s1, const _psl_entry_t *s2)
 	return strcmp(s1->label, s2->label ? s2->label : s2->label_buf);
 }
 
-static void _suffix_init(_psl_entry_t *suffix, const char *rule, size_t length)
+static int _suffix_init(_psl_entry_t *suffix, const char *rule, size_t length)
 {
 	const char *src;
 	char *dst;
@@ -200,15 +200,15 @@ static void _suffix_init(_psl_entry_t *suffix, const char *rule, size_t length)
 
 	if (length >= sizeof(suffix->label_buf) - 1) {
 		suffix->nlabels = 0;
-		fprintf(stderr, _("Suffix rule too long (%zd, ignored): %s\n"), length, rule);
-		return;
+		// fprintf(stderr, _("Suffix rule too long (%zd, ignored): %s\n"), length, rule);
+		return -1;
 	}
 
 	if (*rule == '*') {
 		if (*++rule != '.') {
 			suffix->nlabels = 0;
-			fprintf(stderr, _("Unsupported kind of rule (ignored): %s\n"), rule);
-			return;
+			// fprintf(stderr, _("Unsupported kind of rule (ignored): %s\n"), rule);
+			return -2;
 		}
 		rule++;
 		suffix->wildcard = 1;
@@ -226,6 +226,8 @@ static void _suffix_init(_psl_entry_t *suffix, const char *rule, size_t length)
 		*dst++ = tolower(*src++);
 	}
 	*dst = 0;
+
+	return 0;
 }
 
 int psl_is_public(const psl_ctx_t *psl, const char *domain)
@@ -405,11 +407,11 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 
 		if (*p == '!') {
 			// add to exceptions
-			_suffix_init(&suffix, p + 1, linep - p - 1);
-			suffixp = _vector_get(psl->suffix_exceptions, _vector_add(psl->suffix_exceptions, &suffix));
+			if (_suffix_init(&suffix, p + 1, linep - p - 1) == 0)
+				suffixp = _vector_get(psl->suffix_exceptions, _vector_add(psl->suffix_exceptions, &suffix));
 		} else {
-			_suffix_init(&suffix, p, linep - p);
-			suffixp = _vector_get(psl->suffixes, _vector_add(psl->suffixes, &suffix));
+			if (_suffix_init(&suffix, p, linep - p) == 0)
+				suffixp = _vector_get(psl->suffixes, _vector_add(psl->suffixes, &suffix));
 		}
 
 		if (suffixp)
