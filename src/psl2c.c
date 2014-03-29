@@ -21,7 +21,7 @@
  *
  * This file is part of libpsl.
  *
- * Precompile Public Suffix List into
+ * Precompile Public Suffix List into a C source file
  *
  * Changelog
  * 22.03.2014  Tim Ruehsen  created
