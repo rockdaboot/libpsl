@@ -22,6 +22,7 @@ Mailing List
 ------------
 
 [Mailing List Archive](http://news.gmane.org/gmane.network.dns.libpsl.bugs)
+
 [Mailing List](https://groups.google.com/forum/#!forum/libpsl-bugs)
 
 To join the mailing list send an email to
