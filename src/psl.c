@@ -409,9 +409,13 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 			// add to exceptions
 			if (_suffix_init(&suffix, p + 1, linep - p - 1) == 0)
 				suffixp = _vector_get(psl->suffix_exceptions, _vector_add(psl->suffix_exceptions, &suffix));
+			else
+				suffixp = NULL;
 		} else {
 			if (_suffix_init(&suffix, p, linep - p) == 0)
 				suffixp = _vector_get(psl->suffixes, _vector_add(psl->suffixes, &suffix));
+			else
+				suffixp = NULL;
 		}
 
 		if (suffixp)
@@ -448,6 +452,8 @@ int psl_suffix_count(const psl_ctx_t *psl)
 		return countof(suffixes);
 	else if (psl)
 		return _vector_size(psl->suffixes);
+	else
+		return 0;
 }
 
 /* just counts exceptions */
@@ -457,6 +463,8 @@ int psl_suffix_exception_count(const psl_ctx_t *psl)
 		return countof(suffix_exceptions);
 	else if (psl)
 		return _vector_size(psl->suffix_exceptions);
+	else
+		return 0;
 }
 
 // returns compilation time
