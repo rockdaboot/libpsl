@@ -144,11 +144,6 @@ static void _vector_sort(_psl_vector_t *v)
 		qsort_r(v->entry, v->cur, sizeof(_psl_vector_t *), _compare, v);
 }
 
-static inline int _vector_size(_psl_vector_t *v)
-{
-	return v ? v->cur : 0;
-}
-
 // by this kind of sorting, we can easily see if a domain matches or not (match = supercookie !)
 
 static int _suffix_compare(const _psl_entry_t *s1, const _psl_entry_t *s2)

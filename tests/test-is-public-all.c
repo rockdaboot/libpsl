@@ -39,8 +39,6 @@
 
 #include <libpsl.h>
 
-#define countof(a) (sizeof(a)/sizeof(*(a)))
-
 static int
 	ok,
 	failed;
@@ -121,7 +119,7 @@ int main(int argc, const char * const *argv)
 		const char *valgrind = getenv("TESTS_VALGRIND");
 
 		if (valgrind && *valgrind) {
-			char cmd[strlen(valgrind)+strlen(argv[0])+32];
+			char cmd[strlen(valgrind) + strlen(argv[0]) + 32];
 
 			snprintf(cmd, sizeof(cmd), "TESTS_VALGRIND="" %s %s", valgrind, argv[0]);
 			return system(cmd) != 0;

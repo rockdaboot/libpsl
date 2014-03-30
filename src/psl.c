@@ -46,9 +46,6 @@
 
 #define countof(a) (sizeof(a)/sizeof(*(a)))
 
-// an invalid pointer
-#define _PSL_INTERNAL 1
-
 typedef struct {
 	char
 		label_buf[48];
