@@ -82,7 +82,7 @@ struct _psl_ctx_st {
 
 // references to this PSL will result in lookups to built-in data
 static const psl_ctx_t
-	_builtin_psl = { .suffixes = NULL, .suffix_exceptions = NULL, };
+	_builtin_psl;
 
 static _psl_vector_t *_vector_alloc(int max, int (*cmp)(const _psl_entry_t *, const _psl_entry_t *))
 {
