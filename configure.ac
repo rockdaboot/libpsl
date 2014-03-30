@@ -25,6 +25,19 @@ AM_GNU_GETTEXT_VERSION([0.18.1])
 AC_SUBST([LIBPSL_SO_VERSION], [0:0:0])
 AC_SUBST([LIBPSL_API_VERSION], [0.1])
 
+# Check for idn2
+AC_CHECK_PROG(HAVE_IDN2, idn2, yes, AC_MSG_ERROR(Cannot find required tool 'idn2'.))
+
+# Check for enable/disable builtin PSL data
+AC_ARG_ENABLE(builtin,
+  AS_HELP_STRING([--disable-builtin], [do not compile PSL data into library]),
+  [
+    enable_builtin=no
+  ], [
+    enable_builtin=yes
+    AC_DEFINE([WITH_BUILTIN], [1], [compile PSL data into library])
+  ])
+
 # Check for valgrind
 ac_enable_valgrind=no
 AC_ARG_ENABLE(valgrind-tests,
@@ -63,6 +76,6 @@ AC_MSG_NOTICE([Summary of build options:
   Compiler:          ${CC}
   CFlags:            ${CFLAGS} ${CPPFLAGS}
   LDFlags:           ${LDFLAGS}
+  Builtin PSL:       ${enable_builtin}
   Tests:             ${TESTS_INFO}
 ])
-

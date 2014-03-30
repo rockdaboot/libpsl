@@ -43,6 +43,8 @@
 //#	include <idn2.h>
 //#endif
 
+#ifdef WITH_BUILTIN
+
 #include <libpsl.h>
 
 typedef struct {
@@ -340,11 +342,14 @@ static void _add_punycode_if_needed(_psl_vector_t *v)
 
 	_vector_sort(v);
 }
+#endif // WITH_BUILTIN
 
 int main(int argc, const char **argv)
 {
 	FILE *fpout;
+#ifdef WITH_BUILTIN
 	psl_ctx_t *psl;
+#endif
 	int ret = 0;
 
 	if (argc != 3) {
@@ -354,6 +359,7 @@ int main(int argc, const char **argv)
 		return 1;
 	}
 
+#ifdef WITH_BUILTIN
 	if (!(psl = psl_load_file(argv[1])))
 		return 2;
 
@@ -389,5 +395,22 @@ int main(int argc, const char **argv)
 	}
 
 	psl_free(psl);
+#else
+	if ((fpout = fopen(argv[2], "w"))) {
+		fprintf(fpout, "static _psl_entry_t suffixes[0];\n");
+		fprintf(fpout, "static _psl_entry_t suffix_exceptions[0];\n");
+		fprintf(fpout, "static time_t _psl_file_time;\n");
+		fprintf(fpout, "static time_t _psl_compile_time;\n");
+		fprintf(fpout, "static char _psl_sha1_checksum[]= \"\";\n");
+
+		if (fclose(fpout) != 0)
+			ret = 4;
+	} else {
+		fprintf(stderr, "Failed to write open '%s'\n", argv[2]);
+		ret = 3;
+	}
+
+#endif // WITH_BUILTIN
+
 	return ret;
 }

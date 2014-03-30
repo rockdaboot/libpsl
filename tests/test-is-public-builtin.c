@@ -112,7 +112,9 @@ int main(int argc, const char * const *argv)
 		}
 	}
 
+#ifdef WITH_BUILTIN
 	test_psl();
+#endif
 
 	if (failed) {
 		printf("Summary: %d out of %d tests failed\n", failed, ok + failed);
