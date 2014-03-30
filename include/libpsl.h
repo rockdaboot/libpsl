@@ -32,6 +32,7 @@
 #define _LIBPSL_LIBPSL_H
 
 #include <stdio.h>
+#include <time.h>
 
 // Let C++ include C headers
 #ifdef  __cplusplus
