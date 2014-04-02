@@ -37,12 +37,31 @@
 # include <config.h>
 #endif
 
+#if ENABLE_NLS != 0
+#	include <libintl.h>
+#	define _(STRING) gettext(STRING)
+#else
+#	define _(STRING) STRING
+#	define ngettext(STRING1,STRING2,N) STRING2
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 
 #include <libpsl.h>
+
+/**
+ * SECTION:libpsl
+ * @short_description: Public Suffix List library functions
+ * @title: libpsl
+ * @stability: unstable
+ * @include: libpsl.h
+ *
+ * Public Suffix List library functions.
+ *
+ */
 
 #define countof(a) (sizeof(a)/sizeof(*(a)))
 
@@ -75,6 +94,7 @@ struct _psl_ctx_st {
 		*suffix_exceptions;
 };
 
+// include the PSL data compiled by 'psl2c'
 #include "suffixes.c"
 
 // references to this PSL will result in lookups to built-in data

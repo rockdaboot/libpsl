@@ -34,24 +34,10 @@
 #include <stdio.h>
 #include <time.h>
 
-// Let C++ include C headers
 #ifdef  __cplusplus
-#	define PSL_BEGIN_DECLS  extern "C" {
-#	define PSL_END_DECLS    }
-#else
-#	define PSL_BEGIN_DECLS
-#	define PSL_END_DECLS
+extern "C" {
 #endif
 
-#if ENABLE_NLS != 0
-#	include <libintl.h>
-#	define _(STRING) gettext(STRING)
-#else
-#	define _(STRING) STRING
-#	define ngettext(STRING1,STRING2,N) STRING2
-#endif
-
-PSL_BEGIN_DECLS
 
 typedef struct _psl_ctx_st psl_ctx_t;
 
@@ -88,6 +74,8 @@ const char *
 	psl_builtin_sha1sum(void);
 
 
-PSL_END_DECLS
+#ifdef  __cplusplus
+}
+#endif
 
 #endif /* _LIBPSL_LIBPSL_H */
