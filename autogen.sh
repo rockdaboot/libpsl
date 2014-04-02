@@ -10,6 +10,9 @@ if test -z `which idn2`; then
   exit 1
 fi
 
+# create m4 before gtkdocize
+mkdir m4 2>/dev/null
+
 GTKDOCIZE=`which gtkdocize 2>/dev/null`
 if test -z $GTKDOCIZE; then
   echo "No gtk-doc support found. You can't build the docs."
@@ -18,8 +21,6 @@ if test -z $GTKDOCIZE; then
 else
   gtkdocize || exit $?
 fi
-
-mkdir m4 2>/dev/null
 
 autoreconf --install --force --symlink || exit $?
 
