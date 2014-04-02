@@ -18,6 +18,38 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 AM_GNU_GETTEXT([external],[need-ngettext])
 AM_GNU_GETTEXT_VERSION([0.18.1])
 
+#
+# check for gtk-doc
+#
+m4_ifdef([GTK_DOC_CHECK], [
+GTK_DOC_CHECK([1.15],[--flavour no-tmpl])
+],[
+AM_CONDITIONAL([ENABLE_GTK_DOC], false)
+])
+
+#
+# enable creation of man pages
+#
+AC_ARG_ENABLE(man,[AC_HELP_STRING([--enable-man],
+                                  [generate man pages [default=auto]])],enable_man=yes,enable_man=no)
+AS_IF([test "$enable_man" != no], [
+  AC_PATH_PROG([XSLTPROC], [xsltproc])
+  AS_IF([test -z "$XSLTPROC"], [
+    AS_IF([test "$enable_man" = yes], [
+      AC_MSG_ERROR([xsltproc is required for --enable-man])
+    ])
+    enable_man=no
+  ])
+])
+AM_CONDITIONAL(ENABLE_MAN, test x$enable_man != xno)
+AC_MSG_CHECKING([whether to generate man pages])
+AS_IF([ test "$enable_man" != no ], [
+  AC_MSG_RESULT([yes])
+], [
+  AC_MSG_RESULT([no])
+])
+
+
 # Define these substitions here to keep all version information in one place.
 # For information on how to properly maintain the library version information,
 # refer to the libtool manual, section "Updating library version information":
@@ -63,6 +95,7 @@ AC_CONFIG_FILES([Makefile
                  include/Makefile
                  src/Makefile
                  po/Makefile.in
+                 docs/libpsl/Makefile
                  data/Makefile
                  tests/Makefile
                  libpsl-${LIBPSL_API_VERSION}.pc:libpsl.pc.in])

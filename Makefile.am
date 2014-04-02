@@ -1,10 +1,10 @@
 # got some hints from https://gitorious.org/openismus-playground/examplelib/source
 
-SUBDIRS = po include src tests data
+SUBDIRS = po include src data docs/libpsl tests
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
 # Enable GTK-Doc during make distcheck
-#DISTCHECK_CONFIGURE_FLAGS = --enable-gtk-doc --enable-man
+DISTCHECK_CONFIGURE_FLAGS = --enable-gtk-doc --enable-man
 
 ## Install the generated pkg-config file (.pc) into the expected location for
 ## architecture-dependent package configuration information. Occasionally,

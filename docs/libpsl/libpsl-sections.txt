@@ -1,0 +1,17 @@
+<SECTION>
+<FILE>libpsl</FILE>
+<TITLE>Public Suffix List functions</TITLE>
+psl_ctx_t
+psl_free
+psl_load_file
+psl_load_fp
+psl_builtin
+psl_is_public
+psl_unregistrable_domain
+psl_registrable_domain
+psl_suffix_count
+psl_suffix_exception_count
+psl_builtin_compile_time
+psl_builtin_file_time
+psl_builtin_sha1sum
+</SECTION>

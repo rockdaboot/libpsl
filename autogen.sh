@@ -10,6 +10,15 @@ if test -z `which idn2`; then
   exit 1
 fi
 
+GTKDOCIZE=`which gtkdocize 2>/dev/null`
+if test -z $GTKDOCIZE; then
+  echo "No gtk-doc support found. You can't build the docs."
+  echo "EXTRA_DIST =" >gtk-doc.make
+  echo "CLEANFILES =" >>gtk-doc.make
+else
+  gtkdocize || exit $?
+fi
+
 mkdir m4 2>/dev/null
 
 autoreconf --install --force --symlink || exit $?
@@ -19,5 +28,9 @@ echo "----------------------------------------------------------------"
 echo "Initialized build system. For a common configuration please run:"
 echo "----------------------------------------------------------------"
 echo
-echo "./configure"
+if test -z $GTKDOCIZE; then
+  echo "./configure"
+else
+  echo "./configure --enable-gtk-doc"
+fi
 echo
