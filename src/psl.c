@@ -247,6 +247,22 @@ static int _suffix_init(_psl_entry_t *suffix, const char *rule, size_t length)
 	return 0;
 }
 
+/**
+ * psl_is_public:
+ * @psl: PSL context
+ * @domain: Domain string
+ *
+ * This function checks if @domain is a public suffix by the means of the
+ * [Mozilla Public Suffix List](http://publicsuffix.org).
+ *
+ * This can be used for e.g. cookie domain verification.
+ * You should never accept a cookie who's domain is a public suffix.
+ *
+ * @psl is a context returned by either psl_load_file(), psl_load_fp() or
+ * psl_builtin().
+ *
+ * Returns: 1 if domain is a public suffix, 0 if not.
+ */
 int psl_is_public(const psl_ctx_t *psl, const char *domain)
 {
 	_psl_entry_t suffix, *rule;
@@ -254,7 +270,7 @@ int psl_is_public(const psl_ctx_t *psl, const char *domain)
 	unsigned short length_bak;
 
 	if (!psl || !domain)
-		return 0;
+		return 1;
 
 	// this function should be called without leading dots, just make sure
 	suffix.label = domain + (*domain == '.');
@@ -273,7 +289,7 @@ int psl_is_public(const psl_ctx_t *psl, const char *domain)
 		rule = _vector_get(psl->suffixes, 0);
 
 	if (!rule || rule->nlabels < suffix.nlabels - 1)
-		return 1;
+		return 0;
 
 	if (psl == &_builtin_psl)
 		rule = bsearch(&suffix, suffixes, countof(suffixes), sizeof(suffixes[0]), (int(*)(const void *, const void *))_suffix_compare);
@@ -282,10 +298,10 @@ int psl_is_public(const psl_ctx_t *psl, const char *domain)
 
 	if (rule) {
 		// definitely a match, no matter if the found rule is a wildcard or not
-		return 0;
+		return 1;
 	} else if (suffix.nlabels == 1) {
 		// unknown TLD, this is the prevailing '*' match
-		return 0;
+		return 1;
 	}
 
 	label_bak = suffix.label;
@@ -310,22 +326,34 @@ int psl_is_public(const psl_ctx_t *psl, const char *domain)
 
 				if (psl == &_builtin_psl) {
 					if (bsearch(&suffix, suffix_exceptions, countof(suffix_exceptions), sizeof(suffix_exceptions[0]), (int(*)(const void *, const void *))_suffix_compare))
-						return 1; // found an exception, so 'domain' is public
+						return 0; // found an exception, so 'domain' is not a public suffix
 				} else {
 					if (_vector_get(psl->suffix_exceptions, _vector_find(psl->suffix_exceptions, &suffix)) != 0)
-						return 1; // found an exception, so 'domain' is public
+						return 0; // found an exception, so 'domain' is not a public suffix
 				}
 
-				return 0;
+				return 1;
 			}
 		}
 	}
 
-	return 1;
+	return 0;
 }
 
-// return NULL, if string domain does not contain a registered domain
-// else return a pointer to the longest registered domain within 'domain'
+/**
+ * psl_unregistrable_domain:
+ * @psl: PSL context
+ * @domain: Domain string
+ *
+ * This function finds the longest publix suffix part of @domain by the means
+ * of the [Mozilla Public Suffix List](http://publicsuffix.org).
+ *
+ * @psl is a context returned by either psl_load_file(), psl_load_fp() or
+ * psl_builtin().
+ *
+ * Returns: Pointer to longest public suffix part of @domain or NULL if @domain
+ * does not contain a public suffix (or if @psl is NULL).
+ */
 const char *psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain)
 {
 	const char *p, *ret_domain;
@@ -337,10 +365,10 @@ const char *psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain)
 	// for being a registered domain.
 
 	if (!(p = strrchr(domain, '.')))
-		return psl_is_public(psl, domain) ? NULL : domain;
+		return psl_is_public(psl, domain) ? domain : NULL;
 
 	for (ret_domain = NULL; ;) {
-		if (psl_is_public(psl, p))
+		if (!psl_is_public(psl, p))
 			return ret_domain;
 		else if (p == domain)
 			return domain;
@@ -353,7 +381,20 @@ const char *psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain)
 	}
 }
 
-// returns the shortest possible registrable domain part or NULL if domain is not registrable at all
+/**
+ * psl_registrable_domain:
+ * @psl: PSL context
+ * @domain: Domain string
+ *
+ * This function finds the shortest private suffix part of @domain by the means
+ * of the [Mozilla Public Suffix List](http://publicsuffix.org).
+ *
+ * @psl is a context returned by either psl_load_file(), psl_load_fp() or
+ * psl_builtin().
+ *
+ * Returns: Pointer to shortest private suffix part of @domain or NULL if @domain
+ * does not contain a private suffix (or if @psl is NULL).
+ */
 const char *psl_registrable_domain(const psl_ctx_t *psl, const char *domain)
 {
 	const char *p;
@@ -368,15 +409,24 @@ const char *psl_registrable_domain(const psl_ctx_t *psl, const char *domain)
 	if (!(p = strrchr(domain, '.')))
 		p = domain;
 
-	while (!(ispublic = psl_is_public(psl, p)) && p > domain) {
+	while ((ispublic = psl_is_public(psl, p)) && p > domain) {
 		// go left to next dot
 		while (p > domain && *--p != '.')
 			;
 	}
 
-	return ispublic ? (*p == '.' ? p + 1 : p) : NULL;
+	return ispublic ? NULL : (*p == '.' ? p + 1 : p);
 }
 
+/**
+ * psl_load_file:
+ * @fname: Name of PSL file
+ *
+ * This function loads the public suffixes file named @fname.
+ * To free the allocated resources, call psl_free().
+ *
+ * Returns: Pointer to a PSL context private or NULL on failure.
+ */
 psl_ctx_t *psl_load_file(const char *fname)
 {
 	FILE *fp;
@@ -393,6 +443,15 @@ psl_ctx_t *psl_load_file(const char *fname)
 	return psl;
 }
 
+/**
+ * psl_load_fp:
+ * @fp: FILE pointer
+ *
+ * This function loads the public suffixes from a FILE pointer.
+ * To free the allocated resources, call psl_free().
+ *
+ * Returns: Pointer to a PSL context private or NULL on failure.
+ */
 psl_ctx_t *psl_load_fp(FILE *fp)
 {
 	psl_ctx_t *psl;
@@ -447,12 +506,6 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 	return psl;
 }
 
-// return built-in PSL structure
-const psl_ctx_t *psl_builtin(void)
-{
-	return &_builtin_psl;
-}
-
 void psl_free(psl_ctx_t *psl)
 {
 	if (psl && psl != &_builtin_psl) {
@@ -460,6 +513,12 @@ void psl_free(psl_ctx_t *psl)
 		_vector_free(&psl->suffix_exceptions);
 		free(psl);
 	}
+}
+
+// return built-in PSL structure
+const psl_ctx_t *psl_builtin(void)
+{
+	return &_builtin_psl;
 }
 
 /* does not include exceptions */

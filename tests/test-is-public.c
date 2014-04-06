@@ -54,18 +54,18 @@ static void test_psl(void)
 		int
 			result;
 	} test_data[] = {
-		{ "www.example.com", 1 },
-		{ "com.ar", 0 },
-		{ "www.com.ar", 1 },
-		{ "cc.ar.us", 0 },
-		{ ".cc.ar.us", 0 },
-		{ "www.cc.ar.us", 1 },
-		{ "www.ck", 1 }, // exception from *.ck
-		{ "abc.www.ck", 1 },
-		{ "xxx.ck", 0 },
-		{ "www.xxx.ck", 1 },
-		{ "\345\225\206\346\240\207", 0 }, // xn--czr694b oder 商标
-		{ "www.\345\225\206\346\240\207", 1 },
+		{ "www.example.com", 0 },
+		{ "com.ar", 1 },
+		{ "www.com.ar", 0 },
+		{ "cc.ar.us", 1 },
+		{ ".cc.ar.us", 1 },
+		{ "www.cc.ar.us", 0 },
+		{ "www.ck", 0 }, // exception from *.ck
+		{ "abc.www.ck", 0 },
+		{ "xxx.ck", 1 },
+		{ "www.xxx.ck", 0 },
+		{ "\345\225\206\346\240\207", 1 }, // xn--czr694b oder 商标
+		{ "www.\345\225\206\346\240\207", 0 },
 	};
 	unsigned it;
 	psl_ctx_t *psl;

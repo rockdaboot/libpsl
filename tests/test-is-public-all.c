@@ -67,38 +67,38 @@ static void test_psl(void)
 			*linep = 0;
 
 			if (*p == '!') { // an exception to a wildcard, e.g. !www.ck (wildcard is *.ck)
+				if ((result = psl_is_public(psl, p + 1))) {
+					failed++;
+					printf("psl_is_public(%s)=%d (expected 0)\n", p, result);
+				} else ok++;
+
+				if (!(result = psl_is_public(psl, strchr(p, '.') + 1))) {
+					failed++;
+					printf("psl_is_public(%s)=%d (expected 1)\n", strchr(p, '.') + 1, result);
+				} else ok++;
+			}
+			else if (*p == '*') { // a wildcard, e.g. *.ck
 				if (!(result = psl_is_public(psl, p + 1))) {
+					failed++;
+					printf("psl_is_public(%s)=%d (expected 1)\n", p + 1, result);
+				} else ok++;
+
+				*p = 'x';
+				if (!(result = psl_is_public(psl, p))) {
+					failed++;
+					printf("psl_is_public(%s)=%d (expected 1)\n", p, result);
+				} else ok++;
+			}
+			else {
+				if (!(result = psl_is_public(psl, p))) {
 					failed++;
 					printf("psl_is_public(%s)=%d (expected 1)\n", p, result);
 				} else ok++;
 
-				if ((result = psl_is_public(psl, strchr(p, '.') + 1))) {
-					failed++;
-					printf("psl_is_public(%s)=%d (expected 0)\n", strchr(p, '.') + 1, result);
-				} else ok++;
-			}
-			else if (*p == '*') { // a wildcard, e.g. *.ck
-				if ((result = psl_is_public(psl, p + 1))) {
-					failed++;
-					printf("psl_is_public(%s)=%d (expected 0)\n", p + 1, result);
-				} else ok++;
-
-				*p = 'x';
-				if ((result = psl_is_public(psl, p))) {
-					failed++;
-					printf("psl_is_public(%s)=%d (expected 0)\n", p, result);
-				} else ok++;
-			}
-			else {
-				if ((result = psl_is_public(psl, p))) {
-					failed++;
-					printf("psl_is_public(%s)=%d (expected 0)\n", p, result);
-				} else ok++;
-
 				snprintf(domain, sizeof(domain), "xxxx.%s", p);
-				if (!(result = psl_is_public(psl, domain))) {
+				if ((result = psl_is_public(psl, domain))) {
 					failed++;
-					printf("psl_is_public(%s)=%d (expected 1)\n", domain, result);
+					printf("psl_is_public(%s)=%d (expected 0)\n", domain, result);
 				} else ok++;
 			}
 		}
