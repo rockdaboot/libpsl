@@ -94,6 +94,7 @@ fi
 AC_CONFIG_FILES([Makefile
                  include/Makefile
                  src/Makefile
+                 tools/Makefile
                  po/Makefile.in
                  docs/libpsl/Makefile
                  data/Makefile
