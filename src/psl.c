@@ -59,7 +59,7 @@
  * @stability: unstable
  * @include: libpsl.h
  *
- * Public Suffix List library functions.
+ * [Public Suffix List](http://publicsuffix.org/) library functions.
  *
  */
 
@@ -262,6 +262,8 @@ static int _suffix_init(_psl_entry_t *suffix, const char *rule, size_t length)
  * psl_builtin().
  *
  * Returns: 1 if domain is a public suffix, 0 if not.
+ *
+ * Since: 0.1
  */
 int psl_is_public(const psl_ctx_t *psl, const char *domain)
 {
@@ -351,8 +353,10 @@ int psl_is_public(const psl_ctx_t *psl, const char *domain)
  * @psl is a context returned by either psl_load_file(), psl_load_fp() or
  * psl_builtin().
  *
- * Returns: Pointer to longest public suffix part of @domain or NULL if @domain
- * does not contain a public suffix (or if @psl is NULL).
+ * Returns: Pointer to longest public suffix part of @domain or %NULL if @domain
+ * does not contain a public suffix (or if @psl is %NULL).
+ *
+ * Since: 0.1
  */
 const char *psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain)
 {
@@ -392,8 +396,10 @@ const char *psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain)
  * @psl is a context returned by either psl_load_file(), psl_load_fp() or
  * psl_builtin().
  *
- * Returns: Pointer to shortest private suffix part of @domain or NULL if @domain
- * does not contain a private suffix (or if @psl is NULL).
+ * Returns: Pointer to shortest private suffix part of @domain or %NULL if @domain
+ * does not contain a private suffix (or if @psl is %NULL).
+ *
+ * Since: 0.1
  */
 const char *psl_registrable_domain(const psl_ctx_t *psl, const char *domain)
 {
@@ -425,7 +431,9 @@ const char *psl_registrable_domain(const psl_ctx_t *psl, const char *domain)
  * This function loads the public suffixes file named @fname.
  * To free the allocated resources, call psl_free().
  *
- * Returns: Pointer to a PSL context private or NULL on failure.
+ * Returns: Pointer to a PSL context or %NULL on failure.
+ *
+ * Since: 0.1
  */
 psl_ctx_t *psl_load_file(const char *fname)
 {
@@ -450,7 +458,9 @@ psl_ctx_t *psl_load_file(const char *fname)
  * This function loads the public suffixes from a FILE pointer.
  * To free the allocated resources, call psl_free().
  *
- * Returns: Pointer to a PSL context private or NULL on failure.
+ * Returns: Pointer to a PSL context or %NULL on failure.
+ *
+ * Since: 0.1
  */
 psl_ctx_t *psl_load_fp(FILE *fp)
 {
@@ -506,6 +516,17 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 	return psl;
 }
 
+/**
+ * psl_load_free:
+ * @psl: PSL context pointer
+ *
+ * This function frees the the PSL context that has been retrieved via
+ * psl_load_fp() or psl_load_file().
+ *
+ * Returns: Pointer to a PSL context private or %NULL on failure.
+ *
+ * Since: 0.1
+ */
 void psl_free(psl_ctx_t *psl)
 {
 	if (psl && psl != &_builtin_psl) {
@@ -515,13 +536,36 @@ void psl_free(psl_ctx_t *psl)
 	}
 }
 
-// return built-in PSL structure
+/**
+ * psl_builtin:
+ *
+ * This function returns the PSL context that has been generated and built in at compile-time.
+ * You don't have to free the returned context explicitely.
+ *
+ * If the generation of built-in data has been disabled during compilation, %NULL will be returned.
+ *
+ * Returns: Pointer to the built in PSL data or NULL if this data is not available.
+ *
+ * Since: 0.1
+ */
 const psl_ctx_t *psl_builtin(void)
 {
 	return &_builtin_psl;
 }
 
-/* does not include exceptions */
+/**
+ * psl_suffix_count:
+ * @psl: PSL context pointer
+ *
+ * This function returns number of public suffixes maintained by @psl.
+ * The number of exceptions within the Public Suffix List are not included.
+ *
+ * If the generation of built-in data has been disabled during compilation, 0 will be returned.
+ *
+ * Returns: Number of public suffixes entries in PSL context.
+ *
+ * Since: 0.1
+ */
 int psl_suffix_count(const psl_ctx_t *psl)
 {
 	if (psl == &_builtin_psl)
@@ -532,7 +576,18 @@ int psl_suffix_count(const psl_ctx_t *psl)
 		return 0;
 }
 
-/* just counts exceptions */
+/**
+ * psl_suffix_exception_count:
+ * @psl: PSL context pointer
+ *
+ * This function returns number of public suffix exceptions maintained by @psl.
+ *
+ * If the generation of built-in data has been disabled during compilation, 0 will be returned.
+ *
+ * Returns: Number of public suffix exceptions in PSL context.
+ *
+ * Since: 0.1
+ */
 int psl_suffix_exception_count(const psl_ctx_t *psl)
 {
 	if (psl == &_builtin_psl)
@@ -543,19 +598,51 @@ int psl_suffix_exception_count(const psl_ctx_t *psl)
 		return 0;
 }
 
-// returns compilation time
+/**
+ * psl_builtin_compile_time:
+ *
+ * This function returns the time when the Publix Suffix List has been compiled into C code (by psl2c).
+ *
+ * If the generation of built-in data has been disabled during compilation, 0 will be returned.
+ *
+ * Returns: time_t value or 0.
+ *
+ * Since: 0.1
+ */
 time_t psl_builtin_compile_time(void)
 {
 	return _psl_compile_time;
 }
 
-// returns mtime of PSL source file
+/**
+ * psl_builtin_file_time:
+ *
+ * This function returns the mtime of the Publix Suffix List file that has been built in.
+ *
+ * If the generation of built-in data has been disabled during compilation, 0 will be returned.
+ *
+ * Returns: time_t value or 0.
+ *
+ * Since: 0.1
+ */
 time_t psl_builtin_file_time(void)
 {
 	return _psl_file_time;
 }
 
 // returns MD5 checksum (hex-encoded, lowercase) of PSL source file
+/**
+ * psl_builtin_sha1sum:
+ *
+ * This function returns the SHA1 checksum of the Publix Suffix List file that has been built in.
+ * The returned string is in lowercase hex encoding, e.g. "2af1e9e3044eda0678bb05949d7cca2f769901d8".
+ *
+ * If the generation of built-in data has been disabled during compilation, an empty string will be returned.
+ *
+ * Returns: String containing SHA1 checksum or an empty string.
+ *
+ * Since: 0.1
+ */
 const char *psl_builtin_sha1sum(void)
 {
 	return _psl_sha1_checksum;
