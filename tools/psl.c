@@ -42,7 +42,7 @@ static void usage(int err)
 	fprintf(stderr, "Usage: psl [options]\n");
 	fprintf(stderr, "\n");
 	fprintf(stderr, "Options:\n");
-	fprintf(stderr, "  --is-public <domains...>          check if domains are public suffixes or not\n");
+	fprintf(stderr, "  --is-public-suffix <domains...>   check if domains are public suffixes or not. [default]\n");
 	fprintf(stderr, "  --print-unreg-domain <domains...> print the longest publix suffix part\n");
 	fprintf(stderr, "  --print-reg-domain <domains...>   print the shortest private suffix part\n");
 	fprintf(stderr, "\n");
@@ -63,7 +63,7 @@ int main(int argc, const char *const *argv)
 
 	for (arg = argv + 1; arg < argv + argc; arg++) {
 		if (!strncmp(*arg, "--", 2)) {
-			if (!strcmp(*arg, "--is-public"))
+			if (!strcmp(*arg, "--is-public-suffix"))
 				mode = 1;
 			else if (!strcmp(*arg, "--print-unreg-domain"))
 				mode = 2;
