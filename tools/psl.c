@@ -83,7 +83,7 @@ int main(int argc, const char *const *argv)
 
 	if (mode == 1) {
 		for (; arg < argv + argc; arg++)
-			printf("%s: %d\n", *arg, psl_is_public(psl, *arg));
+			printf("%s: %d\n", *arg, psl_is_public_suffix(psl, *arg));
 	}
 	else if (mode == 2) {
 		for (; arg < argv + argc; arg++)

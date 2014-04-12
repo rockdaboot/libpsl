@@ -78,13 +78,13 @@ static void test_psl(void)
 
 	for (it = 0; it < countof(test_data); it++) {
 		const struct test_data *t = &test_data[it];
-		int result = psl_is_public(psl, t->domain);
+		int result = psl_is_public_suffix(psl, t->domain);
 
 		if (result == t->result) {
 			ok++;
 		} else {
 			failed++;
-			printf("psl_is_public(%s)=%d (expected %d)\n", t->domain, result, t->result);
+			printf("psl_is_public_suffix(%s)=%d (expected %d)\n", t->domain, result, t->result);
 		}
 	}
 

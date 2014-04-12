@@ -50,7 +50,7 @@ psl_ctx_t *
 const psl_ctx_t *
 	psl_builtin(void);
 int
-	psl_is_public(const psl_ctx_t *psl, const char *domain);
+	psl_is_public_suffix(const psl_ctx_t *psl, const char *domain);
 // returns the longest unregistrable domain within 'domain' or NULL if none found
 const char *
 	psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain);

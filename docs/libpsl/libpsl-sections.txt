@@ -6,7 +6,7 @@ psl_free
 psl_load_file
 psl_load_fp
 psl_builtin
-psl_is_public
+psl_is_public_suffix
 psl_unregistrable_domain
 psl_registrable_domain
 psl_suffix_count

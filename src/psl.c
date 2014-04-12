@@ -248,7 +248,7 @@ static int _suffix_init(_psl_entry_t *suffix, const char *rule, size_t length)
 }
 
 /**
- * psl_is_public:
+ * psl_is_public_suffix:
  * @psl: PSL context
  * @domain: Domain string
  *
@@ -265,7 +265,7 @@ static int _suffix_init(_psl_entry_t *suffix, const char *rule, size_t length)
  *
  * Since: 0.1
  */
-int psl_is_public(const psl_ctx_t *psl, const char *domain)
+int psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
 {
 	_psl_entry_t suffix, *rule;
 	const char *p, *label_bak;
@@ -369,10 +369,10 @@ const char *psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain)
 	// for being a registered domain.
 
 	if (!(p = strrchr(domain, '.')))
-		return psl_is_public(psl, domain) ? domain : NULL;
+		return psl_is_public_suffix(psl, domain) ? domain : NULL;
 
 	for (ret_domain = NULL; ;) {
-		if (!psl_is_public(psl, p))
+		if (!psl_is_public_suffix(psl, p))
 			return ret_domain;
 		else if (p == domain)
 			return domain;
@@ -415,7 +415,7 @@ const char *psl_registrable_domain(const psl_ctx_t *psl, const char *domain)
 	if (!(p = strrchr(domain, '.')))
 		p = domain;
 
-	while ((ispublic = psl_is_public(psl, p)) && p > domain) {
+	while ((ispublic = psl_is_public_suffix(psl, p)) && p > domain) {
 		// go left to next dot
 		while (p > domain && *--p != '.')
 			;

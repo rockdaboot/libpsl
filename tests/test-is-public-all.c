@@ -21,7 +21,7 @@
  *
  * This file is part of the test suite of libpsl.
  *
- * Test psl_is_public() for all entries in effective_tld_names.dat
+ * Test psl_is_public_suffix() for all entries in effective_tld_names.dat
  *
  * Changelog
  * 19.03.2014  Tim Ruehsen  created
@@ -67,38 +67,38 @@ static void test_psl(void)
 			*linep = 0;
 
 			if (*p == '!') { // an exception to a wildcard, e.g. !www.ck (wildcard is *.ck)
-				if ((result = psl_is_public(psl, p + 1))) {
+				if ((result = psl_is_public_suffix(psl, p + 1))) {
 					failed++;
-					printf("psl_is_public(%s)=%d (expected 0)\n", p, result);
+					printf("psl_is_public_suffix(%s)=%d (expected 0)\n", p, result);
 				} else ok++;
 
-				if (!(result = psl_is_public(psl, strchr(p, '.') + 1))) {
+				if (!(result = psl_is_public_suffix(psl, strchr(p, '.') + 1))) {
 					failed++;
-					printf("psl_is_public(%s)=%d (expected 1)\n", strchr(p, '.') + 1, result);
+					printf("psl_is_public_suffix(%s)=%d (expected 1)\n", strchr(p, '.') + 1, result);
 				} else ok++;
 			}
 			else if (*p == '*') { // a wildcard, e.g. *.ck
-				if (!(result = psl_is_public(psl, p + 1))) {
+				if (!(result = psl_is_public_suffix(psl, p + 1))) {
 					failed++;
-					printf("psl_is_public(%s)=%d (expected 1)\n", p + 1, result);
+					printf("psl_is_public_suffix(%s)=%d (expected 1)\n", p + 1, result);
 				} else ok++;
 
 				*p = 'x';
-				if (!(result = psl_is_public(psl, p))) {
+				if (!(result = psl_is_public_suffix(psl, p))) {
 					failed++;
-					printf("psl_is_public(%s)=%d (expected 1)\n", p, result);
+					printf("psl_is_public_suffix(%s)=%d (expected 1)\n", p, result);
 				} else ok++;
 			}
 			else {
-				if (!(result = psl_is_public(psl, p))) {
+				if (!(result = psl_is_public_suffix(psl, p))) {
 					failed++;
-					printf("psl_is_public(%s)=%d (expected 1)\n", p, result);
+					printf("psl_is_public_suffix(%s)=%d (expected 1)\n", p, result);
 				} else ok++;
 
 				snprintf(domain, sizeof(domain), "xxxx.%s", p);
-				if ((result = psl_is_public(psl, domain))) {
+				if ((result = psl_is_public_suffix(psl, domain))) {
 					failed++;
-					printf("psl_is_public(%s)=%d (expected 0)\n", domain, result);
+					printf("psl_is_public_suffix(%s)=%d (expected 0)\n", domain, result);
 				} else ok++;
 			}
 		}
