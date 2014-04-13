@@ -39,8 +39,6 @@
 
 #include <libpsl.h>
 
-#define TESTDATA DATADIR"/test_psl.txt"
-
 static int
 	ok,
 	failed;
@@ -110,7 +108,7 @@ static void test_psl(void)
 	// Norwegian with lowercase oe
 	test(psl, "www.\303\270yer.no", "www.\303\270yer.no");
 
-	if ((fp = fopen(TESTDATA, "r"))) {
+	if ((fp = fopen(PSL_TESTFILE, "r"))) {
 		while ((fgets(buf, sizeof(buf), fp))) {
 			if (sscanf(buf, " checkPublicSuffix('%127[^']' , '%127[^']", domain, expected_regdom) != 2) {
 				if (sscanf(buf, " checkPublicSuffix('%127[^']' , %127[nul]", domain, expected_regdom) != 2)
@@ -130,7 +128,7 @@ static void test_psl(void)
 
 		fclose(fp);
 	} else {
-		printf("Failed to open %s\n", TESTDATA);
+		printf("Failed to open %s\n", PSL_TESTFILE);
 		failed++;
 	}
 }

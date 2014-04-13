@@ -97,6 +97,14 @@ AC_ARG_WITH(psl-file,
   PSL_FILE="\$(top_srcdir)/data/effective_tld_names.dat")
 AC_SUBST(PSL_FILE)
 
+# Check for custom PSL test file
+AC_ARG_WITH(psl-testfile,
+  AC_HELP_STRING([--with-psl-testfile=[PATH]],
+  [path to PSL test file]),
+  PSL_TESTFILE=$withval,
+  PSL_TESTFILE="\$(top_srcdir)/data/test_psl.txt")
+AC_SUBST(PSL_TESTFILE)
+
 # Override the template file name of the generated .pc file, so that there
 # is no need to rename the template file when the API version changes.
 AC_CONFIG_FILES([Makefile
@@ -120,5 +128,6 @@ AC_MSG_NOTICE([Summary of build options:
   LDFlags:           ${LDFLAGS}
   Builtin PSL:       ${enable_builtin}
   PSL File:          ${PSL_FILE}
+  PSL Test File:     ${PSL_TESTFILE}
   Tests:             ${TESTS_INFO}
 ])
