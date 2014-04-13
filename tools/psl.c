@@ -39,27 +39,33 @@
 static void usage(int err)
 {
 	fprintf(stderr, "\n");
-	fprintf(stderr, "Usage: psl [options]\n");
+	fprintf(stderr, "Usage: psl [options] <domains...>\n");
 	fprintf(stderr, "\n");
 	fprintf(stderr, "Options:\n");
-	fprintf(stderr, "  --is-public-suffix <domains...>   check if domains are public suffixes or not. [default]\n");
-	fprintf(stderr, "  --print-unreg-domain <domains...> print the longest publix suffix part\n");
-	fprintf(stderr, "  --print-reg-domain <domains...>   print the shortest private suffix part\n");
+	fprintf(stderr, "  --use-builtin-data          use the builtin PSL data. [default]\n");
+	fprintf(stderr, "  --load-psl-file <filename>  load PSL data from file.\n");
+	fprintf(stderr, "  --is-public-suffix          check if domains are public suffixes or not. [default]\n");
+	fprintf(stderr, "  --print-unreg-domain        print the longest publix suffix part\n");
+	fprintf(stderr, "  --print-reg-domain          print the shortest private suffix part\n");
 	fprintf(stderr, "\n");
 
 	exit(err);
 }
 
+static const char *time2str(time_t t)
+{
+	static char buf[64];
+	struct tm *tp = localtime(&t);
+
+	strftime(buf, sizeof(buf), "%a, %d %b %Y %T %z", tp);
+	return buf;
+}
+
 int main(int argc, const char *const *argv)
 {
 	int mode = 1;
-	const char *const *arg;
-	const psl_ctx_t *psl = psl_builtin();
-
-	if (!psl) {
-		fprintf(stderr, "No PSL builtin data available\n");
-		exit(2);
-	}
+	const char *const *arg, *psl_file = NULL;
+	psl_ctx_t *psl = (psl_ctx_t *) psl_builtin();
 
 	for (arg = argv + 1; arg < argv + argc; arg++) {
 		if (!strncmp(*arg, "--", 2)) {
@@ -69,6 +75,27 @@ int main(int argc, const char *const *argv)
 				mode = 2;
 			else if (!strcmp(*arg, "--print-reg-domain"))
 				mode = 3;
+			else if (!strcmp(*arg, "--print-info"))
+				mode = 4;
+			else if (!strcmp(*arg, "--use-builtin-data")) {
+				psl_free(psl);
+				if (psl_file) {
+					fprintf(stderr, "Dropped data from %s\n", psl_file);
+					psl_file = NULL;
+				}
+				psl = (psl_ctx_t *) psl_builtin();
+			}
+			else if (!strcmp(*arg, "--load-psl-file") && arg < argv + argc - 1) {
+				psl_free(psl);
+				if (psl_file) {
+					fprintf(stderr, "Dropped data from %s\n", psl_file);
+					psl_file = NULL;
+				}
+				if (!(psl = psl_load_file(psl_file = *(++arg)))) {
+					fprintf(stderr, "Failed to load PSL data from %s\n", psl_file);
+					psl_file = NULL;
+				}
+			}
 			else if (!strcmp(*arg, "--")) {
 				arg++;
 				break;
@@ -93,6 +120,26 @@ int main(int argc, const char *const *argv)
 		for (; arg < argv + argc; arg++)
 			printf("%s: %s\n", *arg, psl_registrable_domain(psl, *arg));
 	}
+	else if (mode == 4) {
+		if (psl != psl_builtin()) {
+			printf("suffixes: %d\n", psl_suffix_count(psl));
+			printf("exceptions: %d\n", psl_suffix_exception_count(psl));
+		}
+
+		psl_free(psl);
+		psl = (psl_ctx_t *) psl_builtin();
+
+		if (psl) {
+			printf("builtin suffixes: %d\n", psl_suffix_count(psl));
+			printf("builtin exceptions: %d\n", psl_suffix_exception_count(psl));
+			printf("builtin compile time: %ld (%s)\n", psl_builtin_compile_time(), time2str(psl_builtin_compile_time()));
+			printf("builtin file time: %ld (%s)\n", psl_builtin_file_time(), time2str(psl_builtin_file_time()));
+			printf("builtin SHA1 file hash: %s\n", psl_builtin_sha1sum());
+		} else
+			printf("No builtin PSL data available\n");
+	}
+
+	psl_free(psl);
 
 	return 0;
 }
