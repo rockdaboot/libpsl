@@ -70,7 +70,7 @@ static void test_psl(void)
 	unsigned it;
 	psl_ctx_t *psl;
 
-	psl = psl_load_file(DATADIR "/effective_tld_names.dat");
+	psl = psl_load_file(PSL_FILE);
 
 	printf("loaded %d suffixes and %d exceptions\n", psl_suffix_count(psl), psl_suffix_exception_count(psl));
 

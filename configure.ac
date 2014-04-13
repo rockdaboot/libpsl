@@ -89,6 +89,14 @@ else
   TESTS_INFO="Valgrind testing not enabled"
 fi
 
+# Check for custom PSL file
+AC_ARG_WITH(psl-file,
+  AC_HELP_STRING([--with-psl-file=[PATH]],
+  [path to PSL file]),
+  PSL_FILE=$withval,
+  PSL_FILE="\$(top_srcdir)/data/effective_tld_names.dat")
+AC_SUBST(PSL_FILE)
+
 # Override the template file name of the generated .pc file, so that there
 # is no need to rename the template file when the API version changes.
 AC_CONFIG_FILES([Makefile
@@ -111,5 +119,6 @@ AC_MSG_NOTICE([Summary of build options:
   CFlags:            ${CFLAGS} ${CPPFLAGS}
   LDFlags:           ${LDFLAGS}
   Builtin PSL:       ${enable_builtin}
+  PSL File:          ${PSL_FILE}
   Tests:             ${TESTS_INFO}
 ])

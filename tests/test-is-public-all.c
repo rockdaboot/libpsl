@@ -50,11 +50,11 @@ static void test_psl(void)
 	int result;
 	char buf[256], domain[64], *linep, *p;
 
-	psl = psl_load_file(DATADIR "/effective_tld_names.dat");
+	psl = psl_load_file(PSL_FILE); // PSL_FILE can be set by ./configure --with-psl-file=[PATH]
 
 	printf("loaded %d suffixes and %d exceptions\n", psl_suffix_count(psl), psl_suffix_exception_count(psl));
 
-	if ((fp = fopen(DATADIR "/effective_tld_names.dat", "r"))) {
+	if ((fp = fopen(PSL_FILE, "r"))) {
 		while ((linep = fgets(buf, sizeof(buf), fp))) {
 			while (isspace(*linep)) linep++; // ignore leading whitespace
 			if (!*linep) continue; // skip empty lines
@@ -105,7 +105,7 @@ static void test_psl(void)
 
 		fclose(fp);
 	} else {
-		printf("Failed to open %s\n", DATADIR "/effective_tld_names.dat");
+		printf("Failed to open %s\n", PSL_FILE);
 		failed++;
 	}
 

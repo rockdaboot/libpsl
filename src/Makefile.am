@@ -19,5 +19,6 @@ psl2c_CPPFLAGS = -I$(top_srcdir)/include -D _GNU_SOURCE
 #psl2c_LDADD = -lidn2
 
 # Build rule for suffix.c
-suffixes.c: $(top_srcdir)/data/effective_tld_names.dat psl2c$(EXEEXT)
-	./psl2c$(EXEEXT) $(top_srcdir)/data/effective_tld_names.dat suffixes.c
+# PSL_FILE can be set by ./configure --with-psl-file=[PATH]
+suffixes.c: $(PSL_FILE) psl2c$(EXEEXT)
+	./psl2c$(EXEEXT) "$(PSL_FILE)" suffixes.c
