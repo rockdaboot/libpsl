@@ -66,6 +66,15 @@ static void test_psl(void)
 		{ "www.xxx.ck", 0 },
 		{ "\345\225\206\346\240\207", 1 }, // xn--czr694b oder 商标
 		{ "www.\345\225\206\346\240\207", 0 },
+		// some special test follow ('name' and 'forgot.his.name' are public, but e.g. his.name is not)
+		{ "name", 1 },
+		{ ".name", 1 },
+		{ "his.name", 0 },
+		{ ".his.name", 0 },
+		{ "forgot.his.name", 1 },
+		{ ".forgot.his.name", 1 },
+		{ "whoever.his.name", 0 },
+		{ "whoever.forgot.his.name", 0 },
 	};
 	unsigned it;
 	psl_ctx_t *psl;
