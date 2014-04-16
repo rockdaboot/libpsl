@@ -108,6 +108,15 @@ static void test_psl(void)
 	// Norwegian with lowercase oe
 	test(psl, "www.\303\270yer.no", "www.\303\270yer.no");
 
+	// special check with NULL psl context and TLD
+	test(psl, "whoever.forgot.his.name", "whoever.forgot.his.name");
+
+	// special check with NULL psl context and TLD
+	test(psl, "forgot.his.name", NULL);
+
+	// special check with NULL psl context and TLD
+	test(psl, "his.name", "his.name");
+
 	if ((fp = fopen(PSL_TESTFILE, "r"))) {
 		while ((fgets(buf, sizeof(buf), fp))) {
 			if (sscanf(buf, " checkPublicSuffix('%127[^']' , '%127[^']", domain, expected_regdom) != 2) {
