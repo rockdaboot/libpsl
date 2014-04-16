@@ -42,11 +42,13 @@ static void usage(int err)
 	fprintf(stderr, "Usage: psl [options] <domains...>\n");
 	fprintf(stderr, "\n");
 	fprintf(stderr, "Options:\n");
-	fprintf(stderr, "  --use-builtin-data          use the builtin PSL data. [default]\n");
-	fprintf(stderr, "  --load-psl-file <filename>  load PSL data from file.\n");
-	fprintf(stderr, "  --is-public-suffix          check if domains are public suffixes or not. [default]\n");
-	fprintf(stderr, "  --print-unreg-domain        print the longest publix suffix part\n");
-	fprintf(stderr, "  --print-reg-domain          print the shortest private suffix part\n");
+	fprintf(stderr, "  --use-builtin-data           use the builtin PSL data. [default]\n");
+	fprintf(stderr, "  --load-psl-file <filename>   load PSL data from file.\n");
+	fprintf(stderr, "  --is-public-suffix           check if domains are public suffixes or not. [default]\n");
+	fprintf(stderr, "  --is-cookie-domain-acceptable <cookie-domain>\n");
+	fprintf(stderr, "                               check if cookie-domain is acceptable for domains.\n");
+	fprintf(stderr, "  --print-unreg-domain         print the longest publix suffix part\n");
+	fprintf(stderr, "  --print-reg-domain           print the shortest private suffix part\n");
 	fprintf(stderr, "\n");
 
 	exit(err);
@@ -64,7 +66,7 @@ static const char *time2str(time_t t)
 int main(int argc, const char *const *argv)
 {
 	int mode = 1;
-	const char *const *arg, *psl_file = NULL;
+	const char *const *arg, *psl_file = NULL, *cookie_domain = NULL;
 	psl_ctx_t *psl = (psl_ctx_t *) psl_builtin();
 
 	for (arg = argv + 1; arg < argv + argc; arg++) {
@@ -76,7 +78,11 @@ int main(int argc, const char *const *argv)
 			else if (!strcmp(*arg, "--print-reg-domain"))
 				mode = 3;
 			else if (!strcmp(*arg, "--print-info"))
+				mode = 99;
+			else if (!strcmp(*arg, "--is-cookie-domain-acceptable") && arg < argv + argc - 1) {
 				mode = 4;
+				cookie_domain = *(++arg);
+			}
 			else if (!strcmp(*arg, "--use-builtin-data")) {
 				psl_free(psl);
 				if (psl_file) {
@@ -121,6 +127,10 @@ int main(int argc, const char *const *argv)
 			printf("%s: %s\n", *arg, psl_registrable_domain(psl, *arg));
 	}
 	else if (mode == 4) {
+		for (; arg < argv + argc; arg++)
+			printf("%s: %d\n", *arg, psl_is_cookie_domain_acceptable(psl, *arg, cookie_domain));
+	}
+	else if (mode == 99) {
 		if (psl != psl_builtin()) {
 			printf("suffixes: %d\n", psl_suffix_count(psl));
 			printf("exceptions: %d\n", psl_suffix_exception_count(psl));
