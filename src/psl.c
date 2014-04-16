@@ -360,29 +360,20 @@ int psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
  */
 const char *psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain)
 {
-	const char *p, *ret_domain;
-
 	if (!psl || !domain)
 		return NULL;
 
-	// We check from right to left, e.g. in www.xxx.org we check org, xxx.org, www.xxx.org in this order
-	// for being a registered domain.
+	// We check from left to right to catch special PSL entries like 'forgot.his.name':
+	//   'forgot.his.name' and 'name' are in the PSL while 'his.name' is not.
 
-	if (!(p = strrchr(domain, '.')))
-		return psl_is_public_suffix(psl, domain) ? domain : NULL;
-
-	for (ret_domain = NULL; ;) {
-		if (!psl_is_public_suffix(psl, p))
-			return ret_domain;
-		else if (p == domain)
-			return domain;
-
-		ret_domain = p + 1;
-
-		// go left to next dot
-		while (p > domain && *--p != '.')
-			;
+	while (!psl_is_public_suffix(psl, domain)) {
+		if ((domain = strchr(domain, '.')))
+			domain++;
+		else
+			break; // prevent endless loop if psl_is_public_suffix() is broken.
 	}
+
+	return domain;
 }
 
 /**
@@ -403,25 +394,23 @@ const char *psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain)
  */
 const char *psl_registrable_domain(const psl_ctx_t *psl, const char *domain)
 {
-	const char *p;
-	int ispublic;
+	const char *p, *regdom = NULL;
 
 	if (!psl || !domain || *domain == '.')
 		return NULL;
 
-	// We check from right to left, e.g. in www.xxx.org we check org, xxx.org, www.xxx.org in this order
-	// for being a registrable domain.
+	// We check from left to right to catch special PSL entries like 'forgot.his.name':
+	//   'forgot.his.name' and 'name' are in the PSL while 'his.name' is not.
 
-	if (!(p = strrchr(domain, '.')))
-		p = domain;
-
-	while ((ispublic = psl_is_public_suffix(psl, p)) && p > domain) {
-		// go left to next dot
-		while (p > domain && *--p != '.')
-			;
+	while (!psl_is_public_suffix(psl, domain)) {
+		if ((p = strchr(domain, '.'))) {
+			regdom = domain;
+			domain = p + 1;
+		} else
+			break; // prevent endless loop if psl_is_public_suffix() is broken.
 	}
 
-	return ispublic ? NULL : (*p == '.' ? p + 1 : p);
+	return regdom;
 }
 
 /**
@@ -646,4 +635,51 @@ time_t psl_builtin_file_time(void)
 const char *psl_builtin_sha1sum(void)
 {
 	return _psl_sha1_checksum;
+}
+
+/**
+ * psl_is_cookie_domain_acceptable:
+ * @psl: PSL context pointer
+ * @hostname: The request hostname.
+ * @cookie_domain: The domain value from a cookie
+ *
+ * This helper function checks whether @cookie_domain is an acceptable cookie domain value for the request
+ * @hostname.
+ *
+ * Returns: 1 if acceptable, 0 if not acceptable.
+ *
+ * Since: 0.1
+ */
+int psl_is_cookie_domain_acceptable(const psl_ctx_t *psl, const char *hostname, const char *cookie_domain)
+{
+	const char *registrable_domain, *p;
+	size_t hostname_length, cookie_domain_length;
+
+	if (!psl || !hostname || !cookie_domain)
+		return 0;
+
+	while (*cookie_domain == '.')
+		cookie_domain++;
+
+	if (!strcmp(hostname, cookie_domain))
+		return 1; // an exact match is acceptable (and pretty common)
+
+	cookie_domain_length = strlen(cookie_domain);
+	hostname_length = strlen(hostname);
+
+	if (cookie_domain_length >= hostname_length)
+		return 0; // cookie_domain is too long
+
+	p = hostname + hostname_length - cookie_domain_length;
+	if (!strcmp(p, cookie_domain) && p[-1] == '.') {
+		// OK, cookie_domain matches, but it must be longer than the longest public suffix in 'hostname'
+
+		if (!(p = psl_unregistrable_domain(psl, hostname)))
+			return 1;
+
+		if (cookie_domain_length > strlen(p))
+			return 1;
+	}
+
+	return 0;
 }

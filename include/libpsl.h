@@ -49,8 +49,12 @@ psl_ctx_t *
 	psl_load_fp(FILE *fp);
 const psl_ctx_t *
 	psl_builtin(void);
+// checks wether domain is a public suffix or not
 int
 	psl_is_public_suffix(const psl_ctx_t *psl, const char *domain);
+// checks wether cookie_domain is acceptable for domain or not
+int
+	psl_is_cookie_domain_acceptable(const psl_ctx_t *psl, const char *hostname, const char *cookie_domain);
 // returns the longest unregistrable domain within 'domain' or NULL if none found
 const char *
 	psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain);
