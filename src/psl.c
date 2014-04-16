@@ -193,7 +193,7 @@ static inline int _vector_size(_psl_vector_t *v)
 	return v ? v->cur : 0;
 }
 
-// by this kind of sorting, we can easily see if a domain matches or not (match = supercookie !)
+// by this kind of sorting, we can easily see if a domain matches or not
 
 static int _suffix_compare(const _psl_entry_t *s1, const _psl_entry_t *s2)
 {
@@ -255,8 +255,7 @@ static int _suffix_init(_psl_entry_t *suffix, const char *rule, size_t length)
  * This function checks if @domain is a public suffix by the means of the
  * [Mozilla Public Suffix List](http://publicsuffix.org).
  *
- * This can be used for e.g. cookie domain verification.
- * You should never accept a cookie who's domain is a public suffix.
+ * For cookie domain checking see psl_is_cookie_domain_acceptable().
  *
  * @psl is a context returned by either psl_load_file(), psl_load_fp() or
  * psl_builtin().
@@ -646,13 +645,20 @@ const char *psl_builtin_sha1sum(void)
  * This helper function checks whether @cookie_domain is an acceptable cookie domain value for the request
  * @hostname.
  *
+ * Examples:
+ * 1. Cookie domain 'example.com' would be acceptable for hostname 'www.example.com',
+ * but '.com' or 'com' would NOT be acceptable since 'com' is a public suffix.
+ *
+ * 2. Cookie domain 'his.name' would be acceptable for hostname 'remember.his.name',
+ *  but NOT for 'forgot.his.name' since 'forgot.his.name' is a public suffix.
+ *
  * Returns: 1 if acceptable, 0 if not acceptable.
  *
  * Since: 0.1
  */
 int psl_is_cookie_domain_acceptable(const psl_ctx_t *psl, const char *hostname, const char *cookie_domain)
 {
-	const char *registrable_domain, *p;
+	const char *p;
 	size_t hostname_length, cookie_domain_length;
 
 	if (!psl || !hostname || !cookie_domain)
