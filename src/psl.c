@@ -618,7 +618,6 @@ time_t psl_builtin_file_time(void)
 	return _psl_file_time;
 }
 
-// returns MD5 checksum (hex-encoded, lowercase) of PSL source file
 /**
  * psl_builtin_sha1sum:
  *
@@ -634,6 +633,22 @@ time_t psl_builtin_file_time(void)
 const char *psl_builtin_sha1sum(void)
 {
 	return _psl_sha1_checksum;
+}
+
+/**
+ * psl_builtin_filename:
+ *
+ * This function returns the file name of the Publix Suffix List file that has been built in.
+ *
+ * If the generation of built-in data has been disabled during compilation, an empty string will be returned.
+ *
+ * Returns: String containing the PSL file name or an empty string.
+ *
+ * Since: 0.1
+ */
+const char *psl_builtin_filename(void)
+{
+	return _psl_filename;
 }
 
 /**

@@ -380,7 +380,8 @@ int main(int argc, const char **argv)
 			st.st_mtime = 0;
 		fprintf(fpout, "static time_t _psl_file_time = %lu;\n", st.st_mtime);
 		fprintf(fpout, "static time_t _psl_compile_time = %lu;\n", time(NULL));
-		fprintf(fpout, "static char _psl_sha1_checksum[] = \"%s\";\n", checksum);
+		fprintf(fpout, "static const char _psl_sha1_checksum[] = \"%s\";\n", checksum);
+		fprintf(fpout, "static const char _psl_filename[] = \"%s\";\n", checksum);
 
 		if (fclose(fpout) != 0)
 			ret = 4;
@@ -396,7 +397,8 @@ int main(int argc, const char **argv)
 		fprintf(fpout, "static _psl_entry_t suffix_exceptions[0];\n");
 		fprintf(fpout, "static time_t _psl_file_time;\n");
 		fprintf(fpout, "static time_t _psl_compile_time;\n");
-		fprintf(fpout, "static char _psl_sha1_checksum[]= \"\";\n");
+		fprintf(fpout, "static const char _psl_sha1_checksum[] = \"\";\n");
+		fprintf(fpout, "static const char _psl_filename[] = \"\";\n");
 
 		if (fclose(fpout) != 0)
 			ret = 4;

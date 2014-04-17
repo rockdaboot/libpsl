@@ -142,6 +142,7 @@ int main(int argc, const char *const *argv)
 		if (psl) {
 			printf("builtin suffixes: %d\n", psl_suffix_count(psl));
 			printf("builtin exceptions: %d\n", psl_suffix_exception_count(psl));
+			printf("builtin filename: %s\n", psl_builtin_filename());
 			printf("builtin compile time: %ld (%s)\n", psl_builtin_compile_time(), time2str(psl_builtin_compile_time()));
 			printf("builtin file time: %ld (%s)\n", psl_builtin_file_time(), time2str(psl_builtin_file_time()));
 			printf("builtin SHA1 file hash: %s\n", psl_builtin_sha1sum());
