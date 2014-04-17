@@ -69,6 +69,7 @@ AC_ARG_ENABLE(builtin,
     enable_builtin=yes
     AC_DEFINE([WITH_BUILTIN], [1], [compile PSL data into library])
   ])
+AM_CONDITIONAL([WITH_BUILTIN], [test $enable_builtin = yes])
 
 # Check for valgrind
 ac_enable_valgrind=no

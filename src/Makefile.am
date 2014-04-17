@@ -1,5 +1,3 @@
-#EXTRA_DIST = $(top_srcdir)/data/effective_tld_names.dat
-
 # suffixes.c must be created before psl.c is compiled
 BUILT_SOURCES = suffixes.c
 
