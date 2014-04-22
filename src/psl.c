@@ -419,6 +419,14 @@ const char *psl_registrable_domain(const psl_ctx_t *psl, const char *domain)
  * This function loads the public suffixes file named @fname.
  * To free the allocated resources, call psl_free().
  *
+ * If you want to use punycode representations for functions like psl_is_public_suffix(),
+ * these have to exist as entries within @fname. This is a design decision to not pull in
+ * dependencies for UTF-8 case-handling and IDNA libraries.
+ *
+ * On the contrary, the builtin data already contains punycode entries.
+ *
+ * Have a look into psl2c.c for example code on how to convert UTF-8 to lowercase and to punycode.
+ *
  * Returns: Pointer to a PSL context or %NULL on failure.
  *
  * Since: 0.1
@@ -445,6 +453,8 @@ psl_ctx_t *psl_load_file(const char *fname)
  *
  * This function loads the public suffixes from a FILE pointer.
  * To free the allocated resources, call psl_free().
+ *
+ * Have a look at psl_load_fp() for punycode considerations.
  *
  * Returns: Pointer to a PSL context or %NULL on failure.
  *
@@ -530,7 +540,11 @@ void psl_free(psl_ctx_t *psl)
  * This function returns the PSL context that has been generated and built in at compile-time.
  * You don't have to free the returned context explicitely.
  *
+ * The builtin data also contains punycode entries, one for each international domain name.
+ *
  * If the generation of built-in data has been disabled during compilation, %NULL will be returned.
+ * So if using the builtin psl context, you can provide UTF-8 or punycode representations of domains to
+ * functions like psl_is_public_suffix().
  *
  * Returns: Pointer to the built in PSL data or NULL if this data is not available.
  *
