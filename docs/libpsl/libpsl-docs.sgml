@@ -3,19 +3,23 @@
                "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd"
 [
   <!ENTITY % local.common.attrib "xmlns:xi  CDATA  #FIXED 'http://www.w3.org/2003/XInclude'">
+  <!ENTITY version SYSTEM "version.xml"> 
 ]>
 <book id="index">
   <bookinfo>
-    <title>libpsl Reference Manual</title>
+    <title>Libpsl Reference Manual</title>
     <releaseinfo>
-      for libpsl [VERSION].
+      for Libpsl &version;.
       The latest version of this documentation can be found on-line at
       <ulink role="online-location" url="http://github.com/rockdaboot/libpsl">GitHub</ulink>.
     </releaseinfo>
   </bookinfo>
 
-  <chapter>
-    <title>libpsl functions</title>
+  <chapter id="libpsl">
+    <title>Libpsl Overview</title>
+        <para>
+          Libpsl provides functions to work with the Mozilla Public Suffix List.
+        </para>
         <xi:include href="xml/libpsl.xml"/>
   </chapter>
   <chapter id="object-tree">

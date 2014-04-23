@@ -114,6 +114,7 @@ AC_CONFIG_FILES([Makefile
                  tools/Makefile
                  po/Makefile.in
                  docs/libpsl/Makefile
+                 docs/libpsl/version.xml
                  data/Makefile
                  tests/Makefile
                  libpsl-${LIBPSL_API_VERSION}.pc:libpsl.pc.in])
