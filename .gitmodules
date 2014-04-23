@@ -1,4 +1,0 @@
-[submodule "docs/libpsl/html"]
-	path = docs/libpsl/html
-	url = https://github.com/rockdaboot/libpsl
-	branch = gh-pages
