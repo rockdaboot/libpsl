@@ -1,0 +1,579 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>libpsl Reference Manual: libpsl</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="libpsl Reference Manual">
+<link rel="up" href="ch01.html" title="libpsl functions">
+<link rel="prev" href="ch01.html" title="libpsl functions">
+<link rel="next" href="object-tree.html" title="Object Hierarchy">
+<meta name="generator" content="GTK-Doc V1.20 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description"> <span class="dim">|</span> 
+                  <a href="#libpsl-Public-Suffix-List-functions.description" class="shortcut">Description</a></span><span id="nav_hierarchy"> <span class="dim">|</span> 
+                  <a href="#libpsl-Public-Suffix-List-functions.object-hierarchy" class="shortcut">Object Hierarchy</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="ch01.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="ch01.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="object-tree.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="libpsl-Public-Suffix-List-functions"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="libpsl-Public-Suffix-List-functions.top_of_page"></a>libpsl</span></h2>
+<p>libpsl — Public Suffix List library functions</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="libpsl-Public-Suffix-List-functions.stability-level"></a><h2>Stability Level</h2>
+Unstable, unless otherwise indicated
+</div>
+<div class="refsect1">
+<a name="libpsl-Public-Suffix-List-functions.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-ctx-t" title="psl_ctx_t"><span class="returnvalue">psl_ctx_t</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-load-file" title="psl_load_file ()">psl_load_file</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-ctx-t" title="psl_ctx_t"><span class="returnvalue">psl_ctx_t</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-load-fp" title="psl_load_fp ()">psl_load_fp</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-ctx-t" title="psl_ctx_t"><span class="returnvalue">psl_ctx_t</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-builtin" title="psl_builtin ()">psl_builtin</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-free" title="psl_free ()">psl_free</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">int</span>
+</td>
+<td class="function_name">
+<a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-is-public-suffix" title="psl_is_public_suffix ()">psl_is_public_suffix</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-unregistrable-domain" title="psl_unregistrable_domain ()">psl_unregistrable_domain</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-registrable-domain" title="psl_registrable_domain ()">psl_registrable_domain</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">int</span>
+</td>
+<td class="function_name">
+<a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-suffix-count" title="psl_suffix_count ()">psl_suffix_count</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">int</span>
+</td>
+<td class="function_name">
+<a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-suffix-exception-count" title="psl_suffix_exception_count ()">psl_suffix_exception_count</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">time_t</span>
+</td>
+<td class="function_name">
+<a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-builtin-compile-time" title="psl_builtin_compile_time ()">psl_builtin_compile_time</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">time_t</span>
+</td>
+<td class="function_name">
+<a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-builtin-file-time" title="psl_builtin_file_time ()">psl_builtin_file_time</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-builtin-sha1sum" title="psl_builtin_sha1sum ()">psl_builtin_sha1sum</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-builtin-filename" title="psl_builtin_filename ()">psl_builtin_filename</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">int</span>
+</td>
+<td class="function_name">
+<a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-is-cookie-domain-acceptable" title="psl_is_cookie_domain_acceptable ()">psl_is_cookie_domain_acceptable</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="libpsl-Public-Suffix-List-functions.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="typedef_keyword">typedef</td>
+<td class="function_name"><a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-ctx-t" title="psl_ctx_t">psl_ctx_t</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="libpsl-Public-Suffix-List-functions.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">
+</pre>
+</div>
+<div class="refsect1">
+<a name="libpsl-Public-Suffix-List-functions.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;libpsl.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="libpsl-Public-Suffix-List-functions.description"></a><h2>Description</h2>
+<p><a class="ulink" href="http://publicsuffix.org/" target="_top">Public Suffix List</a> library functions.</p>
+</div>
+<div class="refsect1">
+<a name="libpsl-Public-Suffix-List-functions.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="psl-load-file"></a><h3>psl_load_file ()</h3>
+<pre class="programlisting"><a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-ctx-t" title="psl_ctx_t"><span class="returnvalue">psl_ctx_t</span></a> *
+psl_load_file (<em class="parameter"><code>const <span class="type">char</span> *fname</code></em>);</pre>
+<p>This function loads the public suffixes file named <em class="parameter"><code>fname</code></em>
+.
+To free the allocated resources, call <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-free" title="psl_free ()"><code class="function">psl_free()</code></a>.</p>
+<div class="refsect3">
+<a name="id-1.2.2.9.2.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>fname</p></td>
+<td class="parameter_description"><p>Name of PSL file</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.2.2.9.2.6"></a><h4>Returns</h4>
+<p> Pointer to a PSL context or <a href="/usr/share/gtk-doc/html/glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on failure.</p>
+<p></p>
+</div>
+<p class="since">Since 0.1</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="psl-load-fp"></a><h3>psl_load_fp ()</h3>
+<pre class="programlisting"><a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-ctx-t" title="psl_ctx_t"><span class="returnvalue">psl_ctx_t</span></a> *
+psl_load_fp (<em class="parameter"><code><span class="type">FILE</span> *fp</code></em>);</pre>
+<p>This function loads the public suffixes from a FILE pointer.
+To free the allocated resources, call <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-free" title="psl_free ()"><code class="function">psl_free()</code></a>.</p>
+<div class="refsect3">
+<a name="id-1.2.2.9.3.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>fp</p></td>
+<td class="parameter_description"><p>FILE pointer</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.2.2.9.3.6"></a><h4>Returns</h4>
+<p> Pointer to a PSL context or <a href="/usr/share/gtk-doc/html/glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on failure.</p>
+<p></p>
+</div>
+<p class="since">Since 0.1</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="psl-builtin"></a><h3>psl_builtin ()</h3>
+<pre class="programlisting">const <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-ctx-t" title="psl_ctx_t"><span class="returnvalue">psl_ctx_t</span></a> *
+psl_builtin (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>This function returns the PSL context that has been generated and built in at compile-time.
+You don't have to free the returned context explicitely.</p>
+<p>If the generation of built-in data has been disabled during compilation, <a href="/usr/share/gtk-doc/html/glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> will be returned.</p>
+<div class="refsect3">
+<a name="id-1.2.2.9.4.6"></a><h4>Returns</h4>
+<p> Pointer to the built in PSL data or NULL if this data is not available.</p>
+<p></p>
+</div>
+<p class="since">Since 0.1</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="psl-free"></a><h3>psl_free ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+psl_free (<em class="parameter"><code><a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-ctx-t" title="psl_ctx_t"><span class="type">psl_ctx_t</span></a> *psl</code></em>);</pre>
+</div>
+<hr>
+<div class="refsect2">
+<a name="psl-is-public-suffix"></a><h3>psl_is_public_suffix ()</h3>
+<pre class="programlisting"><span class="returnvalue">int</span>
+psl_is_public_suffix (<em class="parameter"><code>const <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-ctx-t" title="psl_ctx_t"><span class="type">psl_ctx_t</span></a> *psl</code></em>,
+                      <em class="parameter"><code>const <span class="type">char</span> *domain</code></em>);</pre>
+<p>This function checks if <em class="parameter"><code>domain</code></em>
+ is a public suffix by the means of the
+<a class="ulink" href="http://publicsuffix.org" target="_top">Mozilla Public Suffix List</a>.</p>
+<p>For cookie domain checking see <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-is-cookie-domain-acceptable" title="psl_is_cookie_domain_acceptable ()"><code class="function">psl_is_cookie_domain_acceptable()</code></a>.</p>
+<p><em class="parameter"><code>psl</code></em>
+ is a context returned by either <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-load-file" title="psl_load_file ()"><code class="function">psl_load_file()</code></a>, <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-load-fp" title="psl_load_fp ()"><code class="function">psl_load_fp()</code></a> or
+<a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-builtin" title="psl_builtin ()"><code class="function">psl_builtin()</code></a>.</p>
+<div class="refsect3">
+<a name="id-1.2.2.9.6.7"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>psl</p></td>
+<td class="parameter_description"><p>PSL context</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>domain</p></td>
+<td class="parameter_description"><p>Domain string</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.2.2.9.6.8"></a><h4>Returns</h4>
+<p> 1 if domain is a public suffix, 0 if not.</p>
+<p></p>
+</div>
+<p class="since">Since 0.1</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="psl-unregistrable-domain"></a><h3>psl_unregistrable_domain ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *
+psl_unregistrable_domain (<em class="parameter"><code>const <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-ctx-t" title="psl_ctx_t"><span class="type">psl_ctx_t</span></a> *psl</code></em>,
+                          <em class="parameter"><code>const <span class="type">char</span> *domain</code></em>);</pre>
+<p>This function finds the longest publix suffix part of <em class="parameter"><code>domain</code></em>
+ by the means
+of the <a class="ulink" href="http://publicsuffix.org" target="_top">Mozilla Public Suffix List</a>.</p>
+<p><em class="parameter"><code>psl</code></em>
+ is a context returned by either <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-load-file" title="psl_load_file ()"><code class="function">psl_load_file()</code></a>, <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-load-fp" title="psl_load_fp ()"><code class="function">psl_load_fp()</code></a> or
+<a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-builtin" title="psl_builtin ()"><code class="function">psl_builtin()</code></a>.</p>
+<div class="refsect3">
+<a name="id-1.2.2.9.7.6"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>psl</p></td>
+<td class="parameter_description"><p>PSL context</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>domain</p></td>
+<td class="parameter_description"><p>Domain string</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.2.2.9.7.7"></a><h4>Returns</h4>
+<p> Pointer to longest public suffix part of <em class="parameter"><code>domain</code></em>
+or <a href="/usr/share/gtk-doc/html/glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if <em class="parameter"><code>domain</code></em>
+does not contain a public suffix (or if <em class="parameter"><code>psl</code></em>
+is <a href="/usr/share/gtk-doc/html/glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>).</p>
+<p></p>
+</div>
+<p class="since">Since 0.1</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="psl-registrable-domain"></a><h3>psl_registrable_domain ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *
+psl_registrable_domain (<em class="parameter"><code>const <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-ctx-t" title="psl_ctx_t"><span class="type">psl_ctx_t</span></a> *psl</code></em>,
+                        <em class="parameter"><code>const <span class="type">char</span> *domain</code></em>);</pre>
+<p>This function finds the shortest private suffix part of <em class="parameter"><code>domain</code></em>
+ by the means
+of the <a class="ulink" href="http://publicsuffix.org" target="_top">Mozilla Public Suffix List</a>.</p>
+<p><em class="parameter"><code>psl</code></em>
+ is a context returned by either <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-load-file" title="psl_load_file ()"><code class="function">psl_load_file()</code></a>, <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-load-fp" title="psl_load_fp ()"><code class="function">psl_load_fp()</code></a> or
+<a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-builtin" title="psl_builtin ()"><code class="function">psl_builtin()</code></a>.</p>
+<div class="refsect3">
+<a name="id-1.2.2.9.8.6"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>psl</p></td>
+<td class="parameter_description"><p>PSL context</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>domain</p></td>
+<td class="parameter_description"><p>Domain string</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.2.2.9.8.7"></a><h4>Returns</h4>
+<p> Pointer to shortest private suffix part of <em class="parameter"><code>domain</code></em>
+or <a href="/usr/share/gtk-doc/html/glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if <em class="parameter"><code>domain</code></em>
+does not contain a private suffix (or if <em class="parameter"><code>psl</code></em>
+is <a href="/usr/share/gtk-doc/html/glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>).</p>
+<p></p>
+</div>
+<p class="since">Since 0.1</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="psl-suffix-count"></a><h3>psl_suffix_count ()</h3>
+<pre class="programlisting"><span class="returnvalue">int</span>
+psl_suffix_count (<em class="parameter"><code>const <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-ctx-t" title="psl_ctx_t"><span class="type">psl_ctx_t</span></a> *psl</code></em>);</pre>
+<p>This function returns number of public suffixes maintained by <em class="parameter"><code>psl</code></em>
+.
+The number of exceptions within the Public Suffix List are not included.</p>
+<p>If the generation of built-in data has been disabled during compilation, 0 will be returned.</p>
+<div class="refsect3">
+<a name="id-1.2.2.9.9.6"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>psl</p></td>
+<td class="parameter_description"><p>PSL context pointer</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.2.2.9.9.7"></a><h4>Returns</h4>
+<p> Number of public suffixes entries in PSL context.</p>
+<p></p>
+</div>
+<p class="since">Since 0.1</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="psl-suffix-exception-count"></a><h3>psl_suffix_exception_count ()</h3>
+<pre class="programlisting"><span class="returnvalue">int</span>
+psl_suffix_exception_count (<em class="parameter"><code>const <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-ctx-t" title="psl_ctx_t"><span class="type">psl_ctx_t</span></a> *psl</code></em>);</pre>
+<p>This function returns number of public suffix exceptions maintained by <em class="parameter"><code>psl</code></em>
+.</p>
+<p>If the generation of built-in data has been disabled during compilation, 0 will be returned.</p>
+<div class="refsect3">
+<a name="id-1.2.2.9.10.6"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>psl</p></td>
+<td class="parameter_description"><p>PSL context pointer</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.2.2.9.10.7"></a><h4>Returns</h4>
+<p> Number of public suffix exceptions in PSL context.</p>
+<p></p>
+</div>
+<p class="since">Since 0.1</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="psl-builtin-compile-time"></a><h3>psl_builtin_compile_time ()</h3>
+<pre class="programlisting"><span class="returnvalue">time_t</span>
+psl_builtin_compile_time (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>This function returns the time when the Publix Suffix List has been compiled into C code (by psl2c).</p>
+<p>If the generation of built-in data has been disabled during compilation, 0 will be returned.</p>
+<div class="refsect3">
+<a name="id-1.2.2.9.11.6"></a><h4>Returns</h4>
+<p> time_t value or 0.</p>
+<p></p>
+</div>
+<p class="since">Since 0.1</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="psl-builtin-file-time"></a><h3>psl_builtin_file_time ()</h3>
+<pre class="programlisting"><span class="returnvalue">time_t</span>
+psl_builtin_file_time (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>This function returns the mtime of the Publix Suffix List file that has been built in.</p>
+<p>If the generation of built-in data has been disabled during compilation, 0 will be returned.</p>
+<div class="refsect3">
+<a name="id-1.2.2.9.12.6"></a><h4>Returns</h4>
+<p> time_t value or 0.</p>
+<p></p>
+</div>
+<p class="since">Since 0.1</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="psl-builtin-sha1sum"></a><h3>psl_builtin_sha1sum ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *
+psl_builtin_sha1sum (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>This function returns the SHA1 checksum of the Publix Suffix List file that has been built in.
+The returned string is in lowercase hex encoding, e.g. "2af1e9e3044eda0678bb05949d7cca2f769901d8".</p>
+<p>If the generation of built-in data has been disabled during compilation, an empty string will be returned.</p>
+<div class="refsect3">
+<a name="id-1.2.2.9.13.6"></a><h4>Returns</h4>
+<p> String containing SHA1 checksum or an empty string.</p>
+<p></p>
+</div>
+<p class="since">Since 0.1</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="psl-builtin-filename"></a><h3>psl_builtin_filename ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *
+psl_builtin_filename (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>This function returns the file name of the Publix Suffix List file that has been built in.</p>
+<p>If the generation of built-in data has been disabled during compilation, an empty string will be returned.</p>
+<div class="refsect3">
+<a name="id-1.2.2.9.14.6"></a><h4>Returns</h4>
+<p> String containing the PSL file name or an empty string.</p>
+<p></p>
+</div>
+<p class="since">Since 0.1</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="psl-is-cookie-domain-acceptable"></a><h3>psl_is_cookie_domain_acceptable ()</h3>
+<pre class="programlisting"><span class="returnvalue">int</span>
+psl_is_cookie_domain_acceptable (<em class="parameter"><code>const <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-ctx-t" title="psl_ctx_t"><span class="type">psl_ctx_t</span></a> *psl</code></em>,
+                                 <em class="parameter"><code>const <span class="type">char</span> *hostname</code></em>,
+                                 <em class="parameter"><code>const <span class="type">char</span> *cookie_domain</code></em>);</pre>
+<p>This helper function checks whether <em class="parameter"><code>cookie_domain</code></em>
+ is an acceptable cookie domain value for the request
+<em class="parameter"><code>hostname</code></em>
+.</p>
+<p>Examples:</p>
+<div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem"><p>Cookie domain 'example.com' would be acceptable for hostname 'www.example.com',
+but '.com' or 'com' would NOT be acceptable since 'com' is a public suffix.</p></li>
+<li class="listitem"><p>Cookie domain 'his.name' would be acceptable for hostname 'remember.his.name',
+but NOT for 'forgot.his.name' since 'forgot.his.name' is a public suffix.</p></li>
+</ol></div>
+<div class="refsect3">
+<a name="id-1.2.2.9.15.7"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>psl</p></td>
+<td class="parameter_description"><p>PSL context pointer</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>hostname</p></td>
+<td class="parameter_description"><p>The request hostname.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cookie_domain</p></td>
+<td class="parameter_description"><p>The domain value from a cookie</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.2.2.9.15.8"></a><h4>Returns</h4>
+<p> 1 if acceptable, 0 if not acceptable.</p>
+<p></p>
+</div>
+<p class="since">Since 0.1</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="libpsl-Public-Suffix-List-functions.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="psl-ctx-t"></a><h3>psl_ctx_t</h3>
+<pre class="programlisting">typedef struct _psl_ctx_st psl_ctx_t;
+</pre>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.20</div>
+</body>
+</html>
