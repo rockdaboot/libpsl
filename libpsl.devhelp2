@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <!DOCTYPE book PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "">
-<book xmlns="http://www.devhelp.net/book" title="libpsl Reference Manual" link="index.html" author="" name="libpsl" version="2" language="c">
+<book xmlns="http://www.devhelp.net/book" title="Libpsl Reference Manual" link="index.html" author="" name="libpsl" version="2" language="c">
   <chapters>
-    <sub name="libpsl functions" link="ch01.html">
+    <sub name="Libpsl Overview" link="libpsl.html">
       <sub name="libpsl" link="libpsl-Public-Suffix-List-functions.html"/>
     </sub>
     <sub name="Object Hierarchy" link="object-tree.html"/>
