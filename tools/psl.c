@@ -102,6 +102,9 @@ int main(int argc, const char *const *argv)
 					psl_file = NULL;
 				}
 			}
+			else if (!strcmp(*arg, "--help")) {
+				usage(0);
+			}
 			else if (!strcmp(*arg, "--")) {
 				arg++;
 				break;
