@@ -1,5 +1,5 @@
 
-AC_INIT([libpsl], [0.1], [tim.ruehsen@gmx.de], [libpsl], [http://github.com/rockdaboot/libpsl])
+AC_INIT([libpsl], [0.2], [tim.ruehsen@gmx.de], [libpsl], [http://github.com/rockdaboot/libpsl])
 AC_PREREQ([2.59])
 AM_INIT_AUTOMAKE([1.10 -Wall no-define])
 
@@ -54,8 +54,15 @@ AS_IF([ test "$enable_man" != no ], [
 # For information on how to properly maintain the library version information,
 # refer to the libtool manual, section "Updating library version information":
 # http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
-AC_SUBST([LIBPSL_SO_VERSION], [0:0:0])
-AC_SUBST([LIBPSL_API_VERSION], [0.1])
+#
+# 1. Start with version information of ‘0:0:0’ for each libtool library.
+# 2. Update the version information only immediately before a public release of your software. More frequent updates are unnecessary, and only guarantee that the current interface number gets larger faster.
+# 3. If the library source code has changed at all since the last update, then increment revision (‘c:r:a’ becomes ‘c:r+1:a’).
+# 4. If any interfaces have been added, removed, or changed since the last update, increment current, and set revision to 0.
+# 5. If any interfaces have been added since the last public release, then increment age.
+# 6. If any interfaces have been removed or changed since the last public release, then set age to 0. 
+AC_SUBST([LIBPSL_SO_VERSION], [0:1:0])
+AC_SUBST([LIBPSL_API_VERSION], [0.2])
 
 # Check for idn2
 AC_CHECK_PROG(HAVE_IDN2, idn2, yes, AC_MSG_ERROR(Cannot find required tool 'idn2'.))
