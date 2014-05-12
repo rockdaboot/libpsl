@@ -365,7 +365,8 @@ int main(int argc, const char **argv)
 	if ((fpout = fopen(argv[2], "w"))) {
 		FILE *pp;
 		struct stat st;
-		char *cmd, checksum[64] = "";
+		size_t cmdsize = 16 + strlen(argv[1]);
+		char *cmd = alloca(cmdsize), checksum[64] = "";
 
 		_add_punycode_if_needed(psl->suffixes);
 		_add_punycode_if_needed(psl->suffix_exceptions);
@@ -373,14 +374,11 @@ int main(int argc, const char **argv)
 		_print_psl_entries(fpout, psl->suffixes, "suffixes");
 		_print_psl_entries(fpout, psl->suffix_exceptions, "suffix_exceptions");
 
-		if ((cmd = malloc(16 + strlen(argv[1])))) {
-			snprintf(cmd, 16 + strlen(argv[1]), "sha1sum %s", argv[1]);
-			if ((pp = popen(cmd, "r"))) {
-				if (fscanf(pp, "%63[0-9a-zA-Z]", checksum) < 1)
-					*checksum = 0;
-				pclose(pp);
-			}
-			free(cmd);
+		snprintf(cmd, cmdsize, "sha1sum %s", argv[1]);
+		if ((pp = popen(cmd, "r"))) {
+			if (fscanf(pp, "%63[0-9a-zA-Z]", checksum) < 1)
+				*checksum = 0;
+			pclose(pp);
 		}
 
 		if (stat(argv[1], &st) != 0)
