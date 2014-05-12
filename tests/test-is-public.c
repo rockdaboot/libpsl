@@ -76,6 +76,10 @@ static void test_psl(void)
 		{ ".forgot.his.name", 1 },
 		{ "whoever.his.name", 0 },
 		{ "whoever.forgot.his.name", 0 },
+		{ ".", 1 }, /* special case */
+		{ "", 1 },  /* special case */
+		{ NULL, 1 },  /* special case */
+		{ "adfhoweirh", 1 }, /* unknown TLD */
 	};
 	unsigned it;
 	psl_ctx_t *psl;
