@@ -35,6 +35,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <alloca.h>
 
 #include <libpsl.h>
 
@@ -46,8 +47,8 @@ static int
 
 static void test_psl(void)
 {
-	// punycode generation: idn 商标
-	// octal code generation: echo -n "商标" | od -b
+	/* punycode generation: idn 商标 */
+	/* octal code generation: echo -n "商标" | od -b */
 	static const struct test_data {
 		const char
 			*domain;
@@ -60,13 +61,13 @@ static void test_psl(void)
 		{ "cc.ar.us", 1 },
 		{ ".cc.ar.us", 1 },
 		{ "www.cc.ar.us", 0 },
-		{ "www.ck", 0 }, // exception from *.ck
+		{ "www.ck", 0 }, /* exception from *.ck */
 		{ "abc.www.ck", 0 },
 		{ "xxx.ck", 1 },
 		{ "www.xxx.ck", 0 },
-		{ "\345\225\206\346\240\207", 1 }, // xn--czr694b oder 商标
+		{ "\345\225\206\346\240\207", 1 }, /* xn--czr694b oder 商标 */
 		{ "www.\345\225\206\346\240\207", 0 },
-		// some special test follow ('name' and 'forgot.his.name' are public, but e.g. his.name is not)
+		/* some special test follow ('name' and 'forgot.his.name' are public, but e.g. his.name is not) */
 		{ "name", 1 },
 		{ ".name", 1 },
 		{ "his.name", 0 },
@@ -100,14 +101,15 @@ static void test_psl(void)
 
 int main(int argc, const char * const *argv)
 {
-	// if VALGRIND testing is enabled, we have to call ourselves with valgrind checking
+	/* if VALGRIND testing is enabled, we have to call ourselves with valgrind checking */
 	if (argc == 1) {
 		const char *valgrind = getenv("TESTS_VALGRIND");
 
 		if (valgrind && *valgrind) {
-			char cmd[strlen(valgrind)+strlen(argv[0])+32];
+			size_t cmdsize = strlen(valgrind) + strlen(argv[0]) + 32;
+			char *cmd = alloca(cmdsize);
 
-			snprintf(cmd, sizeof(cmd), "TESTS_VALGRIND="" %s %s", valgrind, argv[0]);
+			snprintf(cmd, cmdsize, "TESTS_VALGRIND="" %s %s", valgrind, argv[0]);
 			return system(cmd) != 0;
 		}
 	}
