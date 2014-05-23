@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# see https://wiki.debian.org/Courses2005/BuildingWithoutHelper
+
+git clone https://github.com/rockdaboot/libpsl
+version=`(cd libpsl; git tag|tail -1)`
+mv libpsl libpsl-${version}
+cd libpsl-${version}
+./autogen.sh
+./configure --enable-gtk-doc --prefix=/usr --mandir=\$${prefix}/share/man --infodir=\$${prefix}/share/info
+make dist
+#mv libpsl-${version}.tar.gz libpsl_${version}.orig.tar.gz
+dh_make -l --createorig -f libpsl-${version}.tar.gz
