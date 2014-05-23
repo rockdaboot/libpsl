@@ -1,0 +1,21 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+# Uncomment this to turn on verbose mode.
+export DH_VERBOSE=1
+
+%:
+	dh $@  --with autotools-dev
+
+override_dh_auto_configure:
+	./autogen.sh
+	dh_auto_configure -- \
+		--enable-gtk-doc \
+		--enable-ld-version-script \
+		--with-packager=Debian \
+		--with-packager-bug-reports=http://bugs.debian.org/ \
+		--with-packager-version="$(DEB_VERSION)"
+
+#override_dh_auto_clean:
+#	test ! -f Makefile || dh_auto_clean
+

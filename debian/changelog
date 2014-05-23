@@ -1,0 +1,5 @@
+libpsl (0.2.1-1) unstable; urgency=low
+
+  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+
+ -- Tim Ruehsen <tim.ruehsen@gmx.de>  Mon, 19 May 2014 17:15:08 +0200
