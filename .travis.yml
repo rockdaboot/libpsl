@@ -1,0 +1,4 @@
+# blacklist
+branches:
+  except:
+    - debian
