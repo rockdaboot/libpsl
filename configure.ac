@@ -8,7 +8,9 @@ AM_INIT_AUTOMAKE([1.10 -Wall no-define])
 # the library.
 AC_CONFIG_HEADERS([config.h])
 AC_PROG_CXX
-LT_INIT([disable-static])
+m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
+#LT_INIT([disable-static])
+LT_INIT
 AC_CONFIG_MACRO_DIR([m4])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
