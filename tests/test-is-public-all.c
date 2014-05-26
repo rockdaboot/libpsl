@@ -36,6 +36,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <alloca.h>
 
 #include <libpsl.h>
 
@@ -50,23 +51,23 @@ static void test_psl(void)
 	int result;
 	char buf[256], domain[64], *linep, *p;
 
-	psl = psl_load_file(PSL_FILE); // PSL_FILE can be set by ./configure --with-psl-file=[PATH]
+	psl = psl_load_file(PSL_FILE); /* PSL_FILE can be set by ./configure --with-psl-file=[PATH] */
 
 	printf("loaded %d suffixes and %d exceptions\n", psl_suffix_count(psl), psl_suffix_exception_count(psl));
 
 	if ((fp = fopen(PSL_FILE, "r"))) {
 		while ((linep = fgets(buf, sizeof(buf), fp))) {
-			while (isspace(*linep)) linep++; // ignore leading whitespace
-			if (!*linep) continue; // skip empty lines
+			while (isspace(*linep)) linep++; /* ignore leading whitespace */
+			if (!*linep) continue; /* skip empty lines */
 
 			if (*linep == '/' && linep[1] == '/')
-				continue; // skip comments
+				continue; /* skip comments */
 
-			// parse suffix rule
+			/* parse suffix rule */
 			for (p = linep; *linep && !isspace(*linep);) linep++;
 			*linep = 0;
 
-			if (*p == '!') { // an exception to a wildcard, e.g. !www.ck (wildcard is *.ck)
+			if (*p == '!') { /* an exception to a wildcard, e.g. !www.ck (wildcard is *.ck) */
 				if ((result = psl_is_public_suffix(psl, p + 1))) {
 					failed++;
 					printf("psl_is_public_suffix(%s)=%d (expected 0)\n", p, result);
@@ -77,7 +78,7 @@ static void test_psl(void)
 					printf("psl_is_public_suffix(%s)=%d (expected 1)\n", strchr(p, '.') + 1, result);
 				} else ok++;
 			}
-			else if (*p == '*') { // a wildcard, e.g. *.ck
+			else if (*p == '*') { /* a wildcard, e.g. *.ck */
 				if (!(result = psl_is_public_suffix(psl, p + 1))) {
 					failed++;
 					printf("psl_is_public_suffix(%s)=%d (expected 1)\n", p + 1, result);
@@ -114,14 +115,15 @@ static void test_psl(void)
 
 int main(int argc, const char * const *argv)
 {
-	// if VALGRIND testing is enabled, we have to call ourselves with valgrind checking
+	/* if VALGRIND testing is enabled, we have to call ourselves with valgrind checking */
 	if (argc == 1) {
 		const char *valgrind = getenv("TESTS_VALGRIND");
 
 		if (valgrind && *valgrind) {
-			char cmd[strlen(valgrind) + strlen(argv[0]) + 32];
+			size_t cmdsize = strlen(valgrind) + strlen(argv[0]) + 32;
+			char *cmd = alloca(cmdsize);
 
-			snprintf(cmd, sizeof(cmd), "TESTS_VALGRIND="" %s %s", valgrind, argv[0]);
+			snprintf(cmd, cmdsize, "TESTS_VALGRIND="" %s %s", valgrind, argv[0]);
 			return system(cmd) != 0;
 		}
 	}

@@ -36,6 +36,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <alloca.h>
 
 #include <libpsl.h>
 
@@ -48,7 +49,7 @@ static void test(const psl_ctx_t *psl, const char *domain, const char *expected_
 	const char *result;
 	char lookupname[128];
 
-	// check if there might be some utf-8 characters
+	/* check if there might be some utf-8 characters */
 	if (domain) {
 		int utf8;
 		const char *p;
@@ -57,13 +58,14 @@ static void test(const psl_ctx_t *psl, const char *domain, const char *expected_
 			if (*p < 0)
 				utf8 = 1;
 
-		// if we found utf-8, make sure to convert domain correctly to lowercase
-		// does it work, if we are not in a utf-8 env ?
+		/* if we found utf-8, make sure to convert domain correctly to lowercase */
+		/* does it work, if we are not in a utf-8 env ? */
 		if (utf8) {
 			FILE *pp;
-			char cmd[48 + strlen(domain)];
+			size_t cmdsize = 48 + strlen(domain);
+			char *cmd = alloca(cmdsize);
 
-			snprintf(cmd, sizeof(cmd), "echo -n '%s' | sed -e 's/./\\L\\0/g'", domain);
+			snprintf(cmd, cmdsize, "echo -n '%s' | sed -e 's/./\\L\\0/g'", domain);
 			if ((pp = popen(cmd, "r"))) {
 				if (fscanf(pp, "%127s", lookupname) >= 1)
 					domain = lookupname;
@@ -93,28 +95,28 @@ static void test_psl(void)
 
 	printf("have %d suffixes and %d exceptions\n", psl_suffix_count(psl), psl_suffix_exception_count(psl));
 
-	// special check with NULL values
+	/* special check with NULL values */
 	test(NULL, NULL, NULL);
 
-	// special check with NULL psl context
+	/* special check with NULL psl context */
 	test(NULL, "www.example.com", NULL);
 
-	// special check with NULL psl context and TLD
+	/* special check with NULL psl context and TLD */
 	test(NULL, "com", NULL);
 
-	// Norwegian with uppercase oe
+	/* Norwegian with uppercase oe */
 	test(psl, "www.\303\230yer.no", "www.\303\270yer.no");
 
-	// Norwegian with lowercase oe
+	/* Norwegian with lowercase oe */
 	test(psl, "www.\303\270yer.no", "www.\303\270yer.no");
 
-	// special check with NULL psl context and TLD
+	/* special check with NULL psl context and TLD */
 	test(psl, "whoever.forgot.his.name", "whoever.forgot.his.name");
 
-	// special check with NULL psl context and TLD
+	/* special check with NULL psl context and TLD */
 	test(psl, "forgot.his.name", NULL);
 
-	// special check with NULL psl context and TLD
+	/* special check with NULL psl context and TLD */
 	test(psl, "his.name", "his.name");
 
 	if ((fp = fopen(PSL_TESTFILE, "r"))) {
@@ -124,7 +126,7 @@ static void test_psl(void)
 					continue;
 			}
 
-			// we have to lowercase the domain - the PSL API just takes lowercase
+			/* we have to lowercase the domain - the PSL API just takes lowercase */
 			for (p = domain; *p; p++)
 				if (*p > 0 && isupper(*p))
 					*p = tolower(*p);
@@ -144,14 +146,15 @@ static void test_psl(void)
 
 int main(int argc, const char * const *argv)
 {
-	// if VALGRIND testing is enabled, we have to call ourselves with valgrind checking
+	/* if VALGRIND testing is enabled, we have to call ourselves with valgrind checking */
 	if (argc == 1) {
 		const char *valgrind = getenv("TESTS_VALGRIND");
 
 		if (valgrind && *valgrind) {
-			char cmd[strlen(valgrind) + strlen(argv[0]) + 32];
+			size_t cmdsize = strlen(valgrind) + strlen(argv[0]) + 32;
+			char *cmd = alloca(cmdsize);
 
-			snprintf(cmd, sizeof(cmd), "TESTS_VALGRIND="" %s %s", valgrind, argv[0]);
+			snprintf(cmd, cmdsize, "TESTS_VALGRIND="" %s %s", valgrind, argv[0]);
 			return system(cmd) != 0;
 		}
 	}

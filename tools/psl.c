@@ -54,12 +54,13 @@ static void usage(int err)
 	exit(err);
 }
 
+/* RFC 2822-compliant date format */
 static const char *time2str(time_t t)
 {
 	static char buf[64];
 	struct tm *tp = localtime(&t);
 
-	strftime(buf, sizeof(buf), "%a, %d %b %Y %T %z", tp);
+	strftime(buf, sizeof(buf), "%a, %d %b %Y %H:%M:%S %Z", tp);
 	return buf;
 }
 

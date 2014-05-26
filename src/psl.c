@@ -28,7 +28,7 @@
  *
  */
 
-// need _GNU_SOURCE for qsort_r()
+/* need _GNU_SOURCE for qsort_r() */
 #ifndef _GNU_SOURCE
 #	define _GNU_SOURCE
 #endif
@@ -73,19 +73,19 @@ typedef struct {
 	unsigned short
 		length;
 	unsigned char
-		nlabels, // number of labels
-		wildcard; // this is a wildcard rule (e.g. *.sapporo.jp)
+		nlabels, /* number of labels */
+		wildcard; /* this is a wildcard rule (e.g. *.sapporo.jp) */
 } _psl_entry_t;
 
-// stripped down version libmget vector routines
+/* stripped down version libmget vector routines */
 typedef struct {
 	int
-		(*cmp)(const _psl_entry_t *, const _psl_entry_t *); // comparison function
+		(*cmp)(const _psl_entry_t *, const _psl_entry_t *); /* comparison function */
 	_psl_entry_t
-		**entry; // pointer to array of pointers to elements
+		**entry; /* pointer to array of pointers to elements */
 	int
-		max,     // allocated elements
-		cur;     // number of elements in use
+		max,     /* allocated elements */
+		cur;     /* number of elements in use */
 } _psl_vector_t;
 
 struct _psl_ctx_st {
@@ -94,10 +94,10 @@ struct _psl_ctx_st {
 		*suffix_exceptions;
 };
 
-// include the PSL data compiled by 'psl2c'
+/* include the PSL data compiled by 'psl2c' */
 #include "suffixes.c"
 
-// references to this PSL will result in lookups to built-in data
+/* references to this PSL will result in lookups to built-in data */
 static const psl_ctx_t
 	_builtin_psl;
 
@@ -140,14 +140,14 @@ static _psl_entry_t *_vector_get(const _psl_vector_t *v, int pos)
 	return v->entry[pos];
 }
 
-// the entries must be sorted by
+/* the entries must be sorted by */
 static int _vector_find(const _psl_vector_t *v, const _psl_entry_t *elem)
 {
 	if (v) {
 		int l, r, m;
 		int res;
 
-		// binary search for element (exact match)
+		/* binary search for element (exact match) */
 		for (l = 0, r = v->cur - 1; l <= r;) {
 			m = (l + r) / 2;
 			if ((res = v->cmp(elem, v->entry[m])) > 0) l = m + 1;
@@ -156,7 +156,7 @@ static int _vector_find(const _psl_vector_t *v, const _psl_entry_t *elem)
 		}
 	}
 
-	return -1; // not found
+	return -1; /* not found */
 }
 
 static int _vector_add(_psl_vector_t *v, const _psl_entry_t *elem)
@@ -188,22 +188,21 @@ static void _vector_sort(_psl_vector_t *v)
 		qsort_r(v->entry, v->cur, sizeof(_psl_vector_t *), _compare, v);
 }
 
-static inline int _vector_size(_psl_vector_t *v)
+static int _vector_size(_psl_vector_t *v)
 {
 	return v ? v->cur : 0;
 }
 
-// by this kind of sorting, we can easily see if a domain matches or not
-
+/* by this kind of sorting, we can easily see if a domain matches or not */
 static int _suffix_compare(const _psl_entry_t *s1, const _psl_entry_t *s2)
 {
 	int n;
 
 	if ((n = s2->nlabels - s1->nlabels))
-		return n; // most labels first
+		return n; /* most labels first */
 
 	if ((n = s1->length - s2->length))
-		return n;  // shorter rules first
+		return n;  /* shorter rules first */
 
 	return strcmp(s1->label, s2->label ? s2->label : s2->label_buf);
 }
@@ -217,14 +216,14 @@ static int _suffix_init(_psl_entry_t *suffix, const char *rule, size_t length)
 
 	if (length >= sizeof(suffix->label_buf) - 1) {
 		suffix->nlabels = 0;
-		// fprintf(stderr, _("Suffix rule too long (%zd, ignored): %s\n"), length, rule);
+		/* fprintf(stderr, _("Suffix rule too long (%zd, ignored): %s\n"), length, rule); */
 		return -1;
 	}
 
 	if (*rule == '*') {
 		if (*++rule != '.') {
 			suffix->nlabels = 0;
-			// fprintf(stderr, _("Unsupported kind of rule (ignored): %s\n"), rule);
+			/* fprintf(stderr, _("Unsupported kind of rule (ignored): %s\n"), rule); */
 			return -2;
 		}
 		rule++;
@@ -273,7 +272,7 @@ int psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
 	if (!psl || !domain)
 		return 1;
 
-	// this function should be called without leading dots, just make sure
+	/* this function should be called without leading dots, just make sure */
 	suffix.label = domain + (*domain == '.');
 	suffix.length = strlen(suffix.label);
 	suffix.wildcard = 0;
@@ -283,7 +282,7 @@ int psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
 		if (*p == '.')
 			suffix.nlabels++;
 
-	// if domain has enough labels, it is public
+	/* if domain has enough labels, it is public */
 	if (psl == &_builtin_psl)
 		rule = &suffixes[0];
 	else
@@ -298,10 +297,10 @@ int psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
 		rule = _vector_get(psl->suffixes, _vector_find(psl->suffixes, &suffix));
 
 	if (rule) {
-		// definitely a match, no matter if the found rule is a wildcard or not
+		/* definitely a match, no matter if the found rule is a wildcard or not */
 		return 1;
 	} else if (suffix.nlabels == 1) {
-		// unknown TLD, this is the prevailing '*' match
+		/* unknown TLD, this is the prevailing '*' match */
 		return 1;
 	}
 
@@ -320,17 +319,17 @@ int psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
 
 		if (rule) {
 			if (rule->wildcard) {
-				// now that we matched a wildcard, we have to check for an exception
+				/* now that we matched a wildcard, we have to check for an exception */
 				suffix.label = label_bak;
 				suffix.length = length_bak;
 				suffix.nlabels++;
 
 				if (psl == &_builtin_psl) {
 					if (bsearch(&suffix, suffix_exceptions, countof(suffix_exceptions), sizeof(suffix_exceptions[0]), (int(*)(const void *, const void *))_suffix_compare))
-						return 0; // found an exception, so 'domain' is not a public suffix
+						return 0; /* found an exception, so 'domain' is not a public suffix */
 				} else {
 					if (_vector_get(psl->suffix_exceptions, _vector_find(psl->suffix_exceptions, &suffix)) != 0)
-						return 0; // found an exception, so 'domain' is not a public suffix
+						return 0; /* found an exception, so 'domain' is not a public suffix */
 				}
 
 				return 1;
@@ -362,14 +361,16 @@ const char *psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain)
 	if (!psl || !domain)
 		return NULL;
 
-	// We check from left to right to catch special PSL entries like 'forgot.his.name':
-	//   'forgot.his.name' and 'name' are in the PSL while 'his.name' is not.
+	/*
+	 *  We check from left to right to catch special PSL entries like 'forgot.his.name':
+	 *   'forgot.his.name' and 'name' are in the PSL while 'his.name' is not.
+	 */
 
 	while (!psl_is_public_suffix(psl, domain)) {
 		if ((domain = strchr(domain, '.')))
 			domain++;
 		else
-			break; // prevent endless loop if psl_is_public_suffix() is broken.
+			break; /* prevent endless loop if psl_is_public_suffix() is broken. */
 	}
 
 	return domain;
@@ -398,15 +399,17 @@ const char *psl_registrable_domain(const psl_ctx_t *psl, const char *domain)
 	if (!psl || !domain || *domain == '.')
 		return NULL;
 
-	// We check from left to right to catch special PSL entries like 'forgot.his.name':
-	//   'forgot.his.name' and 'name' are in the PSL while 'his.name' is not.
+	/*
+	 *  We check from left to right to catch special PSL entries like 'forgot.his.name':
+	 *   'forgot.his.name' and 'name' are in the PSL while 'his.name' is not.
+	 */
 
 	while (!psl_is_public_suffix(psl, domain)) {
 		if ((p = strchr(domain, '.'))) {
 			regdom = domain;
 			domain = p + 1;
 		} else
-			break; // prevent endless loop if psl_is_public_suffix() is broken.
+			break; /* prevent endless loop if psl_is_public_suffix() is broken. */
 	}
 
 	return regdom;
@@ -473,24 +476,26 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 	if (!(psl = calloc(1, sizeof(psl_ctx_t))))
 		return NULL;
 
-	// as of 02.11.2012, the list at http://publicsuffix.org/list/ contains ~6000 rules and 40 exceptions.
-	// as of 19.02.2014, the list at http://publicsuffix.org/list/ contains ~6500 rules and 19 exceptions.
+	/*
+	 *  as of 02.11.2012, the list at http://publicsuffix.org/list/ contains ~6000 rules and 40 exceptions.
+	 *  as of 19.02.2014, the list at http://publicsuffix.org/list/ contains ~6500 rules and 19 exceptions.
+	 */
 	psl->suffixes = _vector_alloc(8*1024, _suffix_compare);
 	psl->suffix_exceptions = _vector_alloc(64, _suffix_compare);
 
 	while ((linep = fgets(buf, sizeof(buf), fp))) {
-		while (isspace(*linep)) linep++; // ignore leading whitespace
-		if (!*linep) continue; // skip empty lines
+		while (isspace(*linep)) linep++; /* ignore leading whitespace */
+		if (!*linep) continue; /* skip empty lines */
 
 		if (*linep == '/' && linep[1] == '/')
-			continue; // skip comments
+			continue; /* skip comments */
 
-		// parse suffix rule
+		/* parse suffix rule */
 		for (p = linep; *linep && !isspace(*linep);) linep++;
 		*linep = 0;
 
 		if (*p == '!') {
-			// add to exceptions
+			/* add to exceptions */
 			if (_suffix_init(&suffix, p + 1, linep - p - 1) == 0)
 				suffixp = _vector_get(psl->suffix_exceptions, _vector_add(psl->suffix_exceptions, &suffix));
 			else
@@ -503,7 +508,7 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 		}
 
 		if (suffixp)
-			suffixp->label = suffixp->label_buf; // set label to changed address
+			suffixp->label = suffixp->label_buf; /* set label to changed address */
 
 		nsuffixes++;;
 	}
@@ -697,17 +702,17 @@ int psl_is_cookie_domain_acceptable(const psl_ctx_t *psl, const char *hostname, 
 		cookie_domain++;
 
 	if (!strcmp(hostname, cookie_domain))
-		return 1; // an exact match is acceptable (and pretty common)
+		return 1; /* an exact match is acceptable (and pretty common) */
 
 	cookie_domain_length = strlen(cookie_domain);
 	hostname_length = strlen(hostname);
 
 	if (cookie_domain_length >= hostname_length)
-		return 0; // cookie_domain is too long
+		return 0; /* cookie_domain is too long */
 
 	p = hostname + hostname_length - cookie_domain_length;
 	if (!strcmp(p, cookie_domain) && p[-1] == '.') {
-		// OK, cookie_domain matches, but it must be longer than the longest public suffix in 'hostname'
+		/* OK, cookie_domain matches, but it must be longer than the longest public suffix in 'hostname' */
 
 		if (!(p = psl_unregistrable_domain(psl, hostname)))
 			return 1;

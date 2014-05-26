@@ -1,5 +1,10 @@
 Copyright (C) 2014 Tim Ruehsen
 
+26.05.2014  Release V0.2.2
+  * changed code to C89
+  * added a few test cases
+  * build static library by default
+
 25.04.2014  Hotfix release V0.2.1
   * Updated to the latest Publix Suffix List
 

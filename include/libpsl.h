@@ -41,42 +41,46 @@ extern "C" {
 
 typedef struct _psl_ctx_st psl_ctx_t;
 
+/* frees PSL context */
 void
 	psl_free(psl_ctx_t *psl);
+/* loads PSL data from file */
 psl_ctx_t *
 	psl_load_file(const char *fname);
+/* loads PSL data from FILE pointer */
 psl_ctx_t *
 	psl_load_fp(FILE *fp);
+/* retrieves builtin PSL data */
 const psl_ctx_t *
 	psl_builtin(void);
-// checks wether domain is a public suffix or not
+/* checks wether domain is a public suffix or not */
 int
 	psl_is_public_suffix(const psl_ctx_t *psl, const char *domain);
-// checks wether cookie_domain is acceptable for domain or not
+/* checks wether cookie_domain is acceptable for domain or not */
 int
 	psl_is_cookie_domain_acceptable(const psl_ctx_t *psl, const char *hostname, const char *cookie_domain);
-// returns the longest unregistrable domain within 'domain' or NULL if none found
+/* returns the longest unregistrable domain within 'domain' or NULL if none found */
 const char *
 	psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain);
-// returns the shortest possible registrable domain part or NULL if domain is not registrable at all
+/* returns the shortest possible registrable domain part or NULL if domain is not registrable at all */
 const char *
 	psl_registrable_domain(const psl_ctx_t *psl, const char *domain);
-// does not include exceptions
+/* does not include exceptions */
 int
 	psl_suffix_count(const psl_ctx_t *psl);
-// just counts exceptions
+/* just counts exceptions */
 int
 	psl_suffix_exception_count(const psl_ctx_t *psl);
-// returns compilation time
+/* returns compilation time */
 time_t
 	psl_builtin_compile_time(void);
-// returns mtime of PSL source file
+/* returns mtime of PSL source file */
 time_t
 	psl_builtin_file_time(void);
-// returns SHA1 checksum (hex-encoded, lowercase) of PSL source file
+/* returns SHA1 checksum (hex-encoded, lowercase) of PSL source file */
 const char *
 	psl_builtin_sha1sum(void);
-// returns file name of PSL source file
+/* returns file name of PSL source file */
 const char *
 	psl_builtin_filename(void);
 
