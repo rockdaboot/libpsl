@@ -2,7 +2,8 @@
 
 # see https://wiki.debian.org/Courses2005/BuildingWithoutHelper
 
-version="0.2.1"
+version=`git tag -l|tail -1`
+#version="0.2.2"
 
 if [ ! -e libpsl_${version}.orig.tar.gz ]; then
   wget -O libpsl_${version}.orig.tar.gz https://github.com/rockdaboot/libpsl/archive/${version}.tar.gz
