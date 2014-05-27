@@ -1,5 +1,8 @@
 Copyright (C) 2014 Tim Ruehsen
 
+27.05.2014  Release V0.2.3
+  * changed API version to 0.2
+
 26.05.2014  Release V0.2.2
   * changed code to C89
   * added a few test cases

@@ -1,5 +1,5 @@
 
-AC_INIT([libpsl], [0.2.2], [tim.ruehsen@gmx.de], [libpsl], [http://github.com/rockdaboot/libpsl])
+AC_INIT([libpsl], [0.2.3], [tim.ruehsen@gmx.de], [libpsl], [http://github.com/rockdaboot/libpsl])
 AC_PREREQ([2.59])
 AM_INIT_AUTOMAKE([1.10 -Wall no-define])
 
@@ -64,7 +64,7 @@ AS_IF([ test "$enable_man" != no ], [
 # 5. If any interfaces have been added since the last public release, then increment age.
 # 6. If any interfaces have been removed or changed since the last public release, then set age to 0. 
 AC_SUBST([LIBPSL_SO_VERSION], [0:3:0])
-AC_SUBST([LIBPSL_API_VERSION], [0.2.2])
+AC_SUBST([LIBPSL_API_VERSION], [0.2])
 
 # Check for idn2
 AC_CHECK_PROG(HAVE_IDN2, idn2, yes, AC_MSG_ERROR(Cannot find required tool 'idn2'.))
