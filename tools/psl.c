@@ -90,7 +90,8 @@ int main(int argc, const char *const *argv)
 					fprintf(stderr, "Dropped data from %s\n", psl_file);
 					psl_file = NULL;
 				}
-				psl = (psl_ctx_t *) psl_builtin();
+				if (!(psl = (psl_ctx_t *) psl_builtin()))
+					printf("No builtin PSL data available\n");
 			}
 			else if (!strcmp(*arg, "--load-psl-file") && arg < argv + argc - 1) {
 				psl_free(psl);
@@ -118,6 +119,11 @@ int main(int argc, const char *const *argv)
 			break;
 	}
 
+	if (!psl && mode != 99) {
+		printf("No PSL data available - aborting\n");
+		exit(2);
+	}
+
 	if (mode == 1) {
 		for (; arg < argv + argc; arg++)
 			printf("%s: %d\n", *arg, psl_is_public_suffix(psl, *arg));
@@ -135,7 +141,7 @@ int main(int argc, const char *const *argv)
 			printf("%s: %d\n", *arg, psl_is_cookie_domain_acceptable(psl, *arg, cookie_domain));
 	}
 	else if (mode == 99) {
-		if (psl != psl_builtin()) {
+		if (psl && psl != psl_builtin()) {
 			printf("suffixes: %d\n", psl_suffix_count(psl));
 			printf("exceptions: %d\n", psl_suffix_exception_count(psl));
 		}

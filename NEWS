@@ -1,5 +1,8 @@
 Copyright (C) 2014 Tim Ruehsen
 
+30.05.2014
+  * Fixed psl_builtin() to return NULL if no built-in PSL data is available
+
 27.05.2014  Release V0.2.3
   * changed API version to 0.2
 
