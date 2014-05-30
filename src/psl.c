@@ -557,7 +557,11 @@ void psl_free(psl_ctx_t *psl)
  */
 const psl_ctx_t *psl_builtin(void)
 {
+#ifdef WITH_BUILTIN
 	return &_builtin_psl;
+#else
+	return NULL;
+#endif
 }
 
 /**
