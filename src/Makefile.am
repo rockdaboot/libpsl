@@ -4,12 +4,12 @@ BUILT_SOURCES = suffixes.c
 # suffixes.c is a built source that must be cleaned
 CLEANFILES = suffixes.c
 
-lib_LTLIBRARIES = libpsl-@LIBPSL_API_VERSION@.la
+lib_LTLIBRARIES = libpsl.la
 
-libpsl_@LIBPSL_API_VERSION@_la_SOURCES = psl.c
-libpsl_@LIBPSL_API_VERSION@_la_CPPFLAGS = -I$(top_srcdir)/include
+libpsl_la_SOURCES = psl.c
+libpsl_la_CPPFLAGS = -I$(top_srcdir)/include
 # include ABI version information
-libpsl_@LIBPSL_API_VERSION@_la_LDFLAGS = -version-info $(LIBPSL_SO_VERSION)
+libpsl_la_LDFLAGS = -version-info $(LIBPSL_SO_VERSION)
 
 noinst_PROGRAMS = psl2c
 psl2c_SOURCES = psl2c.c

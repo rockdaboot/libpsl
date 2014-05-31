@@ -7,5 +7,5 @@ Name: @PACKAGE_NAME@
 Description: Publix Suffix List C library.
 Version: @PACKAGE_VERSION@
 URL: @PACKAGE_URL@
-Libs: -L${libdir} -llibpsl-@LIBPSL_API_VERSION@
-Cflags: -I${includedir}/libpsl-@LIBPSL_API_VERSION@ -I${libdir}/libpsl-@LIBPSL_API_VERSION@/include
+Libs: -L${libdir} -llibpsl
+Cflags: -I${includedir}/libpsl -I${libdir}/libpsl/include

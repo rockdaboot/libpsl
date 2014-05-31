@@ -64,7 +64,7 @@ AS_IF([ test "$enable_man" != no ], [
 # 5. If any interfaces have been added since the last public release, then increment age.
 # 6. If any interfaces have been removed or changed since the last public release, then set age to 0. 
 AC_SUBST([LIBPSL_SO_VERSION], [0:4:0])
-AC_SUBST([LIBPSL_API_VERSION], [0.2])
+AC_SUBST([LIBPSL_VERSION], $VERSION)
 
 # Check for idn2
 AC_CHECK_PROG(HAVE_IDN2, idn2, yes, AC_MSG_ERROR(Cannot find required tool 'idn2'.))
@@ -126,7 +126,7 @@ AC_CONFIG_FILES([Makefile
                  docs/libpsl/version.xml
                  data/Makefile
                  tests/Makefile
-                 libpsl-${LIBPSL_API_VERSION}.pc:libpsl.pc.in])
+                 libpsl.pc:libpsl.pc.in])
 AC_OUTPUT
 
 AC_MSG_NOTICE([Summary of build options:
