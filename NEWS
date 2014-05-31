@@ -1,7 +1,11 @@
 Copyright (C) 2014 Tim Ruehsen
 
-30.05.2014
-  * Fixed psl_builtin() to return NULL if no built-in PSL data is available
+31.05.2014 Release V0.2.5
+  * added psl_get_version()
+  * removed version from library name
+
+30.05.2014 Release V0.2.4
+  * fixed psl_builtin() to return NULL if no built-in PSL data is available
 
 27.05.2014  Release V0.2.3
   * changed API version to 0.2
@@ -12,6 +16,6 @@ Copyright (C) 2014 Tim Ruehsen
   * build static library by default
 
 25.04.2014  Hotfix release V0.2.1
-  * Updated to the latest Publix Suffix List
+  * updated to the latest Publix Suffix List
 
 25.04.2014  Initial release V0.2

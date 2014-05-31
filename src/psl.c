@@ -675,6 +675,20 @@ const char *psl_builtin_filename(void)
 }
 
 /**
+ * psl_get_version:
+ *
+ * Get libpsl version.
+ *
+ * Returns: String containing version of libpsl.
+ *
+ * Since: 0.2.5
+ **/
+const char *psl_get_version (void)
+{
+	return PACKAGE_VERSION;
+}
+
+/**
  * psl_is_cookie_domain_acceptable:
  * @psl: PSL context pointer
  * @hostname: The request hostname.
