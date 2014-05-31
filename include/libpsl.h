@@ -83,6 +83,9 @@ const char *
 /* returns file name of PSL source file */
 const char *
 	psl_builtin_filename(void);
+/* returns library version */
+const char *
+	psl_get_version(void);
 
 
 #ifdef  __cplusplus

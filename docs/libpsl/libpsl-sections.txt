@@ -16,4 +16,5 @@ psl_builtin_file_time
 psl_builtin_sha1sum
 psl_builtin_filename
 psl_is_cookie_domain_acceptable
+psl_get_version
 </SECTION>

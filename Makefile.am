@@ -11,6 +11,6 @@ DISTCHECK_CONFIGURE_FLAGS = --enable-gtk-doc --enable-man
 ## pkg-config files are also used for architecture-independent data packages,
 ## in which case the correct install location would be $(datadir)/pkgconfig.
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = libpsl-$(LIBPSL_API_VERSION).pc
+pkgconfig_DATA = libpsl.pc
 
 EXTRA_DIST = config.rpath
