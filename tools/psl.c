@@ -42,6 +42,7 @@ static void usage(int err)
 	fprintf(stderr, "Usage: psl [options] <domains...>\n");
 	fprintf(stderr, "\n");
 	fprintf(stderr, "Options:\n");
+	fprintf(stderr, "  --version                    show library version information\n");
 	fprintf(stderr, "  --use-builtin-data           use the builtin PSL data. [default]\n");
 	fprintf(stderr, "  --load-psl-file <filename>   load PSL data from file.\n");
 	fprintf(stderr, "  --is-public-suffix           check if domains are public suffixes or not. [default]\n");
@@ -49,6 +50,7 @@ static void usage(int err)
 	fprintf(stderr, "                               check if cookie-domain is acceptable for domains.\n");
 	fprintf(stderr, "  --print-unreg-domain         print the longest publix suffix part\n");
 	fprintf(stderr, "  --print-reg-domain           print the shortest private suffix part\n");
+	fprintf(stderr, "  --print-info                 print info about library builtin data\n");
 	fprintf(stderr, "\n");
 
 	exit(err);
@@ -106,6 +108,14 @@ int main(int argc, const char *const *argv)
 			}
 			else if (!strcmp(*arg, "--help")) {
 				usage(0);
+			}
+			else if (!strcmp(*arg, "--version")) {
+				printf("psl %s\n", PACKAGE_VERSION);
+				printf("libpsl %s\n", psl_get_version());
+				printf("\n");
+				printf("Copyright (C) 2014 Tim Ruehsen\n");
+				printf("License: MIT\n");
+				exit(0);
 			}
 			else if (!strcmp(*arg, "--")) {
 				arg++;
