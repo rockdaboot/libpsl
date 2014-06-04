@@ -22,6 +22,7 @@ Libpsl...
 - finds the shortest private part of a given domain
 - works with international domains (UTF-8 and IDNA2008 Punycode)
 - is thread-safe
+- handles IDNA2008 UTS#46 (library has to be compiled with libicu)
 
 Find more information about the Publix Suffix List [here](http://publicsuffix.org/).
 

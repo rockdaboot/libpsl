@@ -66,9 +66,6 @@ AS_IF([ test "$enable_man" != no ], [
 AC_SUBST([LIBPSL_SO_VERSION], [1:0:1])
 AC_SUBST([LIBPSL_VERSION], $VERSION)
 
-# Check for idn2
-AC_CHECK_PROG(HAVE_IDN2, idn2, yes, AC_MSG_ERROR(Cannot find required tool 'idn2'.))
-
 # Check for enable/disable builtin PSL data
 AC_ARG_ENABLE(builtin,
   AS_HELP_STRING([--disable-builtin], [do not compile PSL data into library]),
@@ -79,6 +76,16 @@ AC_ARG_ENABLE(builtin,
     AC_DEFINE([WITH_BUILTIN], [1], [compile PSL data into library])
   ])
 AM_CONDITIONAL([WITH_BUILTIN], [test $enable_builtin = yes])
+
+AC_ARG_WITH(icu, AS_HELP_STRING([--without-icu], [disable ICU punycode conversion]), with_icu=$withval, with_icu=yes)
+if test $with_icu != "no"
+then
+  AC_CHECK_LIB(icuuc, uidna_openUTS46, [with_icu=yes; AC_SUBST(ICU_LIBS, "-licu") AC_DEFINE([WITH_LIBICU], [1], [Use libicu])], [with_icu=no; AC_MSG_WARN(*** LIBICU was not found. Falling back to idn2.)])
+fi
+AM_CONDITIONAL([WITH_LIBICU], [test $with_icu = "yes"])
+
+# Check for idn2
+AC_CHECK_PROG(HAVE_IDN2, idn2, yes, AC_MSG_ERROR(Cannot find required tool 'idn2'.))
 
 # Check for valgrind
 ac_enable_valgrind=no
