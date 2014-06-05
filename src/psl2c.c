@@ -350,8 +350,7 @@ static void _add_punycode_if_needed(_psl_vector_t *v)
 			  */
 
 			/* IDNA2008 UTS#46 punycode conversion */
-//			if ((idna = uidna_openUTS46(UIDNA_USE_STD3_RULES, &status))) {
-			if ((idna = uidna_openUTS46(UIDNA_DEFAULT, &status))) {
+			if ((idna = uidna_openUTS46(UIDNA_USE_STD3_RULES, &status))) {
 				UChar utf16_dst[64], utf16_src[64];
 				int32_t utf16_src_length;
 				UIDNAInfo info = UIDNA_INFO_INITIALIZER;
@@ -368,7 +367,7 @@ static void _add_punycode_if_needed(_psl_vector_t *v)
 								suffix.wildcard = e->wildcard;
 								suffixp = _vector_get(v, _vector_add(v, &suffix));
 								suffixp->label = suffixp->label_buf; /* set label to changed address */
-							} // else ignore
+							} /* else ignore */
 						} else
 							fprintf(stderr, "Failed to convert UTF-16 to UTF-8 (status %d)\n", status);
 					} else
