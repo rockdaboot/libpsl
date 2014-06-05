@@ -1,8 +1,8 @@
 Source: libpsl
 Priority: optional
 Maintainer: Tim Ruehsen <tim.ruehsen@gmx.de>
-Build-Depends: debhelper (>=9), autotools-dev, automake, pkg-config, gtk-doc-tools
-Standards-Version: 3.9.4
+Build-Depends: debhelper (>=9), autotools-dev, automake, pkg-config, gtk-doc-tools, libicu-dev | idn2
+Standards-Version: 3.9.5
 Section: libs
 Homepage: https://github.com/rockdaboot/libpsl
 #Vcs-Git: git://git.debian.org/collab-maint/libpsl.git
@@ -11,7 +11,7 @@ Homepage: https://github.com/rockdaboot/libpsl
 Package: libpsl-dev
 Section: libdevel
 Architecture: any
-Depends: libpsl (= ${binary:Version})
+Depends: libpsl (= ${binary:Version}), ${misc:Depends}
 Description: Library for the Public Suffix List
  Libpsl allows checking domains against the Public Suffix List,
  It can be used to avoid privacy-leaking 'super-cookies', 
@@ -34,3 +34,17 @@ Description: Library for the Public Suffix List
  .
  This package contains runtime libraries.
  
+Package: libpsl-dbg
+Section: debug
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Pre-Depends: ${misc:Pre-Depends}
+Multi-Arch: same
+Description: Library for the Public Suffix List
+ Libpsl allows checking domains against the Public Suffix List,
+ It can be used to avoid privacy-leaking 'super-cookies',
+ 'super domain' certificates, for doamin highlighting purposes
+ sorting domain lists by site and more.
+ .
+ This package contains runtime libraries.
+

@@ -9,6 +9,8 @@ if [ ! -e libpsl_${version}.orig.tar.gz ]; then
   wget -O libpsl_${version}.orig.tar.gz https://github.com/rockdaboot/libpsl/archive/${version}.tar.gz
 fi
 
+rm -rf libpsl-${version}
+
 if [ ! -d libpsl-${version} ]; then
   tar xvfz libpsl_${version}.orig.tar.gz
 fi
