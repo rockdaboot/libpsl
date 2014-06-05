@@ -74,18 +74,12 @@ AC_ARG_ENABLE(builtin,
   ], [
     enable_builtin=yes
     AC_DEFINE([WITH_BUILTIN], [1], [compile PSL data into library])
+
+    PKG_CHECK_MODULES(LIBICU, [icu-uc],
+      [AC_DEFINE([WITH_LIBICU], [1], [generate PSL data with IDNA2008 UTS#46 punycode])],
+      [AC_CHECK_PROG(HAVE_IDN2, idn2, yes, AC_MSG_ERROR(Cannot find required tool 'idn2'.))])
   ])
 AM_CONDITIONAL([WITH_BUILTIN], [test $enable_builtin = yes])
-
-AC_ARG_WITH(icu, AS_HELP_STRING([--without-icu], [disable ICU punycode conversion]), with_icu=$withval, with_icu=yes)
-if test $with_icu != "no"
-then
-  AC_CHECK_LIB(icuuc, uidna_openUTS46, [with_icu=yes; AC_SUBST(ICU_LIBS, "-licu") AC_DEFINE([WITH_LIBICU], [1], [Use libicu])], [with_icu=no; AC_MSG_WARN(*** LIBICU was not found. Falling back to idn2.)])
-fi
-AM_CONDITIONAL([WITH_LIBICU], [test $with_icu = "yes"])
-
-# Check for idn2
-AC_CHECK_PROG(HAVE_IDN2, idn2, yes, AC_MSG_ERROR(Cannot find required tool 'idn2'.))
 
 # Check for valgrind
 ac_enable_valgrind=no

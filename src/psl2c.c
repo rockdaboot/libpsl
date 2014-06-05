@@ -47,6 +47,7 @@
 
 #ifdef WITH_LIBICU
 #	include <unicode/uversion.h>
+#	include <unicode/ustring.h>
 #	include <unicode/uidna.h>
 #endif
 
@@ -349,21 +350,36 @@ static void _add_punycode_if_needed(_psl_vector_t *v)
 			  */
 
 			/* IDNA2008 UTS#46 punycode conversion */
-			if ((idna = uidna_openUTS46(UIDNA_USE_STD3_RULES, &status))) {
-				uidna_nameToASCII(idna, (UChar *) e->label_buf, (int32_t) strlen(e->label_buf),
-					(UChar *) lookupname, (int32_t) sizeof(lookupname), NULL, &status);
-				uidna_close(idna);
-			}
+//			if ((idna = uidna_openUTS46(UIDNA_USE_STD3_RULES, &status))) {
+			if ((idna = uidna_openUTS46(UIDNA_DEFAULT, &status))) {
+				UChar utf16_dst[64], utf16_src[64];
+				int32_t utf16_src_length;
+				UIDNAInfo info = UIDNA_INFO_INITIALIZER;
 
-			if (U_FAILURE(status)) {
-				fprintf(stderr, "Failed to convert '%s' to ASCII\n", e->label_buf);
-			} else if (strcmp(e->label_buf, lookupname)) {
-				/* fprintf(stderr, "libicu '%s' -> '%s'\n", e->label_buf, lookupname); */
-				_suffix_init(&suffix, lookupname, strlen(lookupname));
-				suffix.wildcard = e->wildcard;
-				suffixp = _vector_get(v, _vector_add(v, &suffix));
-				suffixp->label = suffixp->label_buf; /* set label to changed address */
-			} /* else ignore */
+				u_strFromUTF8(utf16_src, sizeof(utf16_src)/sizeof(utf16_src[0]), &utf16_src_length, e->label_buf, (int32_t) strlen(e->label_buf), &status);
+				if (U_SUCCESS(status)) {
+					int32_t dst_length = uidna_nameToASCII(idna, utf16_src, utf16_src_length, utf16_dst, sizeof(utf16_dst)/sizeof(utf16_dst[0]), &info, &status);
+					if (U_SUCCESS(status)) {
+						u_strToUTF8(lookupname, (int32_t) sizeof(lookupname), NULL, utf16_dst, dst_length, &status);
+						if (U_SUCCESS(status)) {
+							if (strcmp(e->label_buf, lookupname)) {
+								/* fprintf(stderr, "libicu '%s' -> '%s'\n", e->label_buf, lookupname); */
+								_suffix_init(&suffix, lookupname, strlen(lookupname));
+								suffix.wildcard = e->wildcard;
+								suffixp = _vector_get(v, _vector_add(v, &suffix));
+								suffixp->label = suffixp->label_buf; /* set label to changed address */
+							} // else ignore
+						} else
+							fprintf(stderr, "Failed to convert UTF-16 to UTF-8 (status %d)\n", status);
+					} else
+						fprintf(stderr, "Failed to convert to ASCII (status %d)\n", status);
+				} else
+					fprintf(stderr, "Failed to convert UTF-8 to UTF-16 (status %d)\n", status);
+
+				uidna_close(idna);
+			} else
+				fprintf(stderr, "Failed to get UTS46 IDNA handle\n");
+
 #else
 			/* this is much slower than the libidn2 API but should have no license issues */
 			FILE *pp;

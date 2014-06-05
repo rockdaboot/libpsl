@@ -13,8 +13,8 @@ libpsl_la_LDFLAGS = -version-info $(LIBPSL_SO_VERSION)
 
 noinst_PROGRAMS = psl2c
 psl2c_SOURCES = psl2c.c
-psl2c_CPPFLAGS = -I$(top_srcdir)/include -D _GNU_SOURCE
-#psl2c_LDADD = -lidn2
+psl2c_CPPFLAGS = -I$(top_srcdir)/include -D _GNU_SOURCE $(LIBICU_CFLAGS)
+psl2c_LDADD = $(LIBICU_LIBS)
 
 # Build rule for suffix.c
 # PSL_FILE can be set by ./configure --with-psl-file=[PATH]
