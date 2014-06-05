@@ -1,5 +1,10 @@
 Copyright (C) 2014 Tim Ruehsen
 
+05.06.2014 Release V0.3.0
+  * added support for libicu in psl2c (IDNA2008 UTS#46)
+    this needs pkg-config and libicu-dev installed
+  * added --version to psl utility
+
 31.05.2014 Release V0.2.5
   * added psl_get_version()
   * removed version from library name

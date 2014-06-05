@@ -1,5 +1,5 @@
 
-AC_INIT([libpsl], [0.2.5], [tim.ruehsen@gmx.de], [libpsl], [http://github.com/rockdaboot/libpsl])
+AC_INIT([libpsl], [0.3.0], [tim.ruehsen@gmx.de], [libpsl], [http://github.com/rockdaboot/libpsl])
 AC_PREREQ([2.59])
 AM_INIT_AUTOMAKE([1.10 -Wall no-define])
 
@@ -66,9 +66,6 @@ AS_IF([ test "$enable_man" != no ], [
 AC_SUBST([LIBPSL_SO_VERSION], [1:0:1])
 AC_SUBST([LIBPSL_VERSION], $VERSION)
 
-# Check for idn2
-AC_CHECK_PROG(HAVE_IDN2, idn2, yes, AC_MSG_ERROR(Cannot find required tool 'idn2'.))
-
 # Check for enable/disable builtin PSL data
 AC_ARG_ENABLE(builtin,
   AS_HELP_STRING([--disable-builtin], [do not compile PSL data into library]),
@@ -77,6 +74,10 @@ AC_ARG_ENABLE(builtin,
   ], [
     enable_builtin=yes
     AC_DEFINE([WITH_BUILTIN], [1], [compile PSL data into library])
+
+    PKG_CHECK_MODULES(LIBICU, [icu-uc],
+      [AC_DEFINE([WITH_LIBICU], [1], [generate PSL data with IDNA2008 UTS#46 punycode])],
+      [AC_CHECK_PROG(HAVE_IDN2, idn2, yes, AC_MSG_ERROR(Cannot find required tool 'idn2'.))])
   ])
 AM_CONDITIONAL([WITH_BUILTIN], [test $enable_builtin = yes])
 
