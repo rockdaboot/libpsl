@@ -1,1 +1,1 @@
-liblibpsl 0.2.5 libpsl (>> 0.2.5-0), libpsl (<< 0.2.5-99)
+liblibpsl 0.3.0 libpsl (>> 0.3.0-0), libpsl (<< 0.3.0-99)
