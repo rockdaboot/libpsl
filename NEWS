@@ -1,0 +1,26 @@
+Copyright (C) 2014 Tim Ruehsen
+
+05.06.2014 Release V0.3.0
+  * added support for libicu in psl2c (IDNA2008 UTS#46)
+    this needs pkg-config and libicu-dev installed
+  * added --version to psl utility
+
+31.05.2014 Release V0.2.5
+  * added psl_get_version()
+  * removed version from library name
+
+30.05.2014 Release V0.2.4
+  * fixed psl_builtin() to return NULL if no built-in PSL data is available
+
+27.05.2014  Release V0.2.3
+  * changed API version to 0.2
+
+26.05.2014  Release V0.2.2
+  * changed code to C89
+  * added a few test cases
+  * build static library by default
+
+25.04.2014  Hotfix release V0.2.1
+  * updated to the latest Publix Suffix List
+
+25.04.2014  Initial release V0.2
