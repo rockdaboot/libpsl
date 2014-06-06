@@ -1,0 +1,16 @@
+libpsl.so.0 libpsl0 #MINVER#
+ psl_builtin@Base 0.3.0
+ psl_builtin_compile_time@Base 0.3.0
+ psl_builtin_file_time@Base 0.3.0
+ psl_builtin_filename@Base 0.3.0
+ psl_builtin_sha1sum@Base 0.3.0
+ psl_free@Base 0.3.0
+ psl_get_version@Base 0.3.0
+ psl_is_cookie_domain_acceptable@Base 0.3.0
+ psl_is_public_suffix@Base 0.3.0
+ psl_load_file@Base 0.3.0
+ psl_load_fp@Base 0.3.0
+ psl_registrable_domain@Base 0.3.0
+ psl_suffix_count@Base 0.3.0
+ psl_suffix_exception_count@Base 0.3.0
+ psl_unregistrable_domain@Base 0.3.0
