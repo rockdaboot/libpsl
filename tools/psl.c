@@ -42,15 +42,14 @@ static void usage(int err, FILE* f)
 	fprintf(f, "\n");
 	fprintf(f, "Options:\n");
 	fprintf(f, "  --version                    show library version information\n");
-	fprintf(f, "  --use-builtin-data           use the builtin PSL data. [default]\n");
-	fprintf(f, "  --load-psl-file <filename>   load PSL data from file.\n");
-	fprintf(f, "  --is-public-suffix           check if domains are public suffixes or not. [default]\n");
+	fprintf(f, "  --use-builtin-data           use the builtin PSL data [default]\n");
+	fprintf(f, "  --load-psl-file <filename>   load PSL data from file\n");
+	fprintf(f, "  --is-public-suffix           check if domains are public suffixes [default]\n");
 	fprintf(f, "  --is-cookie-domain-acceptable <cookie-domain>\n");
-	fprintf(f, "                               check if cookie-domain is acceptable for domains.\n");
+	fprintf(f, "                               check if cookie-domain is acceptable for domains\n");
 	fprintf(f, "  --print-unreg-domain         print the longest publix suffix part\n");
 	fprintf(f, "  --print-reg-domain           print the shortest private suffix part\n");
 	fprintf(f, "  --print-info                 print info about library builtin data\n");
-	fprintf(f, "\n");
 	fprintf(f, "\n");
 
 	exit(err);
