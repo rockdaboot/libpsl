@@ -130,9 +130,15 @@ int main(int argc, const char *const *argv)
 			break;
 	}
 
-	if (!psl && mode != 99) {
-		printf("No PSL data available - aborting\n");
-		exit(2);
+	if (mode != 99) {
+		if (!psl) {
+			fprintf(stderr, "No PSL data available - aborting\n");
+			exit(2);
+		}
+		if (arg >= argv + argc) {
+			fprintf(stderr, "No domains given - aborting\n");
+			exit(3);
+		}
 	}
 
 	if (mode == 1) {
