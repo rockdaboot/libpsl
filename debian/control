@@ -20,13 +20,14 @@ Architecture: any
 Depends:
  libpsl (= ${binary:Version}),
  ${misc:Depends}
-Description: Library for the Public Suffix List
+Description: Library for Public Suffix List (development headers)
  Libpsl allows checking domains against the Public Suffix List,
  It can be used to avoid privacy-leaking 'super-cookies', 
  'super domain' certificates, for doamin highlighting purposes
  sorting domain lists by site and more.
  .
- This package contains header files and libraries for static linking.
+ This package contains development header files and documentation for
+ developers.
 
 Package: libpsl
 Section: libs
@@ -37,7 +38,7 @@ Depends:
 Pre-Depends:
  ${misc:Pre-Depends}
 Multi-Arch: same
-Description: Library for the Public Suffix List
+Description: Library for Public Suffix List (shared libraries)
  Libpsl allows checking domains against the Public Suffix List,
  It can be used to avoid privacy-leaking 'super-cookies',
  'super domain' certificates, for doamin highlighting purposes
@@ -54,10 +55,10 @@ Depends:
 Pre-Depends:
  ${misc:Pre-Depends}
 Multi-Arch: same
-Description: Library for the Public Suffix List
+Description: Library for the Public Suffix List (debug symbols)
  Libpsl allows checking domains against the Public Suffix List,
  It can be used to avoid privacy-leaking 'super-cookies',
  'super domain' certificates, for doamin highlighting purposes
  sorting domain lists by site and more.
  .
- This package contains runtime libraries.
+ This package contains debug symbols for libpsl.
