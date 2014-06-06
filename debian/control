@@ -11,8 +11,8 @@ Build-Depends:
 Standards-Version: 3.9.5
 Section: libs
 Homepage: https://github.com/rockdaboot/libpsl
-#Vcs-Git: git://git.debian.org/collab-maint/libpsl.git
-#Vcs-Browser: http://git.debian.org/?p=collab-maint/libpsl.git;a=summary
+Vcs-Git: https://github.com/rockdaboot/libpsl
+Vcs-Browser: https://github.com/rockdaboot/libpsl
 
 Package: libpsl-dev
 Section: libdevel
