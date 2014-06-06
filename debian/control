@@ -48,8 +48,10 @@ Description: Library for Public Suffix List (shared libraries)
  
 Package: libpsl0-dbg
 Section: debug
+Priority: extra
 Architecture: any
 Depends:
+ libpsl0 (= ${binary:Version}),
  ${shlibs:Depends},
  ${misc:Depends}
 Pre-Depends:
