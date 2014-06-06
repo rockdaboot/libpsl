@@ -18,7 +18,7 @@ Package: libpsl-dev
 Section: libdevel
 Architecture: any
 Depends:
- libpsl (= ${binary:Version}),
+ libpsl0 (= ${binary:Version}),
  ${misc:Depends}
 Description: Library for Public Suffix List (development headers)
  Libpsl allows checking domains against the Public Suffix List,
@@ -29,7 +29,7 @@ Description: Library for Public Suffix List (development headers)
  This package contains development header files and documentation for
  developers.
 
-Package: libpsl
+Package: libpsl0
 Section: libs
 Architecture: any
 Depends:
@@ -46,7 +46,7 @@ Description: Library for Public Suffix List (shared libraries)
  .
  This package contains runtime libraries.
  
-Package: libpsl-dbg
+Package: libpsl0-dbg
 Section: debug
 Architecture: any
 Depends:
