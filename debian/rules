@@ -19,6 +19,11 @@ override_dh_auto_configure:
 		--with-psl-file=/usr/share/publicsuffix/effective_tld_names.dat \
 		--with-psl-testfile=/usr/share/doc/publicsuffix/examples/test_psl.txt
 
+override_dh_auto_build:
+	dh_auto_build
+	help2man --no-info --no-discard-stderr --output=debian/psl.1 \
+		--name="Explore the Public Suffix List" tools/psl 
+
 #override_dh_auto_clean:
 #	test ! -f Makefile || dh_auto_clean
 
