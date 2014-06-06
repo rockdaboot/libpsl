@@ -7,7 +7,8 @@ Build-Depends:
  debhelper (>=9),
  gtk-doc-tools,
  libicu-dev | idn2,
- pkg-config
+ pkg-config,
+ publicsuffix (>= 20140402-2)
 Standards-Version: 3.9.5
 Section: libs
 Homepage: https://github.com/rockdaboot/libpsl

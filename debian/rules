@@ -15,7 +15,9 @@ override_dh_auto_configure:
 		--enable-ld-version-script \
 		--with-packager=Debian \
 		--with-packager-bug-reports=http://bugs.debian.org/ \
-		--with-packager-version="$(DEB_VERSION)"
+		--with-packager-version="$(DEB_VERSION)" \
+		--with-psl-file=/usr/share/publicsuffix/effective_tld_names.dat \
+		--with-psl-testfile=/usr/share/doc/publicsuffix/examples/test_psl.txt
 
 #override_dh_auto_clean:
 #	test ! -f Makefile || dh_auto_clean
