@@ -23,7 +23,7 @@ Depends:
 Description: Library for Public Suffix List (development headers)
  Libpsl allows checking domains against the Public Suffix List,
  It can be used to avoid privacy-leaking 'super-cookies', 
- 'super domain' certificates, for doamin highlighting purposes
+ 'super domain' certificates, for domain highlighting purposes
  sorting domain lists by site and more.
  .
  This package contains development header files and documentation for
@@ -41,7 +41,7 @@ Multi-Arch: same
 Description: Library for Public Suffix List (shared libraries)
  Libpsl allows checking domains against the Public Suffix List,
  It can be used to avoid privacy-leaking 'super-cookies',
- 'super domain' certificates, for doamin highlighting purposes
+ 'super domain' certificates, for domain highlighting purposes
  sorting domain lists by site and more.
  .
  This package contains runtime libraries.
@@ -58,7 +58,7 @@ Multi-Arch: same
 Description: Library for the Public Suffix List (debug symbols)
  Libpsl allows checking domains against the Public Suffix List,
  It can be used to avoid privacy-leaking 'super-cookies',
- 'super domain' certificates, for doamin highlighting purposes
+ 'super domain' certificates, for domain highlighting purposes
  sorting domain lists by site and more.
  .
  This package contains debug symbols for libpsl.
