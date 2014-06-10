@@ -1,5 +1,11 @@
 Copyright (C) 2014 Tim Ruehsen
 
+10.06.2014 Release V0.3.1
+  * link psl utility dynamically
+  * fix output of psl_filename()
+  * cleanup for psl --help
+  * removed check for idn2 in autogen.sh
+
 05.06.2014 Release V0.3.0
   * added support for libicu in psl2c (IDNA2008 UTS#46)
     this needs pkg-config and libicu-dev installed
