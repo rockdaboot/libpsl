@@ -5,11 +5,6 @@ if test -z `which autoreconf`; then
   exit 1
 fi
 
-if test -z `which idn2`; then
-  echo "No 'idn2' found. You must install the idn2 package."
-  exit 1
-fi
-
 # create m4 before gtkdocize
 mkdir m4 2>/dev/null
 
