@@ -1,5 +1,5 @@
-libpsl (0.3.0-1) unstable; urgency=low
+libpsl (0.3.1-1) unstable; urgency=low
 
   * Initial release (Closes: #750709)
 
- -- Tim Ruehsen <tim.ruehsen@gmx.de>  Thu, 05 Jun 2014 23:36:14 -0400
+ -- Tim Ruehsen <tim.ruehsen@gmx.de>  Thu, 12 Jun 2014 11:09:32 -0400
