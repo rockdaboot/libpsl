@@ -7,6 +7,7 @@ Build-Depends:
  autotools-dev,
  debhelper (>=9),
  gtk-doc-tools,
+ help2man,
  libicu-dev | idn2,
  pkg-config,
  publicsuffix (>= 20140402-2)
