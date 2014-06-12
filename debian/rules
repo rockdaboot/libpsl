@@ -14,7 +14,7 @@ override_dh_auto_configure:
 		--enable-gtk-doc \
 		--enable-ld-version-script \
 		--with-packager=Debian \
-		--with-packager-bug-reports=http://bugs.debian.org/ \
+		--with-packager-bug-reports=https://bugs.debian.org/ \
 		--with-packager-version="$(DEB_VERSION)" \
 		--with-psl-file=/usr/share/publicsuffix/effective_tld_names.dat \
 		--with-psl-testfile=/usr/share/doc/publicsuffix/examples/test_psl.txt
