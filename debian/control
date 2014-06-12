@@ -1,6 +1,7 @@
 Source: libpsl
 Priority: optional
 Maintainer: Tim Ruehsen <tim.ruehsen@gmx.de>
+Uploaders: Daniel Kahn Gillmor <dkg@fifthhorseman.net>
 Build-Depends:
  automake,
  autotools-dev,
