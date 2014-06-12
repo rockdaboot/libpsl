@@ -446,7 +446,7 @@ int main(int argc, const char **argv)
 		fprintf(fpout, "static time_t _psl_file_time = %lu;\n", st.st_mtime);
 		fprintf(fpout, "static time_t _psl_compile_time = %lu;\n", time(NULL));
 		fprintf(fpout, "static const char _psl_sha1_checksum[] = \"%s\";\n", checksum);
-		fprintf(fpout, "static const char _psl_filename[] = \"%s\";\n", checksum);
+		fprintf(fpout, "static const char _psl_filename[] = \"%s\";\n", argv[1]);
 
 		if (fclose(fpout) != 0)
 			ret = 4;
