@@ -66,6 +66,16 @@ AS_IF([ test "$enable_man" != no ], [
 AC_SUBST([LIBPSL_SO_VERSION], [1:1:1])
 AC_SUBST([LIBPSL_VERSION], $VERSION)
 
+# Check for libicu
+HAVE_LIBICU=no
+AC_ARG_WITH(libicu,
+  AC_HELP_STRING([--without-libicu], [build libpsl without IDNA/Punycode support]),
+  [],
+  [
+    PKG_CHECK_MODULES(LIBICU, [icu-uc],
+      [HAVE_LIBICU=yes; AC_DEFINE([WITH_LIBICU], [1], [generate PSL data with IDNA2008 UTS#46 punycode])])
+  ])
+
 # Check for enable/disable builtin PSL data
 AC_ARG_ENABLE(builtin,
   AS_HELP_STRING([--disable-builtin], [do not compile PSL data into library]),
@@ -74,10 +84,6 @@ AC_ARG_ENABLE(builtin,
   ], [
     enable_builtin=yes
     AC_DEFINE([WITH_BUILTIN], [1], [compile PSL data into library])
-
-    PKG_CHECK_MODULES(LIBICU, [icu-uc],
-      [AC_DEFINE([WITH_LIBICU], [1], [generate PSL data with IDNA2008 UTS#46 punycode])],
-      [AC_CHECK_PROG(HAVE_IDN2, idn2, yes, AC_MSG_ERROR(Cannot find required tool 'idn2'.))])
   ])
 AM_CONDITIONAL([WITH_BUILTIN], [test $enable_builtin = yes])
 
@@ -102,16 +108,14 @@ fi
 
 # Check for custom PSL file
 AC_ARG_WITH(psl-file,
-  AC_HELP_STRING([--with-psl-file=[PATH]],
-  [path to PSL file]),
+  AC_HELP_STRING([--with-psl-file=[PATH]], [path to PSL file]),
   PSL_FILE=$withval,
   PSL_FILE="\$(top_srcdir)/data/effective_tld_names.dat")
 AC_SUBST(PSL_FILE)
 
 # Check for custom PSL test file
 AC_ARG_WITH(psl-testfile,
-  AC_HELP_STRING([--with-psl-testfile=[PATH]],
-  [path to PSL test file]),
+  AC_HELP_STRING([--with-psl-testfile=[PATH]], [path to PSL test file]),
   PSL_TESTFILE=$withval,
   PSL_TESTFILE="\$(top_srcdir)/data/test_psl.txt")
 AC_SUBST(PSL_TESTFILE)
@@ -138,6 +142,7 @@ AC_MSG_NOTICE([Summary of build options:
   Compiler:          ${CC}
   CFlags:            ${CFLAGS} ${CPPFLAGS}
   LDFlags:           ${LDFLAGS}
+  ICU:               ${HAVE_LIBICU}
   Builtin PSL:       ${enable_builtin}
   PSL File:          ${PSL_FILE}
   PSL Test File:     ${PSL_TESTFILE}
