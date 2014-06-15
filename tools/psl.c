@@ -32,8 +32,10 @@
 # include <config.h>
 #endif
 
+#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <libpsl.h>
 
 static void usage(int err, FILE* f)
@@ -135,8 +137,33 @@ int main(int argc, const char *const *argv)
 			exit(2);
 		}
 		if (arg >= argv + argc) {
-			fprintf(stderr, "No domains given - aborting\n");
-			exit(3);
+			if (isatty(STDIN_FILENO)) {
+				char buf[256], *domain;
+				size_t len;
+
+				// read URLs from STDIN
+				while (fgets(buf, sizeof(buf), stdin)) {
+					for (domain = buf; isspace(*domain); domain++); // skip leading spaces
+					if (*domain == '#' || !*domain) continue; // skip empty lines and comments
+					for (len = strlen(domain); len && isspace(domain[len - 1]); len--);  // skip trailing spaces
+					domain[len] = 0;
+
+					if (mode == 1)
+						printf("%s: %d\n", domain, psl_is_public_suffix(psl, domain));
+					else if (mode == 2)
+						printf("%s: %s\n", domain, psl_unregistrable_domain(psl, domain));
+					else if (mode == 3)
+						printf("%s: %s\n", domain, psl_registrable_domain(psl, domain));
+					else if (mode == 4)
+						printf("%s: %d\n", domain, psl_is_cookie_domain_acceptable(psl, domain, cookie_domain));
+				}
+
+				psl_free(psl);
+				exit(0);
+			} else {
+				fprintf(stderr, "No domains given - aborting\n");
+				exit(3);
+			}
 		}
 	}
 
