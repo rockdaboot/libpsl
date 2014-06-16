@@ -8,7 +8,6 @@ AM_INIT_AUTOMAKE([1.10 -Wall no-define])
 # the library.
 AC_CONFIG_HEADERS([config.h])
 AC_PROG_CXX
-AM_PROG_CC_C_O
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 #LT_INIT([disable-static])
 LT_INIT
@@ -73,8 +72,22 @@ AC_ARG_WITH(libicu,
   AC_HELP_STRING([--without-libicu], [build libpsl without IDNA/Punycode support]),
   [],
   [
-    PKG_CHECK_MODULES(LIBICU, [icu-uc],
-      [HAVE_LIBICU=yes; AC_DEFINE([WITH_LIBICU], [1], [generate PSL data with IDNA2008 UTS#46 punycode])])
+     # using pkg-config won't work on older systems like Ubuntu 12.04 LTS Server Edition 64bit
+     LIBS="-licuuc $LIBS"
+     AC_MSG_CHECKING([for ICU unicode library])
+     AC_LINK_IFELSE(
+       AC_LANG_PROGRAM(
+         [[#include <unicode/ustring.h>]],
+         [[u_strToUTF8(NULL, 0, NULL, NULL, 0, NULL);]]),
+       [HAVE_LIBICU=yes; AC_MSG_RESULT([yes]) AC_DEFINE([WITH_LIBICU], [1], [generate PSL data with IDNA2008 UTS#46 punycode])],
+       [AC_MSG_FAILURE([no working ICU unicode library was found])])
+
+#    AC_SEARCH_LIBS(uidna_close, icuuc,
+#      [HAVE_LIBICU=yes; AC_DEFINE([WITH_LIBICU], [1], [generate PSL data with IDNA2008 UTS#46 punycode])],
+#      [AC_MSG_ERROR(*** libicu was not found. Aborting.)],
+#      -licudata )
+#    PKG_CHECK_MODULES(LIBICU, [icu-uc],
+#      [HAVE_LIBICU=yes; AC_DEFINE([WITH_LIBICU], [1], [generate PSL data with IDNA2008 UTS#46 punycode])])
   ])
 
 # Check for enable/disable builtin PSL data
