@@ -8,6 +8,7 @@ AM_INIT_AUTOMAKE([1.10 -Wall no-define])
 # the library.
 AC_CONFIG_HEADERS([config.h])
 AC_PROG_CXX
+AM_PROG_CC_C_O
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 #LT_INIT([disable-static])
 LT_INIT

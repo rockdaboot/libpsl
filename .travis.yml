@@ -8,3 +8,5 @@ before_install:
   - apt-cache search libicu | grep icu
   - sudo apt-get -qq update
   - sudo apt-get -q install autoconf automake autopoint libtool gtk-doc-tools gettext idn2 libidn2-0 libidn2-0-dev libicu48 libicu-dev
+  - ls -la /usr/lib/*/pkgconfig/icu-uc.pc
+  - updatedb && locate icu-cu
