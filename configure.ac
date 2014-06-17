@@ -76,9 +76,9 @@ AC_ARG_WITH(libicu,
      LIBS="-licuuc $LIBS"
      AC_MSG_CHECKING([for ICU unicode library])
      AC_LINK_IFELSE(
-       AC_LANG_PROGRAM(
+       [AC_LANG_PROGRAM(
          [[#include <unicode/ustring.h>]],
-         [[u_strToUTF8(NULL, 0, NULL, NULL, 0, NULL);]]),
+         [[u_strToUTF8(NULL, 0, NULL, NULL, 0, NULL);]])],
        [HAVE_LIBICU=yes; AC_MSG_RESULT([yes]) AC_DEFINE([WITH_LIBICU], [1], [generate PSL data with IDNA2008 UTS#46 punycode])],
        [AC_MSG_FAILURE([no working ICU unicode library was found])])
 
