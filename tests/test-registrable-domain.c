@@ -52,53 +52,10 @@ static int
 static void test(const psl_ctx_t *psl, const char *domain, const char *expected_result)
 {
 	const char *result;
-	char lookupname[128];
+	char *lower;
 
-	/* check if there might be some utf-8 characters */
-	if (domain) {
-		int utf8;
-		const char *p;
-
-		for (p = domain, utf8 = 0; *p && !utf8; p++)
-			if (*p < 0)
-				utf8 = 1;
-
-		/* if we found utf-8, make sure to convert domain correctly to lowercase */
-		/* does it work, if we are not in a utf-8 env ? */
-		if (utf8) {
-#ifdef WITH_LIBICU
-			UErrorCode status = 0;
-			UChar utf16_dst[64], utf16_src[64];
-			int32_t utf16_src_length;
-
-			/* UTF-8 to lowercase conversion */
-			u_strFromUTF8(utf16_src, sizeof(utf16_src)/sizeof(utf16_src[0]), &utf16_src_length, domain, (int32_t) strlen(domain), &status);
-			if (U_SUCCESS(status)) {
-				int32_t dst_length = u_strToLower(utf16_dst, sizeof(utf16_dst)/sizeof(utf16_dst[0]), utf16_src, -1, "en", &status);
-				if (U_SUCCESS(status)) {
-					u_strToUTF8(lookupname, (int32_t) sizeof(lookupname), NULL, utf16_dst, dst_length, &status);
-					if (U_SUCCESS(status)) {
-						domain = lookupname;
-					} else
-						fprintf(stderr, "Failed to convert UTF-16 to UTF-8 (status %d)\n", status);
-				} else
-					fprintf(stderr, "Failed to convert to ASCII (status %d)\n", status);
-			} else
-				fprintf(stderr, "Failed to convert UTF-8 to UTF-16 (status %d)\n", status);
-#else
-			FILE *pp;
-			size_t cmdsize = 48 + strlen(domain);
-			char *cmd = alloca(cmdsize);
-
-			snprintf(cmd, cmdsize, "echo -n '%s' | sed -e 's/./\\L\\0/g'", domain);
-			if ((pp = popen(cmd, "r"))) {
-				if (fscanf(pp, "%127s", lookupname) >= 1)
-					domain = lookupname;
-				pclose(pp);
-			}
-#endif
-		}
-	}
+	if (psl_str_to_utf8lower(domain, NULL, NULL, &lower) == 0)
+		domain = lower;
 
 	result = psl_registrable_domain(psl, domain);
 
@@ -115,7 +72,7 @@ static void test_psl(void)
 {
 	FILE *fp;
 	const psl_ctx_t *psl;
-	char buf[256], domain[128], expected_regdom[128], *p;
+	char buf[256], domain[128], expected_regdom[128];
 
 	psl = psl_builtin();
 
@@ -151,11 +108,6 @@ static void test_psl(void)
 				if (sscanf(buf, " checkPublicSuffix('%127[^']' , %127[nul]", domain, expected_regdom) != 2)
 					continue;
 			}
-
-			/* we have to lowercase the domain - the PSL API just takes lowercase */
-			for (p = domain; *p; p++)
-				if (*p > 0 && isupper(*p))
-					*p = tolower(*p);
 
 			if (!strcmp(expected_regdom, "null"))
 				test(psl, domain, NULL);

@@ -49,8 +49,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <alloca.h>
+
+#ifdef WITH_LIBICU
+#	include <unicode/uversion.h>
+#	include <unicode/ustring.h>
+#	include <unicode/uidna.h>
+#	include <unicode/ucnv.h>
+#endif
 
 #include <libpsl.h>
+
+/* number of elements within an array */
+#define countof(a) (sizeof(a)/sizeof(*(a)))
 
 /**
  * SECTION:libpsl
@@ -239,38 +250,18 @@ static int _suffix_init(_psl_entry_t *suffix, const char *rule, size_t length)
 	for (dst = suffix->label_buf, src = rule; *src;) {
 		if (*src == '.')
 			suffix->nlabels++;
-		*dst++ = tolower(*src++);
+		*dst++ = *src++;
 	}
 	*dst = 0;
 
 	return 0;
 }
 
-/**
- * psl_is_public_suffix:
- * @psl: PSL context
- * @domain: Domain string
- *
- * This function checks if @domain is a public suffix by the means of the
- * [Mozilla Public Suffix List](http://publicsuffix.org).
- *
- * For cookie domain checking see psl_is_cookie_domain_acceptable().
- *
- * @psl is a context returned by either psl_load_file(), psl_load_fp() or
- * psl_builtin().
- *
- * Returns: 1 if domain is a public suffix, 0 if not.
- *
- * Since: 0.1
- */
-int psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
+static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
 {
 	_psl_entry_t suffix, *rule;
 	const char *p, *label_bak;
 	unsigned short length_bak;
-
-	if (!psl || !domain)
-		return 1;
 
 	/* this function should be called without leading dots, just make sure */
 	suffix.label = domain + (*domain == '.');
@@ -341,6 +332,31 @@ int psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
 }
 
 /**
+ * psl_is_public_suffix:
+ * @psl: PSL context
+ * @domain: Domain string
+ *
+ * This function checks if @domain is a public suffix by the means of the
+ * [Mozilla Public Suffix List](http://publicsuffix.org).
+ *
+ * For cookie domain checking see psl_is_cookie_domain_acceptable().
+ *
+ * @psl is a context returned by either psl_load_file(), psl_load_fp() or
+ * psl_builtin().
+ *
+ * Returns: 1 if domain is a public suffix, 0 if not.
+ *
+ * Since: 0.1
+ */
+int psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
+{
+	if (!psl || !domain)
+		return 1;
+
+	return _psl_is_public_suffix(psl, domain);
+}
+
+/**
  * psl_unregistrable_domain:
  * @psl: PSL context
  * @domain: Domain string
@@ -366,7 +382,7 @@ const char *psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain)
 	 *   'forgot.his.name' and 'name' are in the PSL while 'his.name' is not.
 	 */
 
-	while (!psl_is_public_suffix(psl, domain)) {
+	while (!_psl_is_public_suffix(psl, domain)) {
 		if ((domain = strchr(domain, '.')))
 			domain++;
 		else
@@ -404,7 +420,7 @@ const char *psl_registrable_domain(const psl_ctx_t *psl, const char *domain)
 	 *   'forgot.his.name' and 'name' are in the PSL while 'his.name' is not.
 	 */
 
-	while (!psl_is_public_suffix(psl, domain)) {
+	while (!_psl_is_public_suffix(psl, domain)) {
 		if ((p = strchr(domain, '.'))) {
 			regdom = domain;
 			domain = p + 1;
@@ -415,6 +431,51 @@ const char *psl_registrable_domain(const psl_ctx_t *psl, const char *domain)
 	return regdom;
 }
 
+static int _str_is_ascii(const char *s)
+{
+	while (*s > 0) s++;
+
+	return !*s;
+}
+
+static void _add_punycode_if_needed(UIDNA *idna, _psl_vector_t *v, _psl_entry_t *e)
+{
+	if (_str_is_ascii(e->label_buf))
+		return;
+
+#ifdef WITH_LIBICU
+	/* IDNA2008 UTS#46 punycode conversion */
+	if (idna) {
+		_psl_entry_t suffix, *suffixp;
+		char lookupname[128] = "";
+		UErrorCode status = 0;
+		UIDNAInfo info = UIDNA_INFO_INITIALIZER;
+		UChar utf16_dst[128], utf16_src[128];
+		int32_t utf16_src_length;
+
+		u_strFromUTF8(utf16_src, sizeof(utf16_src)/sizeof(utf16_src[0]), &utf16_src_length, e->label_buf, -1, &status);
+		if (U_SUCCESS(status)) {
+			int32_t dst_length = uidna_nameToASCII(idna, utf16_src, utf16_src_length, utf16_dst, sizeof(utf16_dst)/sizeof(utf16_dst[0]), &info, &status);
+			if (U_SUCCESS(status)) {
+				u_strToUTF8(lookupname, sizeof(lookupname), NULL, utf16_dst, dst_length, &status);
+				if (U_SUCCESS(status)) {
+					if (strcmp(e->label_buf, lookupname)) {
+						/* fprintf(stderr, "libicu '%s' -> '%s'\n", e->label_buf, lookupname); */
+						_suffix_init(&suffix, lookupname, strlen(lookupname));
+						suffix.wildcard = e->wildcard;
+						suffixp = _vector_get(v, _vector_add(v, &suffix));
+						suffixp->label = suffixp->label_buf; /* set label to changed address */
+					} /* else ignore */
+				} /* else
+					fprintf(stderr, "Failed to convert UTF-16 to UTF-8 (status %d)\n", status); */
+			} /* else
+				fprintf(stderr, "Failed to convert to ASCII (status %d)\n", status); */
+		} /* else
+			fprintf(stderr, "Failed to convert UTF-8 to UTF-16 (status %d)\n", status); */
+	}
+#endif
+}
+
 /**
  * psl_load_file:
  * @fname: Name of PSL file
@@ -422,13 +483,7 @@ const char *psl_registrable_domain(const psl_ctx_t *psl, const char *domain)
  * This function loads the public suffixes file named @fname.
  * To free the allocated resources, call psl_free().
  *
- * If you want to use punycode representations for functions like psl_is_public_suffix(),
- * these have to exist as entries within @fname. This is a design decision to not pull in
- * dependencies for UTF-8 case-handling and IDNA libraries.
- *
- * On the contrary, the builtin data already contains punycode entries.
- *
- * Have a look into psl2c.c for example code on how to convert UTF-8 to lowercase and to punycode.
+ * The suffixes are expected to be lowercase UTF-8 encoded.
  *
  * Returns: Pointer to a PSL context or %NULL on failure.
  *
@@ -457,7 +512,7 @@ psl_ctx_t *psl_load_file(const char *fname)
  * This function loads the public suffixes from a FILE pointer.
  * To free the allocated resources, call psl_free().
  *
- * Have a look at psl_load_fp() for punycode considerations.
+ * The suffixes are expected to be lowercase UTF-8 encoded.
  *
  * Returns: Pointer to a PSL context or %NULL on failure.
  *
@@ -467,14 +522,21 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 {
 	psl_ctx_t *psl;
 	_psl_entry_t suffix, *suffixp;
-	int nsuffixes = 0;
 	char buf[256], *linep, *p;
+#ifdef WITH_LIBICU
+	UIDNA *idna;
+	UErrorCode status = 0;
+#endif
 
 	if (!fp)
 		return NULL;
 
 	if (!(psl = calloc(1, sizeof(psl_ctx_t))))
 		return NULL;
+
+#ifdef WITH_LIBICU
+	idna = uidna_openUTS46(UIDNA_USE_STD3_RULES, &status);
+#endif
 
 	/*
 	 *  as of 02.11.2012, the list at http://publicsuffix.org/list/ contains ~6000 rules and 40 exceptions.
@@ -496,25 +558,28 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 
 		if (*p == '!') {
 			/* add to exceptions */
-			if (_suffix_init(&suffix, p + 1, linep - p - 1) == 0)
+			if (_suffix_init(&suffix, p + 1, linep - p - 1) == 0) {
 				suffixp = _vector_get(psl->suffix_exceptions, _vector_add(psl->suffix_exceptions, &suffix));
-			else
-				suffixp = NULL;
+				suffixp->label = suffixp->label_buf; /* set label to changed address */
+				_add_punycode_if_needed(idna, psl->suffix_exceptions, suffixp);
+			}
 		} else {
-			if (_suffix_init(&suffix, p, linep - p) == 0)
+			/* add to suffixes */
+			if (_suffix_init(&suffix, p, linep - p) == 0) {
 				suffixp = _vector_get(psl->suffixes, _vector_add(psl->suffixes, &suffix));
-			else
-				suffixp = NULL;
+				suffixp->label = suffixp->label_buf; /* set label to changed address */
+				_add_punycode_if_needed(idna, psl->suffixes, suffixp);
+			}
 		}
-
-		if (suffixp)
-			suffixp->label = suffixp->label_buf; /* set label to changed address */
-
-		nsuffixes++;;
 	}
 
 	_vector_sort(psl->suffix_exceptions);
 	_vector_sort(psl->suffixes);
+
+#ifdef WITH_LIBICU
+	if (idna)
+		uidna_close(idna);
+#endif
 
 	return psl;
 }
@@ -685,7 +750,11 @@ const char *psl_builtin_filename(void)
  **/
 const char *psl_get_version (void)
 {
+#ifdef WITH_LIBICU
+	return PACKAGE_VERSION " +libicu/" U_ICU_VERSION;
+#else
 	return PACKAGE_VERSION;
+#endif
 }
 
 /**
@@ -740,4 +809,82 @@ int psl_is_cookie_domain_acceptable(const psl_ctx_t *psl, const char *hostname, 
 	}
 
 	return 0;
+}
+
+/**
+ * psl_str_to_utf8lower:
+ * @str: string to convert
+ * @encoding: charset encoding of @str, e.g. 'iso-8859-1' or %NULL
+ * @locale: locale of @str for to lowercase conversion, e.g. 'de' or %NULL
+ * @lower: return value containing the converted string
+ *
+ * This helper function converts a string to lowercase UTF-8 representation.
+ * Lowercase UTF-8 is needed as input to the domain checking functions.
+ *
+ * The return value 'lower' must be freed after usage.
+ *
+ * Returns: 0 on success, negative value on error.
+ *   -2 failed to open converter with name @encoding
+ *   -3 failed to convert @str to unicode
+ *   -4 failed to convert unicode to lowercase
+ *   -5 failed to convert unicode to UTF-8
+ *
+ * Since: 0.4
+ */
+int psl_str_to_utf8lower(const char *str, const char *encoding, const char *locale, char **lower)
+{
+	int ret = -1;
+
+	if (lower)
+		*lower = NULL;
+
+	if (!str)
+		return 0;
+
+#ifdef WITH_LIBICU
+	size_t str_length = strlen(str);
+	UErrorCode status = 0;
+	UChar *utf16_dst, *utf16_lower;
+	int32_t utf16_dst_length;
+	char *utf8_lower;
+	UConverter *uconv;
+
+	/* C89 allocation */
+	utf16_dst   = alloca(sizeof(UChar) * (str_length * 2 + 1));
+	utf16_lower = alloca(sizeof(UChar) * (str_length * 2 + 1));
+	utf8_lower  = alloca(str_length * 2 + 1);
+
+	uconv = ucnv_open(encoding, &status);
+	if (U_SUCCESS(status)) {
+		utf16_dst_length = ucnv_toUChars(uconv, utf16_dst, str_length * 2 + 1, str, str_length, &status);
+		ucnv_close(uconv);
+
+		if (U_SUCCESS(status)) {
+			int32_t utf16_lower_length = u_strToLower(utf16_lower, str_length * 2 + 1, utf16_dst, utf16_dst_length, locale, &status);
+			if (U_SUCCESS(status)) {
+				u_strToUTF8(utf8_lower, str_length * 8 + 1, NULL, utf16_lower, utf16_lower_length, &status);
+				if (U_SUCCESS(status)) {
+					if (lower)
+						*lower = strdup(utf8_lower);
+					ret = 0;
+				} else {
+					ret = -5;
+					fprintf(stderr, "Failed to convert UTF-16 to UTF-8 (status %d)\n", status);
+				}
+			} else {
+				ret = -4;
+				fprintf(stderr, "Failed to convert UTF-16 to lowercase (status %d)\n", status);
+			}
+		} else {
+			ret = -3;
+			fprintf(stderr, "Failed to convert string to UTF-16 (status %d)\n", status);
+		}
+	} else {
+		ret = -2;
+		fprintf(stderr, "Failed to open converter for '%s' (status %d)\n", encoding, status);
+	}
+
+#endif
+
+	return ret;
 }

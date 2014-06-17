@@ -17,4 +17,5 @@ psl_builtin_sha1sum
 psl_builtin_filename
 psl_is_cookie_domain_acceptable
 psl_get_version
+psl_str_to_utf8lower
 </SECTION>
