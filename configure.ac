@@ -73,6 +73,7 @@ AC_ARG_WITH(libicu,
   [],
   [
      # using pkg-config won't work on older systems like Ubuntu 12.04 LTS Server Edition 64bit
+     OLDLIBS=$LIBS
      LIBS="-licuuc $LIBS"
      AC_MSG_CHECKING([for ICU unicode library])
      AC_LINK_IFELSE(
@@ -80,7 +81,7 @@ AC_ARG_WITH(libicu,
          [[#include <unicode/ustring.h>]],
          [[u_strToUTF8(NULL, 0, NULL, NULL, 0, NULL);]])],
        [HAVE_LIBICU=yes; AC_MSG_RESULT([yes]) AC_DEFINE([WITH_LIBICU], [1], [generate PSL data with IDNA2008 UTS#46 punycode])],
-       [AC_MSG_FAILURE([no working ICU unicode library was found])])
+       [LIBS=$OLDLIBS; AC_MSG_WARN([no working ICU unicode library was found])])
 
 #    AC_SEARCH_LIBS(uidna_close, icuuc,
 #      [HAVE_LIBICU=yes; AC_DEFINE([WITH_LIBICU], [1], [generate PSL data with IDNA2008 UTS#46 punycode])],
