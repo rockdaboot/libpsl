@@ -341,6 +341,9 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
  *
  * For cookie domain checking see psl_is_cookie_domain_acceptable().
  *
+ * International @domain names have to be either in lowercase UTF-8 or in ASCII form (punycode).
+ * Other encodings result in unexpected behavior.
+ *
  * @psl is a context returned by either psl_load_file(), psl_load_fp() or
  * psl_builtin().
  *
@@ -363,6 +366,9 @@ int psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
  *
  * This function finds the longest publix suffix part of @domain by the means
  * of the [Mozilla Public Suffix List](http://publicsuffix.org).
+ *
+ * International @domain names have to be either in lowercase UTF-8 or in ASCII form (punycode).
+ * Other encodings result in unexpected behavior.
  *
  * @psl is a context returned by either psl_load_file(), psl_load_fp() or
  * psl_builtin().
@@ -399,6 +405,9 @@ const char *psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain)
  *
  * This function finds the shortest private suffix part of @domain by the means
  * of the [Mozilla Public Suffix List](http://publicsuffix.org).
+ *
+ * International @domain names have to be either in lowercase UTF-8 or in ASCII form (punycode).
+ * Other encodings result in unexpected behavior.
  *
  * @psl is a context returned by either psl_load_file(), psl_load_fp() or
  * psl_builtin().
@@ -483,7 +492,7 @@ static void _add_punycode_if_needed(UIDNA *idna, _psl_vector_t *v, _psl_entry_t 
  * This function loads the public suffixes file named @fname.
  * To free the allocated resources, call psl_free().
  *
- * The suffixes are expected to be lowercase UTF-8 encoded.
+ * The suffixes are expected to be lowercase UTF-8 encoded if they are international.
  *
  * Returns: Pointer to a PSL context or %NULL on failure.
  *
@@ -512,7 +521,7 @@ psl_ctx_t *psl_load_file(const char *fname)
  * This function loads the public suffixes from a FILE pointer.
  * To free the allocated resources, call psl_free().
  *
- * The suffixes are expected to be lowercase UTF-8 encoded.
+ * The suffixes are expected to be lowercase UTF-8 encoded if they are international.
  *
  * Returns: Pointer to a PSL context or %NULL on failure.
  *
@@ -766,6 +775,9 @@ const char *psl_get_version (void)
  * This helper function checks whether @cookie_domain is an acceptable cookie domain value for the request
  * @hostname.
  *
+ * For international domain names both, @hostname and @cookie_domain, have to be either in lowercase UTF-8
+ * or in ASCII form (punycode). Other encodings or mixing UTF-8 and punycode result in unexpected behavior.
+ *
  * Examples:
  * 1. Cookie domain 'example.com' would be acceptable for hostname 'www.example.com',
  * but '.com' or 'com' would NOT be acceptable since 'com' is a public suffix.
@@ -821,9 +833,11 @@ int psl_is_cookie_domain_acceptable(const psl_ctx_t *psl, const char *hostname, 
  * This helper function converts a string to lowercase UTF-8 representation.
  * Lowercase UTF-8 is needed as input to the domain checking functions.
  *
+ * @lower is %NULL on error.
  * The return value 'lower' must be freed after usage.
  *
  * Returns: 0 on success, negative value on error.
+ *   -1 @str is a %NULL value
  *   -2 failed to open converter with name @encoding
  *   -3 failed to convert @str to unicode
  *   -4 failed to convert unicode to lowercase
@@ -839,7 +853,14 @@ int psl_str_to_utf8lower(const char *str, const char *encoding, const char *loca
 		*lower = NULL;
 
 	if (!str)
+		return -1;
+
+	/* shortcut to avoid costly conversion */
+	if (_str_is_ascii(str)) {
+		if (lower)
+			*lower = strdup(str);
 		return 0;
+	}
 
 #ifdef WITH_LIBICU
 	size_t str_length = strlen(str);
@@ -869,21 +890,20 @@ int psl_str_to_utf8lower(const char *str, const char *encoding, const char *loca
 					ret = 0;
 				} else {
 					ret = -5;
-					fprintf(stderr, "Failed to convert UTF-16 to UTF-8 (status %d)\n", status);
+					/* fprintf(stderr, "Failed to convert UTF-16 to UTF-8 (status %d)\n", status); */
 				}
 			} else {
 				ret = -4;
-				fprintf(stderr, "Failed to convert UTF-16 to lowercase (status %d)\n", status);
+				/* fprintf(stderr, "Failed to convert UTF-16 to lowercase (status %d)\n", status); */
 			}
 		} else {
 			ret = -3;
-			fprintf(stderr, "Failed to convert string to UTF-16 (status %d)\n", status);
+			/* fprintf(stderr, "Failed to convert string to UTF-16 (status %d)\n", status); */
 		}
 	} else {
 		ret = -2;
-		fprintf(stderr, "Failed to open converter for '%s' (status %d)\n", encoding, status);
+		/* fprintf(stderr, "Failed to open converter for '%s' (status %d)\n", encoding, status); */
 	}
-
 #endif
 
 	return ret;
