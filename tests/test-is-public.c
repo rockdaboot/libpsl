@@ -47,8 +47,8 @@ static int
 
 static void test_psl(void)
 {
-	/* punycode generation: idn 商标 */
-	/* octal code generation: echo -n "商标" | od -b */
+	/* punycode generation: idn ?? */
+	/* octal code generation: echo -n "??" | od -b */
 	static const struct test_data {
 		const char
 			*domain;
@@ -65,7 +65,7 @@ static void test_psl(void)
 		{ "abc.www.ck", 0 },
 		{ "xxx.ck", 1 },
 		{ "www.xxx.ck", 0 },
-		{ "\345\225\206\346\240\207", 1 }, /* xn--czr694b or 商标 */
+		{ "\345\225\206\346\240\207", 1 }, /* xn--czr694b or ?? */
 		{ "www.\345\225\206\346\240\207", 0 },
 		/* some special test follow ('name' and 'forgot.his.name' are public, but e.g. his.name is not) */
 		{ "name", 1 },
