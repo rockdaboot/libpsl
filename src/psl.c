@@ -857,8 +857,16 @@ int psl_str_to_utf8lower(const char *str, const char *encoding, const char *loca
 
 	/* shortcut to avoid costly conversion */
 	if (_str_is_ascii(str)) {
-		if (lower)
+		if (lower) {
+			char *p;
+
 			*lower = strdup(str);
+
+			/* convert ASCII string to lowercase */
+			for (p = *lower; *p; p++)
+				if (isupper(*p))
+					*p = tolower(*p);
+		}
 		return 0;
 	}
 
