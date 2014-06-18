@@ -54,7 +54,8 @@ static void test(const psl_ctx_t *psl, const char *domain, const char *expected_
 	const char *result;
 	char *lower;
 
-	if (psl_str_to_utf8lower(domain, NULL, NULL, &lower) == 0)
+	/* our test data is fixed to UTF-8 (english), so provide it here */
+	if (psl_str_to_utf8lower(domain, "utf-8", "en", &lower) == 0)
 		domain = lower;
 
 	result = psl_registrable_domain(psl, domain);
