@@ -151,11 +151,11 @@ int main(int argc, const char *const *argv)
 			size_t len;
 			int rc;
 
-			// read URLs from STDIN
+			/* read URLs from STDIN */
 			while (fgets(buf, sizeof(buf), stdin)) {
-				for (domain = buf; isspace(*domain); domain++); // skip leading spaces
-				if (*domain == '#' || !*domain) continue; // skip empty lines and comments
-				for (len = strlen(domain); len && isspace(domain[len - 1]); len--);  // skip trailing spaces
+				for (domain = buf; isspace(*domain); domain++); /* skip leading spaces */
+				if (*domain == '#' || !*domain) continue; /* skip empty lines and comments */
+				for (len = strlen(domain); len && isspace(domain[len - 1]); len--); /* skip trailing spaces */
 				domain[len] = 0;
 
 				if ((rc = psl_str_to_utf8lower(domain, NULL, NULL, &lower)) != 0)

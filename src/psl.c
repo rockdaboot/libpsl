@@ -877,6 +877,7 @@ int psl_str_to_utf8lower(const char *str, const char *encoding, const char *loca
 	}
 
 #ifdef WITH_LIBICU
+	do {
 	size_t str_length = strlen(str);
 	UErrorCode status = 0;
 	UChar *utf16_dst, *utf16_lower;
@@ -918,6 +919,7 @@ int psl_str_to_utf8lower(const char *str, const char *encoding, const char *loca
 		ret = -2;
 		/* fprintf(stderr, "Failed to open converter for '%s' (status %d)\n", encoding, status); */
 	}
+	} while (0);
 #endif
 
 	return ret;
