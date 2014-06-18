@@ -91,7 +91,9 @@ static void test_psl(void)
 	test(NULL, "com", NULL);
 
 	/* Norwegian with uppercase oe */
+#ifdef WITH_LIBICU
 	test(psl, "www.\303\230yer.no", "www.\303\270yer.no");
+#endif
 
 	/* Norwegian with lowercase oe */
 	test(psl, "www.\303\270yer.no", "www.\303\270yer.no");
