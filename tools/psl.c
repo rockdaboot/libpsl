@@ -36,6 +36,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+
+#ifdef WITH_LIBICU
+#	include <unicode/uloc.h>
+#	include <unicode/ucnv.h>
+#endif
+
 #include <libpsl.h>
 
 static void usage(int err, FILE* f)
@@ -213,8 +219,6 @@ int main(int argc, const char *const *argv)
 			printf("builtin SHA1 file hash: %s\n", psl_builtin_sha1sum());
 
 #ifdef WITH_LIBICU
-			#include <unicode/uloc.h>
-			#include <unicode/ucnv.h>
 			printf("uloc_getDefault=%s\n", uloc_getDefault());
 			printf("ucnv_getDefaultName=%s\n", ucnv_getDefaultName());
 #endif
