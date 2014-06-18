@@ -66,6 +66,8 @@ static void test(const psl_ctx_t *psl, const char *domain, const char *expected_
 		printf("psl_registrable_domain(%s)=%s (expected %s)\n",
 			domain, result ? result : "NULL", expected_result ? expected_result : "NULL");
 	}
+
+	free(lower);
 }
 
 static void test_psl(void)
