@@ -447,12 +447,12 @@ static int _str_is_ascii(const char *s)
 	return !*s;
 }
 
+#ifdef WITH_LIBICU
 static void _add_punycode_if_needed(UIDNA *idna, _psl_vector_t *v, _psl_entry_t *e)
 {
 	if (_str_is_ascii(e->label_buf))
 		return;
 
-#ifdef WITH_LIBICU
 	/* IDNA2008 UTS#46 punycode conversion */
 	if (idna) {
 		_psl_entry_t suffix, *suffixp;
@@ -482,8 +482,8 @@ static void _add_punycode_if_needed(UIDNA *idna, _psl_vector_t *v, _psl_entry_t 
 		} /* else
 			fprintf(stderr, "Failed to convert UTF-8 to UTF-16 (status %d)\n", status); */
 	}
-#endif
 }
+#endif
 
 /**
  * psl_load_file:
@@ -570,14 +570,18 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 			if (_suffix_init(&suffix, p + 1, linep - p - 1) == 0) {
 				suffixp = _vector_get(psl->suffix_exceptions, _vector_add(psl->suffix_exceptions, &suffix));
 				suffixp->label = suffixp->label_buf; /* set label to changed address */
+#ifdef WITH_LIBICU
 				_add_punycode_if_needed(idna, psl->suffix_exceptions, suffixp);
+#endif
 			}
 		} else {
 			/* add to suffixes */
 			if (_suffix_init(&suffix, p, linep - p) == 0) {
 				suffixp = _vector_get(psl->suffixes, _vector_add(psl->suffixes, &suffix));
 				suffixp->label = suffixp->label_buf; /* set label to changed address */
+#ifdef WITH_LIBICU
 				_add_punycode_if_needed(idna, psl->suffixes, suffixp);
+#endif
 			}
 		}
 	}
@@ -759,11 +763,13 @@ const char *psl_builtin_filename(void)
  **/
 const char *psl_get_version (void)
 {
+	return PACKAGE_VERSION
 #ifdef WITH_LIBICU
-	return PACKAGE_VERSION " +libicu/" U_ICU_VERSION;
+		" (+libicu/" U_ICU_VERSION ")"
 #else
-	return PACKAGE_VERSION;
+		" (limited IDNA support)"
 #endif
+	;
 }
 
 /**
