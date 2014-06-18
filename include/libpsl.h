@@ -67,7 +67,7 @@ const char *
 	psl_registrable_domain(const psl_ctx_t *psl, const char *domain);
 /* convert a string into lowercase UTF-8 */
 int
-	psl_str_to_utf8lower(const char *s, const char *encoding, const char *locale, char **lower);
+	psl_str_to_utf8lower(const char *str, const char *encoding, const char *locale, char **lower);
 /* does not include exceptions */
 int
 	psl_suffix_count(const psl_ctx_t *psl);
