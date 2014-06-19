@@ -81,7 +81,7 @@ AC_ARG_WITH(libicu,
          [[#include <unicode/ustring.h>]],
          [[u_strToUTF8(NULL, 0, NULL, NULL, 0, NULL);]])],
        [HAVE_LIBICU=yes; AC_MSG_RESULT([yes]) AC_DEFINE([WITH_LIBICU], [1], [generate PSL data with IDNA2008 UTS#46 punycode])],
-       [LIBS=$OLDLIBS; AC_MSG_WARN([no working ICU unicode library was found])])
+       [LIBS=$OLDLIBS; AC_MSG_ERROR([no working ICU unicode library was found])])
 
 #    AC_SEARCH_LIBS(uidna_close, icuuc,
 #      [HAVE_LIBICU=yes; AC_DEFINE([WITH_LIBICU], [1], [generate PSL data with IDNA2008 UTS#46 punycode])],
@@ -99,6 +99,11 @@ AC_ARG_ENABLE(builtin,
   ], [
     enable_builtin=yes
     AC_DEFINE([WITH_BUILTIN], [1], [compile PSL data into library])
+    AS_IF([test $HAVE_LIBICU != yes],
+      [
+        # Check for idn2 fallback to generate punycode
+        AC_CHECK_PROG(HAVE_IDN2, idn2, yes, AC_MSG_ERROR(Cannot find required tool 'idn2' as fallback.))
+      ])
   ])
 AM_CONDITIONAL([WITH_BUILTIN], [test $enable_builtin = yes])
 
