@@ -38,6 +38,19 @@
 extern "C" {
 #endif
 
+/**
+ * psl_error_t:
+ * @PSL_SUCCESS: Successful return.
+ * @PSL_ERR_INVALID_ARG: Invalid argument.
+ * @PSL_ERR_CONVERTER: Failed to open libicu utf-16 converter
+ * @PSL_ERR_TO_UTF16: Failed to convert to utf-16.
+ * @PSL_ERR_TO_LOWER: Failed to convert utf-16 to lowercase.
+ * @PSL_ERR_TO_UTF8: Failed to convert utf-16 to utf-8.
+ *
+ * Return codes for PSL functions.
+ * Negative return codes mean failure.
+ * Positive values are reserved for non-error return codes.
+ */
 typedef enum {
 	PSL_SUCCESS = 0,
 	PSL_ERR_INVALID_ARG = -1,

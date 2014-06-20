@@ -1,6 +1,7 @@
 <SECTION>
 <FILE>libpsl</FILE>
 <TITLE>Public Suffix List functions</TITLE>
+psl_error_t
 psl_ctx_t
 psl_load_file
 psl_load_fp
