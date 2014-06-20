@@ -28,8 +28,6 @@
  *
  */
 
-
-
 #if HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -182,8 +180,8 @@ int main(int argc, const char **argv)
 	psl_free(psl);
 #else
 	if ((fpout = fopen(argv[2], "w"))) {
-		fprintf(fpout, "static _psl_entry_t suffixes[0];\n");
-		fprintf(fpout, "static _psl_entry_t suffix_exceptions[0];\n");
+		fprintf(fpout, "static _psl_entry_t suffixes[1];\n");
+		fprintf(fpout, "static _psl_entry_t suffix_exceptions[1];\n");
 		fprintf(fpout, "static time_t _psl_file_time;\n");
 		fprintf(fpout, "static time_t _psl_compile_time;\n");
 		fprintf(fpout, "static const char _psl_sha1_checksum[] = \"\";\n");

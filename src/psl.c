@@ -110,8 +110,8 @@ struct _psl_ctx_st {
 #	include "suffixes.c"
 #else
 	/* if this source file is included by psl2c.c, provide empty builtin data */
-	static _psl_entry_t suffixes[0];
-	static _psl_entry_t suffix_exceptions[0];
+	static _psl_entry_t suffixes[1];
+	static _psl_entry_t suffix_exceptions[1];
 	static time_t _psl_file_time;
 	static time_t _psl_compile_time;
 	static const char _psl_sha1_checksum[] = "";
