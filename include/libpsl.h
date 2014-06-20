@@ -38,6 +38,14 @@
 extern "C" {
 #endif
 
+typedef enum {
+	PSL_SUCCESS = 0,
+	PSL_ERR_INVALID_ARG = -1,
+	PSL_ERR_CONVERTER = -2, /* failed to open libicu utf-16 converter */
+	PSL_ERR_TO_UTF16 = -3, /* failed to convert to utf-16 */
+	PSL_ERR_TO_LOWER = -4, /* failed to convert utf-16 to lowercase */
+	PSL_ERR_TO_UTF8 = -5 /* failed to convert utf-16 to utf-8 */
+} psl_error_t;
 
 typedef struct _psl_ctx_st psl_ctx_t;
 

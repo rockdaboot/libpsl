@@ -852,24 +852,25 @@ int psl_is_cookie_domain_acceptable(const psl_ctx_t *psl, const char *hostname, 
  * @lower is %NULL on error.
  * The return value 'lower' must be freed after usage.
  *
- * Returns: 0 on success, negative value on error.
- *   -1 @str is a %NULL value
- *   -2 failed to open converter with name @encoding
- *   -3 failed to convert @str to unicode
- *   -4 failed to convert unicode to lowercase
- *   -5 failed to convert unicode to UTF-8
+ * Returns: psl_error_t value.
+ *   PSL_SUCCESS: Success
+ *   PSL_ERR_INVALID_ARG: @str is a %NULL value.
+ *   PSL_ERR_CONVERTER: Failed to open the unicode converter with name @encoding
+ *   PSL_ERR_TO_UTF16: Failed to convert @str to unicode
+ *   PSL_ERR_TO_LOWER: Failed to convert unicode to lowercase
+ *   PSL_ERR_TO_UTF8: Failed to convert unicode to UTF-8
  *
  * Since: 0.4
  */
-int psl_str_to_utf8lower(const char *str, const char *encoding, const char *locale, char **lower)
+psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding, const char *locale, char **lower)
 {
-	int ret = -1;
+	int ret = PSL_ERR_INVALID_ARG;
 
 	if (lower)
 		*lower = NULL;
 
 	if (!str)
-		return -1;
+		return PSL_ERR_INVALID_ARG;
 
 	/* shortcut to avoid costly conversion */
 	if (_str_is_ascii(str)) {
@@ -883,7 +884,7 @@ int psl_str_to_utf8lower(const char *str, const char *encoding, const char *loca
 				if (isupper(*p))
 					*p = tolower(*p);
 		}
-		return 0;
+		return PSL_SUCCESS;
 	}
 
 #ifdef WITH_LIBICU
@@ -912,21 +913,21 @@ int psl_str_to_utf8lower(const char *str, const char *encoding, const char *loca
 				if (U_SUCCESS(status)) {
 					if (lower)
 						*lower = strdup(utf8_lower);
-					ret = 0;
+					ret = PSL_SUCCESS;
 				} else {
-					ret = -5;
+					ret = PSL_ERR_TO_UTF8;
 					/* fprintf(stderr, "Failed to convert UTF-16 to UTF-8 (status %d)\n", status); */
 				}
 			} else {
-				ret = -4;
+				ret = PSL_ERR_TO_LOWER;
 				/* fprintf(stderr, "Failed to convert UTF-16 to lowercase (status %d)\n", status); */
 			}
 		} else {
-			ret = -3;
+			ret = PSL_ERR_TO_UTF16;
 			/* fprintf(stderr, "Failed to convert string to UTF-16 (status %d)\n", status); */
 		}
 	} else {
-		ret = -2;
+		ret = PSL_ERR_CONVERTER;
 		/* fprintf(stderr, "Failed to open converter for '%s' (status %d)\n", encoding, status); */
 	}
 	} while (0);
