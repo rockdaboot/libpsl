@@ -10,6 +10,7 @@ libpsl.so.0 libpsl0 #MINVER#
  psl_is_public_suffix@Base 0.3.0
  psl_load_file@Base 0.3.0
  psl_load_fp@Base 0.3.0
+ psl_str_to_utf8lower@Base 0.4.0
  psl_registrable_domain@Base 0.3.0
  psl_suffix_count@Base 0.3.0
  psl_suffix_exception_count@Base 0.3.0
