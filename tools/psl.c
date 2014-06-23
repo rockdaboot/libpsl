@@ -32,8 +32,16 @@
 # include <config.h>
 #endif
 
+#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
+
+#ifdef WITH_LIBICU
+#	include <unicode/uloc.h>
+#	include <unicode/ucnv.h>
+#endif
+
 #include <libpsl.h>
 
 static void usage(int err, FILE* f)
@@ -70,6 +78,10 @@ int main(int argc, const char *const *argv)
 	int mode = 1;
 	const char *const *arg, *psl_file = NULL, *cookie_domain = NULL;
 	psl_ctx_t *psl = (psl_ctx_t *) psl_builtin();
+
+	/* set current locale according to the environment variables */
+	#include <locale.h>
+	setlocale(LC_ALL, "");
 
 	for (arg = argv + 1; arg < argv + argc; arg++) {
 		if (!strncmp(*arg, "--", 2)) {
@@ -135,8 +147,41 @@ int main(int argc, const char *const *argv)
 			exit(2);
 		}
 		if (arg >= argv + argc) {
-			fprintf(stderr, "No domains given - aborting\n");
-			exit(3);
+			char buf[256], *domain, *lower;
+			size_t len;
+			psl_error_t rc;
+
+			/* read URLs from STDIN */
+			while (fgets(buf, sizeof(buf), stdin)) {
+				for (domain = buf; isspace(*domain); domain++); /* skip leading spaces */
+				if (*domain == '#' || !*domain) continue; /* skip empty lines and comments */
+				for (len = strlen(domain); len && isspace(domain[len - 1]); len--); /* skip trailing spaces */
+				domain[len] = 0;
+
+				if ((rc = psl_str_to_utf8lower(domain, NULL, NULL, &lower)) != PSL_SUCCESS)
+					fprintf(stderr, "%s: Failed to convert to lowercase UTF-8 (%d)\n", domain, rc);
+				else if (mode == 1)
+					printf("%s: %d (%s)\n", domain, psl_is_public_suffix(psl, lower), lower);
+				else if (mode == 2)
+					printf("%s: %s\n", domain, psl_unregistrable_domain(psl, lower));
+				else if (mode == 3)
+					printf("%s: %s\n", domain, psl_registrable_domain(psl, lower));
+				else if (mode == 4) {
+					char *cookie_domain_lower;
+
+					if ((rc = psl_str_to_utf8lower(domain, NULL, NULL, &cookie_domain_lower)) != PSL_SUCCESS)
+						fprintf(stderr, "%s: Failed to convert cookie domain '%s' to lowercase UTF-8 (%d)\n", domain, cookie_domain, rc);
+					else
+						printf("%s: %d\n", domain, psl_is_cookie_domain_acceptable(psl, lower, cookie_domain));
+
+					free(cookie_domain_lower);
+				}
+
+				free(lower);
+			}
+
+			psl_free(psl);
+			exit(0);
 		}
 	}
 
@@ -172,6 +217,11 @@ int main(int argc, const char *const *argv)
 			printf("builtin compile time: %ld (%s)\n", psl_builtin_compile_time(), time2str(psl_builtin_compile_time()));
 			printf("builtin file time: %ld (%s)\n", psl_builtin_file_time(), time2str(psl_builtin_file_time()));
 			printf("builtin SHA1 file hash: %s\n", psl_builtin_sha1sum());
+
+#ifdef WITH_LIBICU
+			printf("uloc_getDefault=%s\n", uloc_getDefault());
+			printf("ucnv_getDefaultName=%s\n", ucnv_getDefaultName());
+#endif
 		} else
 			printf("No builtin PSL data available\n");
 	}

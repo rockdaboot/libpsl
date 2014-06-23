@@ -8,4 +8,6 @@ Please drop me a note if you feel you should have
 been mentioned here.
 
 Tim Ruehsen (Implementation of libpsl)
-Daniel Kahn Gillmor (Discussion, Ideas, Organization)
+Daniel Kahn Gillmor (Discussion, Ideas, Organization, Code)
+Daniel Stenberg (Discussion, Ideas)
+Darshit Shah (Patching Wget to work with libpsl)
