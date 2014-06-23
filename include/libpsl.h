@@ -38,6 +38,27 @@
 extern "C" {
 #endif
 
+/**
+ * psl_error_t:
+ * @PSL_SUCCESS: Successful return.
+ * @PSL_ERR_INVALID_ARG: Invalid argument.
+ * @PSL_ERR_CONVERTER: Failed to open libicu utf-16 converter
+ * @PSL_ERR_TO_UTF16: Failed to convert to utf-16.
+ * @PSL_ERR_TO_LOWER: Failed to convert utf-16 to lowercase.
+ * @PSL_ERR_TO_UTF8: Failed to convert utf-16 to utf-8.
+ *
+ * Return codes for PSL functions.
+ * Negative return codes mean failure.
+ * Positive values are reserved for non-error return codes.
+ */
+typedef enum {
+	PSL_SUCCESS = 0,
+	PSL_ERR_INVALID_ARG = -1,
+	PSL_ERR_CONVERTER = -2, /* failed to open libicu utf-16 converter */
+	PSL_ERR_TO_UTF16 = -3, /* failed to convert to utf-16 */
+	PSL_ERR_TO_LOWER = -4, /* failed to convert utf-16 to lowercase */
+	PSL_ERR_TO_UTF8 = -5 /* failed to convert utf-16 to utf-8 */
+} psl_error_t;
 
 typedef struct _psl_ctx_st psl_ctx_t;
 
@@ -65,6 +86,9 @@ const char *
 /* returns the shortest possible registrable domain part or NULL if domain is not registrable at all */
 const char *
 	psl_registrable_domain(const psl_ctx_t *psl, const char *domain);
+/* convert a string into lowercase UTF-8 */
+int
+	psl_str_to_utf8lower(const char *str, const char *encoding, const char *locale, char **lower);
 /* does not include exceptions */
 int
 	psl_suffix_count(const psl_ctx_t *psl);
