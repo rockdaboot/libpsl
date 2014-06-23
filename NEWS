@@ -1,5 +1,14 @@
 Copyright (C) 2014 Tim Ruehsen
 
+23.06.2014 Release V0.4.0
+  * depend on libicu for punycode, utf-8 and lowercase conversions
+  * added function psl_str_to_utf8lower()
+  * fixed locale issues
+  * introducing psl_error_t for error codes + defines
+  * removed redundant code from psl2c.c
+  * updated docs
+  * psl utility reads from stdin if no argument specified
+
 10.06.2014 Release V0.3.1
   * link psl utility dynamically
   * fix output of psl_filename()
