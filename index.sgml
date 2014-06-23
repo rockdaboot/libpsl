@@ -21,5 +21,8 @@
 <ANCHOR id="psl-builtin-sha1sum" href="libpsl/libpsl-Public-Suffix-List-functions.html#psl-builtin-sha1sum">
 <ANCHOR id="psl-builtin-filename" href="libpsl/libpsl-Public-Suffix-List-functions.html#psl-builtin-filename">
 <ANCHOR id="psl-is-cookie-domain-acceptable" href="libpsl/libpsl-Public-Suffix-List-functions.html#psl-is-cookie-domain-acceptable">
+<ANCHOR id="psl-get-version" href="libpsl/libpsl-Public-Suffix-List-functions.html#psl-get-version">
+<ANCHOR id="psl-str-to-utf8lower" href="libpsl/libpsl-Public-Suffix-List-functions.html#psl-str-to-utf8lower">
 <ANCHOR id="libpsl-Public-Suffix-List-functions.other_details" href="libpsl/libpsl-Public-Suffix-List-functions.html#libpsl-Public-Suffix-List-functions.other_details">
+<ANCHOR id="psl-error-t" href="libpsl/libpsl-Public-Suffix-List-functions.html#psl-error-t">
 <ANCHOR id="psl-ctx-t" href="libpsl/libpsl-Public-Suffix-List-functions.html#psl-ctx-t">
