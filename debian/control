@@ -53,8 +53,6 @@ Architecture: any
 Depends:
  ${misc:Depends},
  ${shlibs:Depends}
-Pre-Depends:
- ${misc:Pre-Depends}
 Multi-Arch: foreign
 Description: Explore the Public Suffix List
  Libpsl allows checking domains against the Public Suffix List,
@@ -71,7 +69,6 @@ Priority: extra
 Architecture: any
 Depends:
  libpsl0 (= ${binary:Version}),
- ${shlibs:Depends},
  ${misc:Depends}
 Multi-Arch: same
 Description: Library for the Public Suffix List (debug symbols)
