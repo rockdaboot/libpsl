@@ -24,3 +24,5 @@ override_dh_auto_build:
 	help2man --no-info --no-discard-stderr --output=debian/psl.1 \
 		--name="Explore the Public Suffix List" tools/psl 
 
+override_dh_installchangelogs:
+	dh_installchangelogs -XChangeLog NEWS
