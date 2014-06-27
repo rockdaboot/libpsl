@@ -2,18 +2,17 @@ DEFS = @DEFS@ -DDATADIR=\"$(top_srcdir)/data\" -DSRCDIR=\"$(srcdir)\" -DPSL_FILE
 AM_CPPFLAGS = -I$(top_srcdir)/include
 LDADD = ../src/libpsl.la
 
-if WITH_BUILTIN
-
-PSL_TESTS = test-is-public test-is-public-builtin test-is-public-all test-registrable-domain \
-   test-is-cookie-domain-acceptable
-
-else
-
 # ./configure'd with '--disable-builtin'
 # Do not call test-is-public-builtin here: it does not make sense.
 # Do not call test-registrable-domain here: it would fail due to missing punycode entries in PSL file.
 PSL_TESTS = test-is-public test-is-public-all test-is-cookie-domain-acceptable
 
+if BUILTIN_GENERATOR_LIBICU
+  PSL_TESTS += test-is-public-builtin test-registrable-domain
+endif
+
+if BUILTIN_GENERATOR_LIBIDN2
+  PSL_TESTS += test-is-public-builtin test-registrable-domain
 endif
 
 check_PROGRAMS = $(PSL_TESTS)
