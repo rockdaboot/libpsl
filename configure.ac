@@ -66,29 +66,34 @@ AS_IF([ test "$enable_man" != no ], [
 AC_SUBST([LIBPSL_SO_VERSION], [2:0:2])
 AC_SUBST([LIBPSL_VERSION], $VERSION)
 
-# Check for libicu
-HAVE_LIBICU=no
-AC_ARG_WITH(libicu,
-  AC_HELP_STRING([--without-libicu], [build libpsl without IDNA/Punycode support]),
-  [],
+# Check for enable/disable builtin PSL data
+AC_ARG_ENABLE(runtime,
   [
-     # using pkg-config won't work on older systems like Ubuntu 12.04 LTS Server Edition 64bit
-     OLDLIBS=$LIBS
-     LIBS="-licuuc $LIBS"
-     AC_MSG_CHECKING([for ICU unicode library])
-     AC_LINK_IFELSE(
-       [AC_LANG_PROGRAM(
-         [[#include <unicode/ustring.h>]],
-         [[u_strToUTF8(NULL, 0, NULL, NULL, 0, NULL);]])],
-       [HAVE_LIBICU=yes; AC_MSG_RESULT([yes]) AC_DEFINE([WITH_LIBICU], [1], [generate PSL data with IDNA2008 UTS#46 punycode])],
-       [LIBS=$OLDLIBS; AC_MSG_ERROR([no working ICU unicode library was found])])
-
-#    AC_SEARCH_LIBS(uidna_close, icuuc,
-#      [HAVE_LIBICU=yes; AC_DEFINE([WITH_LIBICU], [1], [generate PSL data with IDNA2008 UTS#46 punycode])],
-#      [AC_MSG_ERROR(*** libicu was not found. Aborting.)],
-#      -licudata )
-#    PKG_CHECK_MODULES(LIBICU, [icu-uc],
-#      [HAVE_LIBICU=yes; AC_DEFINE([WITH_LIBICU], [1], [generate PSL data with IDNA2008 UTS#46 punycode])])
+  --enable-runtime[=IDNA library]
+      Specify the IDNA library used for libpsl run-time conversions:
+        libicu [[default]]: IDNA2008 UTS#46 library
+        libidn2:          IDNA2008 library (also needs libunistring)
+        libidn:           IDNA2003 library
+  --disable-runtime       Do not link runtime IDNA functionality
+  ], [
+    if test "$enableval" = "libicu" -o "$enableval" = "yes"; then
+      enable_runtime=libicu
+      AC_DEFINE([WITH_LIBICU], [1], [generate PSL data using libicu])
+    elif test "$enableval" = "libidn2"; then
+      enable_runtime=libidn2
+      AC_DEFINE([WITH_LIBIDN2], [1], [generate PSL data using libidn2])
+    elif test "$enableval" = "libidn"; then
+      enable_runtime=libidn
+      AC_DEFINE([WITH_LIBIDN], [1], [generate PSL data using libidn])
+    elif test "$enableval" = "no"; then
+      enable_runtime=no
+    else
+      AC_MSG_ERROR([Unknown value $enableval for --enable-runtime])
+    fi
+  ], [
+    # this is the default if neither --enable-runtime nor --disable-runtime were specified
+    enable_runtime=libicu
+    AC_DEFINE([WITH_LIBICU], [1], [generate PSL data using libicu])
   ])
 
 # Check for enable/disable builtin PSL data
@@ -97,38 +102,73 @@ AC_ARG_ENABLE(builtin,
   --enable-builtin[=IDNA library]
       Specify the IDNA library used for built-in data generation:
         libicu [[default]]: IDNA2008 UTS#46 library
-        libidn2:          IDNA2008 library also needs libunistring
+        libidn2:          IDNA2008 library (also needs libunistring)
+        libidn:           IDNA2003 library
   --disable-builtin       Do not generate built-in data
   ], [
     if test "$enableval" = "libicu" -o "$enableval" = "yes"; then
-      if test "$HAVE_LIBICU" != "yes"; then
-        AC_MSG_ERROR(You requested libicu but it is not installed.)
-      fi
       enable_builtin=libicu
       AC_DEFINE([BUILTIN_GENERATOR_LIBICU], [1], [generate PSL data using libicu])
     elif test "$enableval" = "libidn2"; then
-      if test "$HAVE_LIBIDN2" != "yes"; then
-        AC_MSG_ERROR(You requested libidn2 but it is not installed.)
-      fi
       enable_builtin=libidn2
       AC_DEFINE([BUILTIN_GENERATOR_LIBIDN2], [1], [generate PSL data using libidn2])
+    elif test "$enableval" = "libidn"; then
+      enable_builtin=libidn
+      AC_DEFINE([BUILTIN_GENERATOR_LIBIDN], [1], [generate PSL data using libidn])
     elif test "$enableval" = "no"; then
       enable_builtin=no
     else
       AC_MSG_ERROR(Unknown value $enableval)
     fi
   ], [
-    # this is the default if neither --enable-builtin nor --disable-built were specified
+    # this is the default if neither --enable-builtin nor --disable-builtin were specified
     enable_builtin=libicu
-    if test "$HAVE_LIBIDN2" != "yes"; then
-      AC_MSG_ERROR(You requested libidn2 but it is not installed.)
-    fi
     AC_DEFINE([BUILTIN_GENERATOR_LIBICU], [1], [generate PSL data using libicu])
-    AC_DEFINE([WITH_BUILTIN], [1], [compile PSL data into library])
   ])
 
+if test "$enable_runtime" = "libicu" -o "$enable_builtin" = "libicu"; then
+  # Check for libicu
+  # using pkg-config won't work on older systems like Ubuntu 12.04 LTS Server Edition 64bit
+  # using AC_SEARCH_LIBS also don't work since functions have the library version appended
+  OLDLIBS=$LIBS
+  LIBS="-licuuc $LIBS"
+  AC_MSG_CHECKING([for ICU unicode library])
+  AC_LINK_IFELSE(
+    [AC_LANG_PROGRAM(
+      [[#include <unicode/ustring.h>]],
+      [[u_strToUTF8(NULL, 0, NULL, NULL, 0, NULL);]])],
+    [HAVE_LIBICU=yes; AC_MSG_RESULT([yes])],
+    [AC_MSG_RESULT([no]); AC_MSG_ERROR(You requested libicu but it is not installed.)])
+  LIBS=$OLDLIBS
+fi
+
+if test "$enable_runtime" = "libidn2" -o "$enable_builtin" = "libidn2"; then
+  # Check for libidn2
+  OLDLIBS=$LIBS
+  AC_SEARCH_LIBS(idn2_lookup_u8, idn2, HAVE_LIBIDN2=yes, AC_MSG_ERROR(You requested libidn2 but it is not installed.))
+  LIBS=$OLDLIBS
+fi
+
+if test "$enable_runtime" = "libidn" -o "$enable_builtin" = "libidn"; then
+  # Check for libidn
+  OLDLIBS=$LIBS
+  AC_SEARCH_LIBS(idna_to_ascii_8z, idn, HAVE_LIBIDN=yes, AC_MSG_ERROR(You requested libidn but it is not installed.))
+  LIBS=$OLDLIBS
+fi
+
+if test "x$HAVE_LIBIDN2" = "xyes" -o "x$HAVE_LIBIDN" = "xyes"; then
+  # Check for libunistring, we need it for psl_str_to_utf8lower()
+  OLDLIBS=$LIBS
+  AC_SEARCH_LIBS(u8_tolower, unistring, HAVE_UNISTRING=yes, AC_MSG_ERROR(You requested libidn2 but libunistring is not installed.))
+  LIBS=$OLDLIBS
+fi
+
+AM_CONDITIONAL([WITH_LIBICU], test "x$enable_runtime" = "xlibicu")
+AM_CONDITIONAL([WITH_LIBIDN2], test "x$enable_runtime" = "xlibidn2")
+AM_CONDITIONAL([WITH_LIBIDN], test "x$enable_runtime" = "xlibidn")
 AM_CONDITIONAL([BUILTIN_GENERATOR_LIBICU], test "x$enable_builtin" = "xlibicu")
 AM_CONDITIONAL([BUILTIN_GENERATOR_LIBIDN2], test "x$enable_builtin" = "xlibidn2")
+AM_CONDITIONAL([BUILTIN_GENERATOR_LIBIDN], test "x$enable_builtin" = "xlibidn")
 AM_CONDITIONAL([WITH_BUILTIN], test $enable_builtin = yes)
 
 # Check for valgrind
@@ -187,8 +227,9 @@ AC_MSG_NOTICE([Summary of build options:
   Compiler:          ${CC}
   CFlags:            ${CFLAGS} ${CPPFLAGS}
   LDFlags:           ${LDFLAGS}
-  ICU:               ${HAVE_LIBICU}
-  Builtin PSL:       ${enable_builtin}
+  Libs:              ${LIBS}
+  Runtime:           ${enable_runtime}
+  Builtin:           ${enable_builtin}
   PSL File:          ${PSL_FILE}
   PSL Test File:     ${PSL_TESTFILE}
   Tests:             ${TESTS_INFO}

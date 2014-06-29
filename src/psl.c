@@ -37,6 +37,20 @@
 # include <config.h>
 #endif
 
+/* if this file is included by psl2c, redefine to use requested library for builtin data */
+#ifdef _LIBPSL_INCLUDED_BY_PSL2C
+#	undef WITH_LIBICU
+#	undef WITH_LIBIDN2
+#	undef WITH_LIBIDN
+#	ifdef BUILTIN_GENERATOR_LIBICU
+#		define WITH_LIBICU
+#	elif defined(BUILTIN_GENERATOR_LIBIDN2)
+#		define WITH_LIBIDN2
+#	elif defined(BUILTIN_GENERATOR_LIBIDN)
+#		define WITH_LIBIDN
+#	endif
+#endif
+
 #if ENABLE_NLS != 0
 #	include <libintl.h>
 #	define _(STRING) gettext(STRING)
@@ -56,6 +70,13 @@
 #	include <unicode/ustring.h>
 #	include <unicode/uidna.h>
 #	include <unicode/ucnv.h>
+#elif defined(WITH_LIBIDN2)
+#	include <idn2.h>
+#	include <unicase.h>
+#	include <unistr.h>
+#elif defined(WITH_LIBIDN)
+#	include <stringprep.h>
+#	include <idna.h>
 #endif
 
 #include <libpsl.h>
@@ -457,7 +478,7 @@ static int _str_is_ascii(const char *s)
 	return !*s;
 }
 
-#ifdef WITH_LIBICU
+#if defined(WITH_LIBICU)
 static void _add_punycode_if_needed(UIDNA *idna, _psl_vector_t *v, _psl_entry_t *e)
 {
 	if (_str_is_ascii(e->label_buf))
@@ -465,7 +486,6 @@ static void _add_punycode_if_needed(UIDNA *idna, _psl_vector_t *v, _psl_entry_t 
 
 	/* IDNA2008 UTS#46 punycode conversion */
 	if (idna) {
-		_psl_entry_t suffix, *suffixp;
 		char lookupname[128] = "";
 		UErrorCode status = 0;
 		UIDNAInfo info = UIDNA_INFO_INITIALIZER;
@@ -479,6 +499,8 @@ static void _add_punycode_if_needed(UIDNA *idna, _psl_vector_t *v, _psl_entry_t 
 				u_strToUTF8(lookupname, sizeof(lookupname), NULL, utf16_dst, dst_length, &status);
 				if (U_SUCCESS(status)) {
 					if (strcmp(e->label_buf, lookupname)) {
+						_psl_entry_t suffix, *suffixp;
+
 						/* fprintf(stderr, "libicu '%s' -> '%s'\n", e->label_buf, lookupname); */
 						_suffix_init(&suffix, lookupname, strlen(lookupname));
 						suffix.wildcard = e->wildcard;
@@ -492,6 +514,66 @@ static void _add_punycode_if_needed(UIDNA *idna, _psl_vector_t *v, _psl_entry_t 
 		} /* else
 			fprintf(stderr, "Failed to convert UTF-8 to UTF-16 (status %d)\n", status); */
 	}
+}
+#elif defined(WITH_LIBIDN2)
+static void _add_punycode_if_needed(_psl_vector_t *v, _psl_entry_t *e)
+{
+	char *lookupname = NULL;
+	int rc;
+	uint8_t *lower, resbuf[256];
+	size_t len = sizeof(resbuf) - 1; /* leave space for additional \0 byte */
+
+	if (_str_is_ascii(e->label_buf))
+		return;
+
+	/* we need a conversion to lowercase */
+	lower = u8_tolower((uint8_t *)src, u8_strlen((uint8_t *)src), 0, UNINORM_NFKC, resbuf, &len);
+	if (!lower) {
+		printf("u8_tolower(%s) failed (%d)\n", src, errno);
+		return src;
+	}
+
+	/* u8_tolower() does not terminate the result string */
+	if (lower == resbuf) {
+		lower[len]=0;
+	} else {
+		uint8_t *tmp = lower;
+		lower = (uint8_t *)strndup((char *)lower, len);
+		xfree(tmp);
+	}
+
+	if ((rc = idn2_lookup_u8(lower, (uint8_t **)&asc, 0)) == IDN2_OK) {
+		debug_printf("idn2 '%s' -> '%s'\n", src, asc);
+		src = asc;
+	} else
+		error_printf(_("toASCII(%s) failed (%d): %s\n"), lower, rc, idn2_strerror(rc));
+
+	if (lower != resbuf)
+		xfree(lower);
+}
+#elif defined(WITH_LIBIDN)
+static void _add_punycode_if_needed(_psl_vector_t *v, _psl_entry_t *e)
+{
+	char *lookupname = NULL;
+	int rc;
+
+	if (_str_is_ascii(e->label_buf))
+		return;
+
+	/* idna_to_ascii_8z() automatically converts UTF-8 to lowercase */
+
+	if ((rc = idna_to_ascii_8z(e->label_buf, &lookupname, IDNA_USE_STD3_ASCII_RULES)) == IDNA_SUCCESS) {
+		if (strcmp(e->label_buf, lookupname)) {
+			_psl_entry_t suffix, *suffixp;
+
+			/* fprintf(stderr, "libidn '%s' -> '%s'\n", e->label_buf, lookupname); */
+			_suffix_init(&suffix, lookupname, strlen(lookupname));
+			suffix.wildcard = e->wildcard;
+			suffixp = _vector_get(v, _vector_add(v, &suffix));
+			suffixp->label = suffixp->label_buf; /* set label to changed address */
+		} /* else ignore */
+	} /* else
+		fprintf(_(stderr, "toASCII failed (%d): %s\n"), rc, idna_strerror(rc)); */
 }
 #endif
 
@@ -582,6 +664,8 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 				suffixp->label = suffixp->label_buf; /* set label to changed address */
 #ifdef WITH_LIBICU
 				_add_punycode_if_needed(idna, psl->suffix_exceptions, suffixp);
+#elif defined(WITH_LIBIDN2) || defined(WITH_LIBIDN)
+				_add_punycode_if_needed(psl->suffix_exceptions, suffixp);
 #endif
 			}
 		} else {
@@ -591,6 +675,8 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 				suffixp->label = suffixp->label_buf; /* set label to changed address */
 #ifdef WITH_LIBICU
 				_add_punycode_if_needed(idna, psl->suffixes, suffixp);
+#elif defined(WITH_LIBIDN2) || defined(WITH_LIBIDN)
+				_add_punycode_if_needed(psl->suffix_exceptions, suffixp);
 #endif
 			}
 		}
@@ -645,7 +731,7 @@ void psl_free(psl_ctx_t *psl)
  */
 const psl_ctx_t *psl_builtin(void)
 {
-#ifdef WITH_BUILTIN
+#if defined(BUILTIN_GENERATOR_LIBICU) || defined(BUILTIN_GENERATOR_LIBIDN2) || defined(BUILTIN_GENERATOR_LIBIDN)
 	return &_builtin_psl;
 #else
 	return NULL;
@@ -773,13 +859,15 @@ const char *psl_builtin_filename(void)
  **/
 const char *psl_get_version (void)
 {
-	return PACKAGE_VERSION
 #ifdef WITH_LIBICU
-		" (+libicu/" U_ICU_VERSION ")"
+	return PACKAGE_VERSION " (+libicu/" U_ICU_VERSION ")";
+#elif defined(WITH_LIBIDN2)
+	return PACKAGE_VERSION " (+libidn2/" IDN2_VERSION ")";
+#elif defined(WITH_LIBIDN)
+	return PACKAGE_VERSION " (+libidn/" STRINGPREP_VERSION ")";
 #else
-		" (limited IDNA support)"
+	return PACKAGE_VERSION " (limited IDNA support)";
 #endif
-	;
 }
 
 /**
@@ -932,6 +1020,8 @@ psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding, const ch
 		/* fprintf(stderr, "Failed to open converter for '%s' (status %d)\n", encoding, status); */
 	}
 	} while (0);
+#elif defined(WITH_LIBIDN2)
+#elif defined(WITH_LIBIDN)
 #endif
 
 	return ret;

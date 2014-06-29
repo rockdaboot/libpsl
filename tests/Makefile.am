@@ -15,6 +15,10 @@ if BUILTIN_GENERATOR_LIBIDN2
   PSL_TESTS += test-is-public-builtin test-registrable-domain
 endif
 
+if BUILTIN_GENERATOR_LIBIDN
+  PSL_TESTS += test-is-public-builtin test-registrable-domain
+endif
+
 check_PROGRAMS = $(PSL_TESTS)
 
 TESTS_ENVIRONMENT = TESTS_VALGRIND="@VALGRIND_ENVIRONMENT@"
