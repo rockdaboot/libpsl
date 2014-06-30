@@ -14,10 +14,10 @@ if WITH_LIBICU
   libpsl_la_LDFLAGS += -licuuc
 endif
 if WITH_LIBIDN2
-  libpsl_la_LDFLAGS += -lidn2
+  libpsl_la_LDFLAGS += -lidn2 -lunistring
 endif
 if WITH_LIBIDN
-  libpsl_la_LDFLAGS += -lunistring -lidn
+  libpsl_la_LDFLAGS += -lidn -lunistring
 endif
 
 noinst_PROGRAMS = psl2c
@@ -27,10 +27,10 @@ if BUILTIN_GENERATOR_LIBICU
   psl2c_LDADD = -licuuc
 endif
 if BUILTIN_GENERATOR_LIBIDN2
-  psl2c_LDADD = -lidn2
+  psl2c_LDADD = -lidn2 -lunistring
 endif
 if BUILTIN_GENERATOR_LIBIDN
-  psl2c_LDADD = -lidn
+  psl2c_LDADD = -lidn -lunistring
 endif
 
 # Build rule for suffix.c
