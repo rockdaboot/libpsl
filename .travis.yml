@@ -26,4 +26,4 @@ script:
   - make distcheck
 before_install:
   - sudo apt-get -qq update
-  - sudo apt-get -q install autoconf automake autopoint libtool gtk-doc-tools gettext libidn libidn-dev libidn2-0 libidn2-0-dev libicu48 libicu-dev libunistring0 libunistring-dev
+  - sudo apt-get -q install autoconf automake autopoint libtool gtk-doc-tools gettext libidn11 libidn11-dev libidn2-0 libidn2-0-dev libicu48 libicu-dev libunistring0 libunistring-dev
