@@ -69,11 +69,11 @@ AC_SUBST([LIBPSL_VERSION], $VERSION)
 # Check for enable/disable builtin PSL data
 AC_ARG_ENABLE(runtime,
   [
-  --enable-runtime[=IDNA library]
+  --enable-runtime[[=IDNA library]]
       Specify the IDNA library used for libpsl run-time conversions:
         libicu [[default]]: IDNA2008 UTS#46 library
         libidn2:          IDNA2008 library (also needs libunistring)
-        libidn:           IDNA2003 library
+        libidn:           IDNA2003 library (also needs libunistring)
   --disable-runtime       Do not link runtime IDNA functionality
   ], [
     if test "$enableval" = "libicu" -o "$enableval" = "yes"; then
@@ -99,12 +99,12 @@ AC_ARG_ENABLE(runtime,
 # Check for enable/disable builtin PSL data
 AC_ARG_ENABLE(builtin,
   [
-  --enable-builtin[=IDNA library]
+  --enable-builtin[[=IDNA library]]
       Specify the IDNA library used for built-in data generation:
         libicu [[default]]: IDNA2008 UTS#46 library
         libidn2:          IDNA2008 library (also needs libunistring)
-        libidn:           IDNA2003 library
-  --disable-builtin       Do not generate built-in data
+        libidn:           IDNA2003 library (also needs libunistring)
+  --disable-builtin       Do not generate built-in PSL data
   ], [
     if test "$enableval" = "libicu" -o "$enableval" = "yes"; then
       enable_builtin=libicu
