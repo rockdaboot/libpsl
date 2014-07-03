@@ -37,6 +37,20 @@
 # include <config.h>
 #endif
 
+/* if this file is included by psl2c, redefine to use requested library for builtin data */
+#ifdef _LIBPSL_INCLUDED_BY_PSL2C
+#	undef WITH_LIBICU
+#	undef WITH_LIBIDN2
+#	undef WITH_LIBIDN
+#	ifdef BUILTIN_GENERATOR_LIBICU
+#		define WITH_LIBICU
+#	elif defined(BUILTIN_GENERATOR_LIBIDN2)
+#		define WITH_LIBIDN2
+#	elif defined(BUILTIN_GENERATOR_LIBIDN)
+#		define WITH_LIBIDN
+#	endif
+#endif
+
 #if ENABLE_NLS != 0
 #	include <libintl.h>
 #	define _(STRING) gettext(STRING)
@@ -50,12 +64,25 @@
 #include <string.h>
 #include <ctype.h>
 #include <alloca.h>
+#include <errno.h>
+#include <langinfo.h>
 
 #ifdef WITH_LIBICU
 #	include <unicode/uversion.h>
 #	include <unicode/ustring.h>
 #	include <unicode/uidna.h>
 #	include <unicode/ucnv.h>
+#elif defined(WITH_LIBIDN2)
+#	include <iconv.h>
+#	include <idn2.h>
+#	include <unicase.h>
+#	include <unistr.h>
+#elif defined(WITH_LIBIDN)
+#	include <iconv.h>
+#	include <stringprep.h>
+#	include <idna.h>
+#	include <unicase.h>
+#	include <unistr.h>
 #endif
 
 #include <libpsl.h>
@@ -457,7 +484,7 @@ static int _str_is_ascii(const char *s)
 	return !*s;
 }
 
-#ifdef WITH_LIBICU
+#if defined(WITH_LIBICU)
 static void _add_punycode_if_needed(UIDNA *idna, _psl_vector_t *v, _psl_entry_t *e)
 {
 	if (_str_is_ascii(e->label_buf))
@@ -465,7 +492,6 @@ static void _add_punycode_if_needed(UIDNA *idna, _psl_vector_t *v, _psl_entry_t 
 
 	/* IDNA2008 UTS#46 punycode conversion */
 	if (idna) {
-		_psl_entry_t suffix, *suffixp;
 		char lookupname[128] = "";
 		UErrorCode status = 0;
 		UIDNAInfo info = UIDNA_INFO_INITIALIZER;
@@ -479,6 +505,8 @@ static void _add_punycode_if_needed(UIDNA *idna, _psl_vector_t *v, _psl_entry_t 
 				u_strToUTF8(lookupname, sizeof(lookupname), NULL, utf16_dst, dst_length, &status);
 				if (U_SUCCESS(status)) {
 					if (strcmp(e->label_buf, lookupname)) {
+						_psl_entry_t suffix, *suffixp;
+
 						/* fprintf(stderr, "libicu '%s' -> '%s'\n", e->label_buf, lookupname); */
 						_suffix_init(&suffix, lookupname, strlen(lookupname));
 						suffix.wildcard = e->wildcard;
@@ -492,6 +520,73 @@ static void _add_punycode_if_needed(UIDNA *idna, _psl_vector_t *v, _psl_entry_t 
 		} /* else
 			fprintf(stderr, "Failed to convert UTF-8 to UTF-16 (status %d)\n", status); */
 	}
+}
+#elif defined(WITH_LIBIDN2)
+static void _add_punycode_if_needed(_psl_vector_t *v, _psl_entry_t *e)
+{
+	char *lookupname = NULL;
+	int rc;
+	uint8_t *lower, resbuf[256];
+	size_t len = sizeof(resbuf) - 1; /* leave space for additional \0 byte */
+
+	if (_str_is_ascii(e->label_buf))
+		return;
+
+	/* we need a conversion to lowercase */
+	lower = u8_tolower((uint8_t *)e->label_buf, u8_strlen((uint8_t *)e->label_buf), 0, UNINORM_NFKC, resbuf, &len);
+	if (!lower) {
+		/* fprintf(stderr, "u8_tolower(%s) failed (%d)\n", e->label_buf, errno); */
+		return;
+	}
+
+	/* u8_tolower() does not terminate the result string */
+	if (lower == resbuf) {
+		lower[len]=0;
+	} else {
+		uint8_t *tmp = lower;
+		lower = (uint8_t *)strndup((char *)lower, len);
+		free(tmp);
+	}
+
+	if ((rc = idn2_lookup_u8(lower, (uint8_t **)&lookupname, 0)) == IDN2_OK) {
+		if (strcmp(e->label_buf, lookupname)) {
+			_psl_entry_t suffix, *suffixp;
+
+			/* fprintf(stderr, "libidn '%s' -> '%s'\n", e->label_buf, lookupname); */
+			_suffix_init(&suffix, lookupname, strlen(lookupname));
+			suffix.wildcard = e->wildcard;
+			suffixp = _vector_get(v, _vector_add(v, &suffix));
+			suffixp->label = suffixp->label_buf; /* set label to changed address */
+		} /* else ignore */
+	} /* else
+		fprintf(stderr, "toASCII(%s) failed (%d): %s\n", lower, rc, idn2_strerror(rc)); */
+
+	if (lower != resbuf)
+		free(lower);
+}
+#elif defined(WITH_LIBIDN)
+static void _add_punycode_if_needed(_psl_vector_t *v, _psl_entry_t *e)
+{
+	char *lookupname = NULL;
+	int rc;
+
+	if (_str_is_ascii(e->label_buf))
+		return;
+
+	/* idna_to_ascii_8z() automatically converts UTF-8 to lowercase */
+
+	if ((rc = idna_to_ascii_8z(e->label_buf, &lookupname, IDNA_USE_STD3_ASCII_RULES)) == IDNA_SUCCESS) {
+		if (strcmp(e->label_buf, lookupname)) {
+			_psl_entry_t suffix, *suffixp;
+
+			/* fprintf(stderr, "libidn '%s' -> '%s'\n", e->label_buf, lookupname); */
+			_suffix_init(&suffix, lookupname, strlen(lookupname));
+			suffix.wildcard = e->wildcard;
+			suffixp = _vector_get(v, _vector_add(v, &suffix));
+			suffixp->label = suffixp->label_buf; /* set label to changed address */
+		} /* else ignore */
+	} /* else
+		fprintf(_(stderr, "toASCII failed (%d): %s\n"), rc, idna_strerror(rc)); */
 }
 #endif
 
@@ -582,6 +677,8 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 				suffixp->label = suffixp->label_buf; /* set label to changed address */
 #ifdef WITH_LIBICU
 				_add_punycode_if_needed(idna, psl->suffix_exceptions, suffixp);
+#elif defined(WITH_LIBIDN2) || defined(WITH_LIBIDN)
+				_add_punycode_if_needed(psl->suffix_exceptions, suffixp);
 #endif
 			}
 		} else {
@@ -591,6 +688,8 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 				suffixp->label = suffixp->label_buf; /* set label to changed address */
 #ifdef WITH_LIBICU
 				_add_punycode_if_needed(idna, psl->suffixes, suffixp);
+#elif defined(WITH_LIBIDN2) || defined(WITH_LIBIDN)
+				_add_punycode_if_needed(psl->suffixes, suffixp);
 #endif
 			}
 		}
@@ -645,7 +744,7 @@ void psl_free(psl_ctx_t *psl)
  */
 const psl_ctx_t *psl_builtin(void)
 {
-#ifdef WITH_BUILTIN
+#if defined(BUILTIN_GENERATOR_LIBICU) || defined(BUILTIN_GENERATOR_LIBIDN2) || defined(BUILTIN_GENERATOR_LIBIDN)
 	return &_builtin_psl;
 #else
 	return NULL;
@@ -773,13 +872,15 @@ const char *psl_builtin_filename(void)
  **/
 const char *psl_get_version (void)
 {
-	return PACKAGE_VERSION
 #ifdef WITH_LIBICU
-		" (+libicu/" U_ICU_VERSION ")"
+	return PACKAGE_VERSION " (+libicu/" U_ICU_VERSION ")";
+#elif defined(WITH_LIBIDN2)
+	return PACKAGE_VERSION " (+libidn2/" IDN2_VERSION ")";
+#elif defined(WITH_LIBIDN)
+	return PACKAGE_VERSION " (+libidn/" STRINGPREP_VERSION ")";
 #else
-		" (limited IDNA support)"
+	return PACKAGE_VERSION " (no IDNA support)";
 #endif
-	;
 }
 
 /**
@@ -849,7 +950,8 @@ int psl_is_cookie_domain_acceptable(const psl_ctx_t *psl, const char *hostname, 
  * This helper function converts a string to lowercase UTF-8 representation.
  * Lowercase UTF-8 is needed as input to the domain checking functions.
  *
- * @lower is %NULL on error.
+ * @lower is set to %NULL on error.
+ *
  * The return value 'lower' must be freed after usage.
  *
  * Returns: psl_error_t value.
@@ -930,6 +1032,73 @@ psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding, const ch
 		ret = PSL_ERR_CONVERTER;
 		/* fprintf(stderr, "Failed to open converter for '%s' (status %d)\n", encoding, status); */
 	}
+	} while (0);
+#elif defined(WITH_LIBIDN2) || defined(WITH_LIBIDN)
+	do {
+		/* find out local charset encoding */
+		if (!encoding) {
+			encoding = nl_langinfo(CODESET);
+
+			if (!encoding || !*encoding)
+				encoding = "ASCII";
+		}
+
+		/* convert to UTF-8 */
+		if (strcasecmp(encoding, "utf-8")) {
+			iconv_t cd = iconv_open("utf-8", encoding);
+
+			if (cd != (iconv_t)-1) {
+				char *tmp = (char *)str; /* iconv won't change where str points to, but changes tmp itself */
+				size_t tmp_len = strlen(str);
+				size_t dst_len = tmp_len * 6, dst_len_tmp = dst_len;
+				char *dst = malloc(dst_len + 1), *dst_tmp = dst;
+
+				if (iconv(cd, &tmp, &tmp_len, &dst_tmp, &dst_len_tmp) != (size_t)-1) {
+					uint8_t *resbuf = malloc(dst_len * 2 + 1);
+					size_t len = dst_len * 2; /* leave space for additional \0 byte */
+
+					if ((dst = (char *)u8_tolower((uint8_t *)dst, dst_len - dst_len_tmp, 0, UNINORM_NFKC, resbuf, &len))) {
+						/* u8_tolower() does not terminate the result string */
+						if (lower)
+							*lower = strndup((char *)dst, len);
+					} else {
+						ret = PSL_ERR_TO_LOWER;
+						/* fprintf(stderr, "Failed to convert UTF-8 to lowercase (errno %d)\n", errno); */
+					}
+
+					if (lower)
+						*lower = strndup(dst, dst_len - dst_len_tmp);
+					ret = PSL_SUCCESS;
+				} else {
+					ret = PSL_ERR_TO_UTF8;
+					/* fprintf(stderr, "Failed to convert '%s' string into '%s' (%d)\n", src_encoding, dst_encoding, errno); */
+				}
+
+				free(dst);
+				iconv_close(cd);
+			} else {
+				ret = PSL_ERR_TO_UTF8;
+				/* fprintf(stderr, "Failed to prepare encoding '%s' into '%s' (%d)\n", src_encoding, dst_encoding, errno); */
+			}
+		} else
+			ret = PSL_SUCCESS;
+
+		/* convert to lowercase */
+		if (ret == PSL_SUCCESS) {
+			uint8_t *dst, resbuf[256];
+			size_t len = sizeof(resbuf) - 1; /* leave space for additional \0 byte */
+
+			/* we need a conversion to lowercase */
+			if ((dst = u8_tolower((uint8_t *)str, u8_strlen((uint8_t *)str), 0, UNINORM_NFKC, resbuf, &len))) {
+				/* u8_tolower() does not terminate the result string */
+				if (lower)
+					*lower = strndup((char *)dst, len);
+			} else {
+				ret = PSL_ERR_TO_LOWER;
+				/* fprintf(stderr, "Failed to convert UTF-8 to lowercase (errno %d)\n", errno); */
+			}
+		}
+
 	} while (0);
 #endif
 
