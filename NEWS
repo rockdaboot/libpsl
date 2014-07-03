@@ -1,5 +1,13 @@
 Copyright (C) 2014 Tim Rühsen
 
+02.07.2014 Release V0.5.0
+  * added configure --enable-runtime to allow for IDNA library
+    selection as runtime dependency
+  * added configure --enable-builtin to allow for IDNA library
+    selection for generating the built-in PSL data
+  * fixed psl_str_to_utf8lower prototype
+  * fixed authors name to UTF-8
+
 23.06.2014 Release V0.4.0
   * depend on libicu for punycode, utf-8 and lowercase conversions
   * added function psl_str_to_utf8lower()
