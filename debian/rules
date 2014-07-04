@@ -11,8 +11,10 @@ export DH_OPTIONS += --dbg-package=libpsl0-dbg
 override_dh_auto_configure:
 	./autogen.sh
 	dh_auto_configure -- \
+		--enable-builtin=libicu \
 		--enable-gtk-doc \
 		--enable-ld-version-script \
+		--enable-runtime=libicu \
 		--with-packager=Debian \
 		--with-packager-bug-reports=https://bugs.debian.org/ \
 		--with-packager-version="$(DEB_VERSION)" \
