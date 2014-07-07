@@ -28,7 +28,15 @@ License: MIT
  * DEALINGS IN THE SOFTWARE.
 
 Files: data/effective_tld_names.dat
-Copyright: Copyright (C) 2007-2014 Mozilla Foundation
+Copyright: 2010-2012 Daniel Veditz,
+   Ehsan Akhgari,
+   Gervase Markham,
+   Jason Duell,
+   Jothan Frakes,
+   Mitchell Field,
+   Mounir Lamouri,
+   Ruben Arakelyan,
+   Simone Carletti
 License: MPL-2.0
 
 Files: data/test_psl.txt
