@@ -48,7 +48,7 @@ Description: Library for Public Suffix List (shared libraries)
  This package contains runtime libraries.
 
 Package: psl
-Section: libs
+Section: net
 Architecture: any
 Depends:
  ${misc:Depends},
