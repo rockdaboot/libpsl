@@ -1,5 +1,8 @@
 Copyright (C) 2014 Tim Rühsen
 
+03.08.2014 Release V0.5.1
+  * fix ASCII check for architectures where char <> signed char
+
 02.07.2014 Release V0.5.0
   * added configure --enable-runtime to allow for IDNA library
     selection as runtime dependency
