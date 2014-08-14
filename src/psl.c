@@ -870,7 +870,7 @@ const char *psl_builtin_filename(void)
  *
  * Since: 0.2.5
  **/
-const char *psl_get_version (void)
+const char *psl_get_version(void)
 {
 #ifdef WITH_LIBICU
 	return PACKAGE_VERSION " (+libicu/" U_ICU_VERSION ")";
