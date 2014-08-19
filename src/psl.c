@@ -66,6 +66,7 @@
 #include <alloca.h>
 #include <errno.h>
 #include <langinfo.h>
+#include <arpa/inet.h>
 
 #ifdef WITH_LIBICU
 #	include <unicode/uversion.h>
@@ -883,6 +884,15 @@ const char *psl_get_version(void)
 #endif
 }
 
+/* return whether hostname is an IP address or not */
+static int _isip(const char *hostname)
+{
+	struct in_addr addr;
+	struct in6_addr addr6;
+
+	return inet_pton(AF_INET, hostname, &addr) || inet_pton(AF_INET6, hostname, &addr6);
+}
+
 /**
  * psl_is_cookie_domain_acceptable:
  * @psl: PSL context pointer
@@ -919,6 +929,9 @@ int psl_is_cookie_domain_acceptable(const psl_ctx_t *psl, const char *hostname, 
 
 	if (!strcmp(hostname, cookie_domain))
 		return 1; /* an exact match is acceptable (and pretty common) */
+
+	if (_isip(hostname))
+		return 0; /* Hostname is an IP address and these must match fully (RFC 6265, 5.1.3) */
 
 	cookie_domain_length = strlen(cookie_domain);
 	hostname_length = strlen(hostname);
