@@ -119,7 +119,7 @@ typedef struct {
 /* stripped down version libmget vector routines */
 typedef struct {
 	int
-		(*cmp)(const _psl_entry_t *, const _psl_entry_t *); /* comparison function */
+		(*cmp)(const _psl_entry_t **, const _psl_entry_t **); /* comparison function */
 	_psl_entry_t
 		**entry; /* pointer to array of pointers to elements */
 	int
@@ -150,7 +150,7 @@ struct _psl_ctx_st {
 static const psl_ctx_t
 	_builtin_psl;
 
-static _psl_vector_t *_vector_alloc(int max, int (*cmp)(const _psl_entry_t *, const _psl_entry_t *))
+static _psl_vector_t *_vector_alloc(int max, int (*cmp)(const _psl_entry_t **, const _psl_entry_t **))
 {
 	_psl_vector_t *v;
 	
@@ -199,7 +199,7 @@ static int _vector_find(const _psl_vector_t *v, const _psl_entry_t *elem)
 		/* binary search for element (exact match) */
 		for (l = 0, r = v->cur - 1; l <= r;) {
 			m = (l + r) / 2;
-			if ((res = v->cmp(elem, v->entry[m])) > 0) l = m + 1;
+			if ((res = v->cmp(&elem, (const _psl_entry_t **)&(v->entry[m]))) > 0) l = m + 1;
 			else if (res < 0) r = m - 1;
 			else return m;
 		}
@@ -226,15 +226,10 @@ static int _vector_add(_psl_vector_t *v, const _psl_entry_t *elem)
 	return -1;
 }
 
-static int _compare(const void *p1, const void *p2, void *v)
-{
-	return ((_psl_vector_t *)v)->cmp(*((_psl_entry_t **)p1), *((_psl_entry_t **)p2));
-}
-
 static void _vector_sort(_psl_vector_t *v)
 {
 	if (v && v->cmp)
-		qsort_r(v->entry, v->cur, sizeof(_psl_vector_t *), _compare, v);
+		qsort(v->entry, v->cur, sizeof(_psl_vector_t **), (int(*)(const void *, const void *))v->cmp);
 }
 
 static int _vector_size(_psl_vector_t *v)
@@ -248,12 +243,18 @@ static int _suffix_compare(const _psl_entry_t *s1, const _psl_entry_t *s2)
 	int n;
 
 	if ((n = s2->nlabels - s1->nlabels))
-		return n; /* most labels first */
+		return n; // most labels first
 
 	if ((n = s1->length - s2->length))
-		return n;  /* shorter rules first */
+		return n;  // shorter rules first
 
 	return strcmp(s1->label, s2->label ? s2->label : s2->label_buf);
+}
+
+/* needed to sort array of pointers, given to qsort() */
+static int _suffix_compare_array(const _psl_entry_t **s1, const _psl_entry_t **s2)
+{
+	return _suffix_compare(*s1, *s2);
 }
 
 static int _suffix_init(_psl_entry_t *suffix, const char *rule, size_t length)
@@ -657,8 +658,8 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 	 *  as of 02.11.2012, the list at http://publicsuffix.org/list/ contains ~6000 rules and 40 exceptions.
 	 *  as of 19.02.2014, the list at http://publicsuffix.org/list/ contains ~6500 rules and 19 exceptions.
 	 */
-	psl->suffixes = _vector_alloc(8*1024, _suffix_compare);
-	psl->suffix_exceptions = _vector_alloc(64, _suffix_compare);
+	psl->suffixes = _vector_alloc(8*1024, _suffix_compare_array);
+	psl->suffix_exceptions = _vector_alloc(64, _suffix_compare_array);
 
 	while ((linep = fgets(buf, sizeof(buf), fp))) {
 		while (isspace(*linep)) linep++; /* ignore leading whitespace */
