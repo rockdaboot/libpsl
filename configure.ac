@@ -205,6 +205,9 @@ AC_ARG_WITH(psl-testfile,
   PSL_TESTFILE="\$(top_srcdir)/data/test_psl.txt")
 AC_SUBST(PSL_TESTFILE)
 
+# check for alloca / alloca.h
+AC_FUNC_ALLOCA
+
 # Override the template file name of the generated .pc file, so that there
 # is no need to rename the template file when the API version changes.
 AC_CONFIG_FILES([Makefile

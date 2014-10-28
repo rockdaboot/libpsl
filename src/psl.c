@@ -63,10 +63,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <alloca.h>
 #include <errno.h>
 #include <langinfo.h>
 #include <arpa/inet.h>
+#ifdef HAVE_ALLOCA_H
+#	include <alloca.h>
+#endif
 
 #ifdef WITH_LIBICU
 #	include <unicode/uversion.h>

@@ -36,7 +36,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <alloca.h>
+#ifdef HAVE_ALLOCA_H
+#	include <alloca.h>
+#endif
 
 #ifdef WITH_LIBICU
 #	include <unicode/uversion.h>
