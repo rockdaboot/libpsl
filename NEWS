@@ -1,5 +1,11 @@
 Copyright (C) 2014 Tim Rühsen
 
+28.10.2014 Release V0.6.0
+  * added support for IP addresses in psl_is_cookie_domain_acceptable()
+  * removed qsort_r() for compatibility
+  * check for alloca.h before including
+  * include effective_tld_names.dat of date 27.10.2014
+
 03.08.2014 Release V0.5.1
   * fix ASCII check for architectures where char <> signed char
 
