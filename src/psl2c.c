@@ -38,6 +38,9 @@
 #include <time.h>
 #include <ctype.h>
 #include <sys/stat.h>
+#ifdef HAVE_ALLOCA_H
+#	include <alloca.h>
+#endif
 
 #if defined(BUILTIN_GENERATOR_LIBICU) || defined(BUILTIN_GENERATOR_LIBIDN2) || defined(BUILTIN_GENERATOR_LIBIDN)
 #	define _GENERATE_BUILTIN_DATA
