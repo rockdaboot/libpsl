@@ -11,7 +11,7 @@ Build-Depends:
  libicu-dev,
  pkg-config,
  publicsuffix (>= 20140402-2)
-Standards-Version: 3.9.5
+Standards-Version: 3.9.6
 Section: libs
 Homepage: https://github.com/rockdaboot/libpsl
 Vcs-Git: https://github.com/rockdaboot/libpsl
@@ -24,10 +24,12 @@ Depends:
  libpsl0 (= ${binary:Version}),
  ${misc:Depends}
 Description: Library for Public Suffix List (development headers)
- Libpsl allows checking domains against the Public Suffix List,
+ Libpsl allows checking domains against the Public Suffix List.
  It can be used to avoid privacy-leaking 'super-cookies', 
  'super domain' certificates, for domain highlighting purposes
  sorting domain lists by site and more.
+ .
+ Please see http://publicsuffix.org for more detailed information.
  .
  This package contains development header files and documentation for
  developers.
@@ -40,10 +42,12 @@ Depends:
  ${shlibs:Depends}
 Multi-Arch: same
 Description: Library for Public Suffix List (shared libraries)
- Libpsl allows checking domains against the Public Suffix List,
+ Libpsl allows checking domains against the Public Suffix List.
  It can be used to avoid privacy-leaking 'super-cookies',
  'super domain' certificates, for domain highlighting purposes
  sorting domain lists by site and more.
+ .
+ Please see http://publicsuffix.org for more detailed information.
  .
  This package contains runtime libraries.
 
@@ -55,10 +59,12 @@ Depends:
  ${shlibs:Depends}
 Multi-Arch: foreign
 Description: Explore the Public Suffix List
- Libpsl allows checking domains against the Public Suffix List,
+ Libpsl allows checking domains against the Public Suffix List.
  It can be used to avoid privacy-leaking 'super-cookies',
  'super domain' certificates, for domain highlighting purposes
  sorting domain lists by site and more.
+ .
+ Please see http://publicsuffix.org for more detailed information.
  .
  This package contains a commandline tool to explore the Public Suffix
  List.
@@ -72,9 +78,11 @@ Depends:
  ${misc:Depends}
 Multi-Arch: same
 Description: Library for the Public Suffix List (debug symbols)
- Libpsl allows checking domains against the Public Suffix List,
+ Libpsl allows checking domains against the Public Suffix List.
  It can be used to avoid privacy-leaking 'super-cookies',
  'super domain' certificates, for domain highlighting purposes
  sorting domain lists by site and more.
+ .
+ Please see http://publicsuffix.org for more detailed information.
  .
  This package contains debug symbols for libpsl.

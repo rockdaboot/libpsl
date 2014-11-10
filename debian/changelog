@@ -1,3 +1,9 @@
+libpsl (0.6.0-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Tim Rühsen <tim.ruehsen@gmx.de>  Mon, 10 Nov 2014 21:19:17 +0100
+
 libpsl (0.5.1-1) unstable; urgency=low
 
   * New upstream release.
