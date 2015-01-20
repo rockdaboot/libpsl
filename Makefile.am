@@ -13,4 +13,4 @@ DISTCHECK_CONFIGURE_FLAGS = --enable-gtk-doc --enable-man
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libpsl.pc
 
-EXTRA_DIST = config.rpath
+EXTRA_DIST = config.rpath configure
