@@ -28,6 +28,9 @@ GTK_DOC_CHECK([1.15],[--flavour no-tmpl])
 ],[
 AM_CONDITIONAL([ENABLE_GTK_DOC], false)
 ])
+m4_ifdef([GTK_DOC_USE_LIBTOOL], [], [
+AM_CONDITIONAL([GTK_DOC_USE_LIBTOOL], false)
+])
 
 #
 # enable creation of man pages
@@ -170,6 +173,19 @@ AM_CONDITIONAL([BUILTIN_GENERATOR_LIBICU], test "x$enable_builtin" = "xlibicu")
 AM_CONDITIONAL([BUILTIN_GENERATOR_LIBIDN2], test "x$enable_builtin" = "xlibidn2")
 AM_CONDITIONAL([BUILTIN_GENERATOR_LIBIDN], test "x$enable_builtin" = "xlibidn")
 AM_CONDITIONAL([WITH_BUILTIN], test $enable_builtin = yes)
+
+# Solaris has socket in libsocket and inet_ntop in libnsl, but also needs libsocket, so the order is important here
+AC_CHECK_LIB([socket], [socket], [NEEDS_SOCKET=yes], [])
+if test -n "$NEEDS_SOCKET" ; then
+  AC_CHECK_LIB([nsl], [inet_ntop], [NEEDS_NSL=yes], [])
+fi
+if test -n "$NEEDS_SOCKET" && test -n "$NEEDS_NSL" ; then
+  LIBS="$LIBS -lsocket -lnsl"
+elif test -n "$NEEDS_SOCKET" ; then
+  LIBS="$LIBS -lsocket"
+elif test -n "$NEEDS_NSL" ; then
+  LIBS="$LIBS -lnsl"
+fi
 
 # Check for valgrind
 ac_enable_valgrind=no
