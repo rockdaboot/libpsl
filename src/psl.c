@@ -97,7 +97,7 @@
  * SECTION:libpsl
  * @short_description: Public Suffix List library functions
  * @title: libpsl
- * @stability: unstable
+ * @stability: Stable
  * @include: libpsl.h
  *
  * [Public Suffix List](http://publicsuffix.org/) library functions.
