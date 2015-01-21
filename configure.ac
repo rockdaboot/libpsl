@@ -55,6 +55,7 @@ AS_IF([ test "$enable_man" != no ], [
   AC_MSG_RESULT([no])
 ])
 
+PKG_PROG_PKG_CONFIG
 
 # Define these substitions here to keep all version information in one place.
 # For information on how to properly maintain the library version information,
@@ -134,16 +135,22 @@ if test "$enable_runtime" = "libicu" -o "$enable_builtin" = "libicu"; then
   # Check for libicu
   # using pkg-config won't work on older systems like Ubuntu 12.04 LTS Server Edition 64bit
   # using AC_SEARCH_LIBS also don't work since functions have the library version appended
-  OLDLIBS=$LIBS
-  LIBS="-licuuc $LIBS"
-  AC_MSG_CHECKING([for ICU unicode library])
-  AC_LINK_IFELSE(
-    [AC_LANG_PROGRAM(
-      [[#include <unicode/ustring.h>]],
-      [[u_strToUTF8(NULL, 0, NULL, NULL, 0, NULL);]])],
-    [HAVE_LIBICU=yes; AC_MSG_RESULT([yes])],
-    [AC_MSG_RESULT([no]); AC_MSG_ERROR(You requested libicu but it is not installed.)])
-  LIBS=$OLDLIBS
+  PKG_CHECK_MODULES([ICUUC], [icu-uc], [
+    HAVE_LIBICU=yes
+    LIBS="$ICUUC_LIBS $LIBS"
+    CFLAGS="$ICUUC_CFLAGS $CFLAGS"
+  ], [
+    OLDLIBS=$LIBS
+    LIBS="-licuuc $LIBS"
+    AC_MSG_CHECKING([for ICU unicode library])
+    AC_LINK_IFELSE(
+      [AC_LANG_PROGRAM(
+        [[#include <unicode/ustring.h>]],
+        [[u_strToUTF8(NULL, 0, NULL, NULL, 0, NULL);]])],
+      [HAVE_LIBICU=yes; AC_MSG_RESULT([yes])],
+      [AC_MSG_RESULT([no]); AC_MSG_ERROR(You requested libicu but it is not installed.)])
+    LIBS=$OLDLIBS
+  ])
 fi
 
 if test "$enable_runtime" = "libidn2" -o "$enable_builtin" = "libidn2"; then
