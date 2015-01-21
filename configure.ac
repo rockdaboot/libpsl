@@ -135,10 +135,10 @@ if test "$enable_runtime" = "libicu" -o "$enable_builtin" = "libicu"; then
   # Check for libicu
   # using pkg-config won't work on older systems like Ubuntu 12.04 LTS Server Edition 64bit
   # using AC_SEARCH_LIBS also don't work since functions have the library version appended
-  PKG_CHECK_MODULES([ICUUC], [icu-uc], [
+  PKG_CHECK_MODULES([LIBICU], [icu-uc], [
     HAVE_LIBICU=yes
-    LIBS="$ICUUC_LIBS $LIBS"
-    CFLAGS="$ICUUC_CFLAGS $CFLAGS"
+    LIBS="$LIBICU_LIBS $LIBS"
+    CFLAGS="$LIBICU_CFLAGS $CFLAGS"
   ], [
     OLDLIBS=$LIBS
     LIBS="-licuuc $LIBS"
