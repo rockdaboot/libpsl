@@ -175,6 +175,19 @@ AM_CONDITIONAL([BUILTIN_GENERATOR_LIBIDN2], test "x$enable_builtin" = "xlibidn2"
 AM_CONDITIONAL([BUILTIN_GENERATOR_LIBIDN], test "x$enable_builtin" = "xlibidn")
 AM_CONDITIONAL([WITH_BUILTIN], test $enable_builtin = yes)
 
+# Solaris has socket in libsocket and inet_ntop in libnsl, but also needs libsocket, so the order is important here
+AC_CHECK_LIB([socket], [socket], [NEEDS_SOCKET=yes], [])
+if test -n "$NEEDS_SOCKET" ; then
+  AC_CHECK_LIB([nsl], [inet_ntop], [NEEDS_NSL=yes], [])
+fi
+if test -n "$NEEDS_SOCKET" && test -n "$NEEDS_NSL" ; then
+  LIBS="$LIBS -lsocket -lnsl"
+elif test -n "$NEEDS_SOCKET" ; then
+  LIBS="$LIBS -lsocket"
+elif test -n "$NEEDS_NSL" ; then
+  LIBS="$LIBS -lnsl"
+fi
+
 # Check for valgrind
 ac_enable_valgrind=no
 AC_ARG_ENABLE(valgrind-tests,
