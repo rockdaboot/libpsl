@@ -28,6 +28,10 @@ GTK_DOC_CHECK([1.15],[--flavour no-tmpl])
 ],[
 AM_CONDITIONAL([ENABLE_GTK_DOC], false)
 ])
+# needed for some older versions of gtk-doc
+m4_ifdef([GTK_DOC_USE_LIBTOOL], [], [
+AM_CONDITIONAL([GTK_DOC_USE_LIBTOOL], false)
+])
 
 #
 # enable creation of man pages
