@@ -245,10 +245,10 @@ static int _suffix_compare(const _psl_entry_t *s1, const _psl_entry_t *s2)
 	int n;
 
 	if ((n = s2->nlabels - s1->nlabels))
-		return n; // most labels first
+		return n; /* most labels first */
 
 	if ((n = s1->length - s2->length))
-		return n;  // shorter rules first
+		return n;  /* shorter rules first */
 
 	return strcmp(s1->label, s2->label ? s2->label : s2->label_buf);
 }
