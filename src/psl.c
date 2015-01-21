@@ -483,7 +483,7 @@ const char *psl_registrable_domain(const psl_ctx_t *psl, const char *domain)
 
 static int _str_is_ascii(const char *s)
 {
-	while (*s > 0 && *s < 128) s++;
+	while (*s && *((unsigned char *)s) < 128) s++;
 
 	return !*s;
 }
