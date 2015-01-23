@@ -27,10 +27,10 @@ if BUILTIN_GENERATOR_LIBICU
   psl2c_LDADD = -licuuc
 endif
 if BUILTIN_GENERATOR_LIBIDN2
-  psl2c_LDADD = -lidn2 -lunistring
+  psl2c_LDADD = @LTLIBICONV@ -lidn2 -lunistring
 endif
 if BUILTIN_GENERATOR_LIBIDN
-  psl2c_LDADD = -lidn -lunistring
+  psl2c_LDADD = @LTLIBICONV@ -lidn -lunistring
 endif
 
 # Build rule for suffix.c

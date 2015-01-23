@@ -174,6 +174,10 @@ if test "x$HAVE_LIBIDN2" = "xyes" -o "x$HAVE_LIBIDN" = "xyes"; then
   LIBS=$OLDLIBS
 fi
 
+# AM_ICONV sets @LIBICONV@ and @LTLIBICONV@ for use in Makefile.am
+# do not use AM_ICONV conditionally
+AM_ICONV
+
 AM_CONDITIONAL([WITH_LIBICU], test "x$enable_runtime" = "xlibicu")
 AM_CONDITIONAL([WITH_LIBIDN2], test "x$enable_runtime" = "xlibidn2")
 AM_CONDITIONAL([WITH_LIBIDN], test "x$enable_runtime" = "xlibidn")
