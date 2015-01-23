@@ -93,6 +93,22 @@
 /* number of elements within an array */
 #define countof(a) (sizeof(a)/sizeof(*(a)))
 
+#ifndef HAVE_STRNDUP
+// I found no strndup on my old SUSE 7.3 test system (gcc 2.95)
+
+static char *strndup(const char *s, size_t n)
+{
+	char *dst = malloc(n + 1);
+
+	if (dst) {
+		memcpy(dst, s, n);
+		dst[n] = 0;
+	}
+
+	return dst;
+}
+#endif
+
 /**
  * SECTION:libpsl
  * @short_description: Public Suffix List library functions

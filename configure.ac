@@ -231,6 +231,7 @@ AC_SUBST(PSL_TESTFILE)
 
 # check for alloca / alloca.h
 AC_FUNC_ALLOCA
+AC_CHECK_FUNCS([strndup])
 
 # Override the template file name of the generated .pc file, so that there
 # is no need to rename the template file when the API version changes.
