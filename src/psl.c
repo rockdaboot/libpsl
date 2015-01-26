@@ -497,6 +497,11 @@ const char *psl_registrable_domain(const psl_ctx_t *psl, const char *domain)
 	return regdom;
 }
 
+static inline int _isspace_ascii(const char c)
+{
+	return c == ' ' || c == '\t' || c == '\r' || c == '\n';
+}
+
 static int _str_is_ascii(const char *s)
 {
 	while (*s && *((unsigned char *)s) < 128) s++;
@@ -680,14 +685,14 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 	psl->suffix_exceptions = _vector_alloc(64, _suffix_compare_array);
 
 	while ((linep = fgets(buf, sizeof(buf), fp))) {
-		while (isspace(*linep)) linep++; /* ignore leading whitespace */
+		while (_isspace_ascii(*linep)) linep++; /* ignore leading whitespace */
 		if (!*linep) continue; /* skip empty lines */
 
 		if (*linep == '/' && linep[1] == '/')
 			continue; /* skip comments */
 
 		/* parse suffix rule */
-		for (p = linep; *linep && !isspace(*linep);) linep++;
+		for (p = linep; *linep && !_isspace_ascii(*linep);) linep++;
 		*linep = 0;
 
 		if (*p == '!') {
