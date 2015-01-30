@@ -1,5 +1,13 @@
 Copyright (C) 2014 Tim Rühsen
 
+30.01.2015 Release V0.7.0
+  * include effective_tld_names.dat of date 29.12.2014
+  * do not install docs when gtk-doc is not installed
+  * fix several compatibility issues with Solaris
+  * fix 'make distcheck' after 'make clean'
+  * mark API as stable
+  * use pkg-config to detect libicu
+
 14.11.2014 Release V0.6.2
   * revoked commit from 0.6.1 to satisfy Travis-CI
 

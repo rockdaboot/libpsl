@@ -1,5 +1,5 @@
 
-AC_INIT([libpsl], [0.6.2], [tim.ruehsen@gmx.de], [libpsl], [http://github.com/rockdaboot/libpsl])
+AC_INIT([libpsl], [0.7.0], [tim.ruehsen@gmx.de], [libpsl], [http://github.com/rockdaboot/libpsl])
 AC_PREREQ([2.59])
 AM_INIT_AUTOMAKE([1.10 -Wall no-define foreign])
 
@@ -77,7 +77,7 @@ PKG_PROG_PKG_CONFIG
 # 4. If any interfaces have been added, removed, or changed since the last update, increment current, and set revision to 0.
 # 5. If any interfaces have been added since the last public release, then increment age.
 # 6. If any existing interfaces have been removed or changed since the last public release, then set age to 0. 
-AC_SUBST([LIBPSL_SO_VERSION], [2:3:2])
+AC_SUBST([LIBPSL_SO_VERSION], [2:4:2])
 AC_SUBST([LIBPSL_VERSION], $VERSION)
 
 # Check for enable/disable builtin PSL data
