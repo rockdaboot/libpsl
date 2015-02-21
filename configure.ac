@@ -1,5 +1,5 @@
 
-AC_INIT([libpsl], [0.7.0], [tim.ruehsen@gmx.de], [libpsl], [http://github.com/rockdaboot/libpsl])
+AC_INIT([libpsl], [0.7.1], [tim.ruehsen@gmx.de], [libpsl], [http://github.com/rockdaboot/libpsl])
 AC_PREREQ([2.59])
 AM_INIT_AUTOMAKE([1.10 -Wall no-define foreign])
 

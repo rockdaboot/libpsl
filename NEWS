@@ -1,5 +1,8 @@
 Copyright (C) 2014 Tim Rühsen
 
+21.02.2015 Release V0.7.1
+  * include configured PSL file into tarball
+
 30.01.2015 Release V0.7.0
   * include effective_tld_names.dat of date 29.12.2014
   * do not install docs when gtk-doc is not installed
