@@ -28,11 +28,6 @@
  *
  */
 
-/* need _GNU_SOURCE for qsort_r() */
-#ifndef _GNU_SOURCE
-#	define _GNU_SOURCE
-#endif
-
 #if HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -98,7 +93,13 @@
 
 static char *strndup(const char *s, size_t n)
 {
-	char *dst = malloc(n + 1);
+	char *dst;
+	size_t s_len = strlen(s);
+
+	if (s_len > n)
+		n = s_len;
+
+	dst = malloc(n + 1);
 
 	if (dst) {
 		memcpy(dst, s, n);
