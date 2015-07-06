@@ -510,6 +510,44 @@ static int _str_is_ascii(const char *s)
 	return !*s;
 }
 
+#if defined(WITH_LIBIDN)
+/*
+ * Work around a libidn <= 1.30 vulnerability.
+ *
+ * The function checks for a valid UTF-8 character sequence before
+ * passing it to idna_to_ascii_8z().
+ *
+ * [1] http://lists.gnu.org/archive/html/help-libidn/2015-05/msg00002.html
+ * [2] https://lists.gnu.org/archive/html/bug-wget/2015-06/msg00002.html
+ * [3] http://curl.haxx.se/mail/lib-2015-06/0143.html
+ */
+static int _utf8_is_valid(const char *utf8)
+{
+	const unsigned char *s = (const unsigned char *) utf8;
+
+	while (*s) {
+		if ((*s & 0x80) == 0) /* 0xxxxxxx ASCII char */
+			s++;
+		else if ((*s & 0xE0) == 0xC0) /* 110xxxxx 10xxxxxx */ {
+			if ((s[1] & 0xC0) != 0x80)
+				return 0;
+			s += 2;
+		} else if ((*s & 0xF0) == 0xE0) /* 1110xxxx 10xxxxxx 10xxxxxx */ {
+			if ((s[1] & 0xC0) != 0x80 || (s[2] & 0xC0) != 0x80)
+				return 0;
+			s += 3;
+		} else if ((*s & 0xF8) == 0xF0) /* 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx */ {
+			if ((s[1] & 0xC0) != 0x80 || (s[2] & 0xC0) != 0x80 || (s[3] & 0xC0) != 0x80)
+				return 0;
+			s += 4;
+		} else
+			return 0;
+	}
+
+	return 1;
+}
+#endif
+
 #if defined(WITH_LIBICU)
 static void _add_punycode_if_needed(UIDNA *idna, _psl_vector_t *v, _psl_entry_t *e)
 {
@@ -598,6 +636,11 @@ static void _add_punycode_if_needed(_psl_vector_t *v, _psl_entry_t *e)
 
 	if (_str_is_ascii(e->label_buf))
 		return;
+
+	if (!_utf8_is_valid(e->label_buf)) {
+		/* fprintf(_(stderr, "Invalid UTF-8 sequence not converted: '%s'\n"), e->label_buf); */
+		return;
+	}
 
 	/* idna_to_ascii_8z() automatically converts UTF-8 to lowercase */
 
