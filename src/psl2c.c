@@ -36,7 +36,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <ctype.h>
 #include <sys/stat.h>
 #ifdef HAVE_ALLOCA_H
 #	include <alloca.h>
@@ -92,7 +91,7 @@ static void _print_psl_entries(FILE *fpout, const _psl_vector_t *v, const char *
 #if !defined(WITH_LIBICU) && !defined(WITH_IDN2)
 static int _str_needs_encoding(const char *s)
 {
-	while (*s > 0) s++;
+	while (*s && *((unsigned char *)s) < 128) s++;
 
 	return !!*s;
 }

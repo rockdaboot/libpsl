@@ -1,5 +1,5 @@
 
-AC_INIT([libpsl], [0.6.2], [tim.ruehsen@gmx.de], [libpsl], [http://github.com/rockdaboot/libpsl])
+AC_INIT([libpsl], [0.7.1], [tim.ruehsen@gmx.de], [libpsl], [http://github.com/rockdaboot/libpsl])
 AC_PREREQ([2.59])
 AM_INIT_AUTOMAKE([1.10 -Wall no-define foreign])
 
@@ -13,6 +13,9 @@ m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 LT_INIT
 AC_CONFIG_MACRO_DIR([m4])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+
+dnl Check that compiler understands inline
+AC_C_INLINE
 
 #
 # Gettext
@@ -28,6 +31,16 @@ GTK_DOC_CHECK([1.15],[--flavour no-tmpl])
 ],[
 AM_CONDITIONAL([ENABLE_GTK_DOC], false)
 ])
+# needed for some older versions of gtk-doc
+m4_ifdef([GTK_DOC_USE_LIBTOOL], [], [
+AM_CONDITIONAL([GTK_DOC_USE_LIBTOOL], false)
+])
+
+if test x"$have_gtk_doc" = xyes -a x"$enable_gtk_doc" = xyes; then
+  docdir_makefile=docs/libpsl/Makefile
+  docdir_version_xml=docs/libpsl/version.xml
+  AC_SUBST([LIBPSL_DOCS], [docs/libpsl])
+fi
 
 #
 # enable creation of man pages
@@ -51,6 +64,7 @@ AS_IF([ test "$enable_man" != no ], [
   AC_MSG_RESULT([no])
 ])
 
+PKG_PROG_PKG_CONFIG
 
 # Define these substitions here to keep all version information in one place.
 # For information on how to properly maintain the library version information,
@@ -63,7 +77,7 @@ AS_IF([ test "$enable_man" != no ], [
 # 4. If any interfaces have been added, removed, or changed since the last update, increment current, and set revision to 0.
 # 5. If any interfaces have been added since the last public release, then increment age.
 # 6. If any existing interfaces have been removed or changed since the last public release, then set age to 0. 
-AC_SUBST([LIBPSL_SO_VERSION], [2:3:2])
+AC_SUBST([LIBPSL_SO_VERSION], [2:4:2])
 AC_SUBST([LIBPSL_VERSION], $VERSION)
 
 # Check for enable/disable builtin PSL data
@@ -130,16 +144,22 @@ if test "$enable_runtime" = "libicu" -o "$enable_builtin" = "libicu"; then
   # Check for libicu
   # using pkg-config won't work on older systems like Ubuntu 12.04 LTS Server Edition 64bit
   # using AC_SEARCH_LIBS also don't work since functions have the library version appended
-  OLDLIBS=$LIBS
-  LIBS="-licuuc $LIBS"
-  AC_MSG_CHECKING([for ICU unicode library])
-  AC_LINK_IFELSE(
-    [AC_LANG_PROGRAM(
-      [[#include <unicode/ustring.h>]],
-      [[u_strToUTF8(NULL, 0, NULL, NULL, 0, NULL);]])],
-    [HAVE_LIBICU=yes; AC_MSG_RESULT([yes])],
-    [AC_MSG_RESULT([no]); AC_MSG_ERROR(You requested libicu but it is not installed.)])
-  LIBS=$OLDLIBS
+  PKG_CHECK_MODULES([LIBICU], [icu-uc], [
+    HAVE_LIBICU=yes
+    LIBS="$LIBICU_LIBS $LIBS"
+    CFLAGS="$LIBICU_CFLAGS $CFLAGS"
+  ], [
+    OLDLIBS=$LIBS
+    LIBS="-licuuc $LIBS"
+    AC_MSG_CHECKING([for ICU unicode library])
+    AC_LINK_IFELSE(
+      [AC_LANG_PROGRAM(
+        [[#include <unicode/ustring.h>]],
+        [[u_strToUTF8(NULL, 0, NULL, NULL, 0, NULL);]])],
+      [HAVE_LIBICU=yes; AC_MSG_RESULT([yes])],
+      [AC_MSG_RESULT([no]); AC_MSG_ERROR(You requested libicu but it is not installed.)])
+    LIBS=$OLDLIBS
+  ])
 fi
 
 if test "$enable_runtime" = "libidn2" -o "$enable_builtin" = "libidn2"; then
@@ -163,6 +183,10 @@ if test "x$HAVE_LIBIDN2" = "xyes" -o "x$HAVE_LIBIDN" = "xyes"; then
   LIBS=$OLDLIBS
 fi
 
+# AM_ICONV sets @LIBICONV@ and @LTLIBICONV@ for use in Makefile.am
+# do not use AM_ICONV conditionally
+AM_ICONV
+
 AM_CONDITIONAL([WITH_LIBICU], test "x$enable_runtime" = "xlibicu")
 AM_CONDITIONAL([WITH_LIBIDN2], test "x$enable_runtime" = "xlibidn2")
 AM_CONDITIONAL([WITH_LIBIDN], test "x$enable_runtime" = "xlibidn")
@@ -170,6 +194,19 @@ AM_CONDITIONAL([BUILTIN_GENERATOR_LIBICU], test "x$enable_builtin" = "xlibicu")
 AM_CONDITIONAL([BUILTIN_GENERATOR_LIBIDN2], test "x$enable_builtin" = "xlibidn2")
 AM_CONDITIONAL([BUILTIN_GENERATOR_LIBIDN], test "x$enable_builtin" = "xlibidn")
 AM_CONDITIONAL([WITH_BUILTIN], test $enable_builtin = yes)
+
+# Solaris has socket in libsocket and inet_ntop in libnsl, but also needs libsocket, so the order is important here
+AC_CHECK_LIB([socket], [socket], [NEEDS_SOCKET=yes], [])
+if test -n "$NEEDS_SOCKET" ; then
+  AC_CHECK_LIB([nsl], [inet_ntop], [NEEDS_NSL=yes], [])
+fi
+if test -n "$NEEDS_SOCKET" && test -n "$NEEDS_NSL" ; then
+  LIBS="$LIBS -lsocket -lnsl"
+elif test -n "$NEEDS_SOCKET" ; then
+  LIBS="$LIBS -lsocket"
+elif test -n "$NEEDS_NSL" ; then
+  LIBS="$LIBS -lnsl"
+fi
 
 # Check for valgrind
 ac_enable_valgrind=no
@@ -207,6 +244,7 @@ AC_SUBST(PSL_TESTFILE)
 
 # check for alloca / alloca.h
 AC_FUNC_ALLOCA
+AC_CHECK_FUNCS([strndup])
 
 # Override the template file name of the generated .pc file, so that there
 # is no need to rename the template file when the API version changes.
@@ -215,8 +253,8 @@ AC_CONFIG_FILES([Makefile
                  src/Makefile
                  tools/Makefile
                  po/Makefile.in
-                 docs/libpsl/Makefile
-                 docs/libpsl/version.xml
+                 ${docdir_makefile}
+                 ${docdir_version_xml}
                  data/Makefile
                  tests/Makefile
                  libpsl.pc:libpsl.pc.in])

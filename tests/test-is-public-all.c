@@ -46,6 +46,11 @@ static int
 	ok,
 	failed;
 
+static inline int _isspace_ascii(const char c)
+{
+	return c == ' ' || c == '\t' || c == '\r' || c == '\n';
+}
+
 static void test_psl(void)
 {
 	FILE *fp;
@@ -59,14 +64,14 @@ static void test_psl(void)
 
 	if ((fp = fopen(PSL_FILE, "r"))) {
 		while ((linep = fgets(buf, sizeof(buf), fp))) {
-			while (isspace(*linep)) linep++; /* ignore leading whitespace */
+			while (_isspace_ascii(*linep)) linep++; /* ignore leading whitespace */
 			if (!*linep) continue; /* skip empty lines */
 
 			if (*linep == '/' && linep[1] == '/')
 				continue; /* skip comments */
 
 			/* parse suffix rule */
-			for (p = linep; *linep && !isspace(*linep);) linep++;
+			for (p = linep; *linep && !_isspace_ascii(*linep);) linep++;
 			*linep = 0;
 
 			if (*p == '!') { /* an exception to a wildcard, e.g. !www.ck (wildcard is *.ck) */

@@ -93,11 +93,27 @@
 /* number of elements within an array */
 #define countof(a) (sizeof(a)/sizeof(*(a)))
 
+#ifndef HAVE_STRNDUP
+// I found no strndup on my old SUSE 7.3 test system (gcc 2.95)
+
+static char *strndup(const char *s, size_t n)
+{
+	char *dst = malloc(n + 1);
+
+	if (dst) {
+		memcpy(dst, s, n);
+		dst[n] = 0;
+	}
+
+	return dst;
+}
+#endif
+
 /**
  * SECTION:libpsl
  * @short_description: Public Suffix List library functions
  * @title: libpsl
- * @stability: unstable
+ * @stability: Stable
  * @include: libpsl.h
  *
  * [Public Suffix List](http://publicsuffix.org/) library functions.
@@ -245,10 +261,10 @@ static int _suffix_compare(const _psl_entry_t *s1, const _psl_entry_t *s2)
 	int n;
 
 	if ((n = s2->nlabels - s1->nlabels))
-		return n; // most labels first
+		return n; /* most labels first */
 
 	if ((n = s1->length - s2->length))
-		return n;  // shorter rules first
+		return n;  /* shorter rules first */
 
 	return strcmp(s1->label, s2->label ? s2->label : s2->label_buf);
 }
@@ -481,9 +497,14 @@ const char *psl_registrable_domain(const psl_ctx_t *psl, const char *domain)
 	return regdom;
 }
 
+static inline int _isspace_ascii(const char c)
+{
+	return c == ' ' || c == '\t' || c == '\r' || c == '\n';
+}
+
 static int _str_is_ascii(const char *s)
 {
-	while (*s > 0 && *s < 128) s++;
+	while (*s && *((unsigned char *)s) < 128) s++;
 
 	return !*s;
 }
@@ -664,14 +685,14 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 	psl->suffix_exceptions = _vector_alloc(64, _suffix_compare_array);
 
 	while ((linep = fgets(buf, sizeof(buf), fp))) {
-		while (isspace(*linep)) linep++; /* ignore leading whitespace */
+		while (_isspace_ascii(*linep)) linep++; /* ignore leading whitespace */
 		if (!*linep) continue; /* skip empty lines */
 
 		if (*linep == '/' && linep[1] == '/')
 			continue; /* skip comments */
 
 		/* parse suffix rule */
-		for (p = linep; *linep && !isspace(*linep);) linep++;
+		for (p = linep; *linep && !_isspace_ascii(*linep);) linep++;
 		*linep = 0;
 
 		if (*p == '!') {
