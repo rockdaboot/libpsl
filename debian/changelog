@@ -1,6 +1,7 @@
 libpsl (0.7.1-1) unstable; urgency=medium
 
   * New upstream release.
+  * switch from autotools-dev to dh_autoreconf
 
  -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Thu, 09 Jul 2015 10:06:59 -0400
 

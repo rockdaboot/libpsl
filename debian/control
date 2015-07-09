@@ -4,8 +4,8 @@ Maintainer: Tim Rühsen <tim.ruehsen@gmx.de>
 Uploaders: Daniel Kahn Gillmor <dkg@fifthhorseman.net>
 Build-Depends:
  automake,
- autotools-dev,
  debhelper (>=9),
+ dh-autoreconf,
  gtk-doc-tools,
  help2man,
  libicu-dev,

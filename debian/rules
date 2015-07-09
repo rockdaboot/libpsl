@@ -6,7 +6,7 @@
 export DH_OPTIONS += --dbg-package=libpsl0-dbg
 
 %:
-	dh $@  --with autotools-dev
+	dh $@  --with autoreconf
 
 override_dh_auto_configure:
 	./autogen.sh
