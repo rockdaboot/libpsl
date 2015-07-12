@@ -9,8 +9,7 @@ export DH_OPTIONS += --dbg-package=libpsl0-dbg
 	dh $@  --with autoreconf
 
 override_dh_autoreconf:
-	gtkdocize
-	dh_autoreconf
+	dh_autoreconf ./autogen.sh
 
 override_dh_auto_configure:
 	dh_auto_configure -- \
