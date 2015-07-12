@@ -13,7 +13,6 @@ override_dh_autoreconf:
 	dh_autoreconf
 
 override_dh_auto_configure:
-	./autogen.sh
 	dh_auto_configure -- \
 		--enable-builtin=libicu \
 		--enable-gtk-doc \
