@@ -1,4 +1,4 @@
-usr/share/gtk-doc/html/libpsl/*
 usr/include/*
 usr/lib/*/lib*.so
 usr/lib/*/pkgconfig/*
+usr/share/gtk-doc/html/libpsl/*

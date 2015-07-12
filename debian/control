@@ -2,15 +2,14 @@ Source: libpsl
 Priority: optional
 Maintainer: Tim Rühsen <tim.ruehsen@gmx.de>
 Uploaders: Daniel Kahn Gillmor <dkg@fifthhorseman.net>
-Build-Depends:
- automake,
- debhelper (>=9),
- dh-autoreconf,
- gtk-doc-tools,
- help2man,
- libicu-dev,
- pkg-config,
- publicsuffix (>= 20140402-2)
+Build-Depends: automake,
+               debhelper (>=9),
+               dh-autoreconf,
+               gtk-doc-tools,
+               help2man,
+               libicu-dev,
+               pkg-config,
+               publicsuffix (>= 20140402-2)
 Standards-Version: 3.9.6
 Section: libs
 Homepage: https://github.com/rockdaboot/libpsl
@@ -20,12 +19,10 @@ Vcs-Browser: https://github.com/rockdaboot/libpsl
 Package: libpsl-dev
 Section: libdevel
 Architecture: any
-Depends:
- libpsl0 (= ${binary:Version}),
- ${misc:Depends}
+Depends: libpsl0 (= ${binary:Version}), ${misc:Depends}
 Description: Library for Public Suffix List (development headers)
  Libpsl allows checking domains against the Public Suffix List.
- It can be used to avoid privacy-leaking 'super-cookies', 
+ It can be used to avoid privacy-leaking 'super-cookies',
  'super domain' certificates, for domain highlighting purposes
  sorting domain lists by site and more.
  .
@@ -36,9 +33,7 @@ Description: Library for Public Suffix List (development headers)
 
 Package: libpsl0
 Architecture: any
-Depends:
- ${misc:Depends},
- ${shlibs:Depends}
+Depends: ${misc:Depends}, ${shlibs:Depends}
 Multi-Arch: same
 Description: Library for Public Suffix List (shared libraries)
  Libpsl allows checking domains against the Public Suffix List.
@@ -53,9 +48,7 @@ Description: Library for Public Suffix List (shared libraries)
 Package: psl
 Section: net
 Architecture: any
-Depends:
- ${misc:Depends},
- ${shlibs:Depends}
+Depends: ${misc:Depends}, ${shlibs:Depends}
 Multi-Arch: foreign
 Description: Explore the Public Suffix List
  Libpsl allows checking domains against the Public Suffix List.
@@ -67,14 +60,12 @@ Description: Explore the Public Suffix List
  .
  This package contains a commandline tool to explore the Public Suffix
  List.
- 
+
 Package: libpsl0-dbg
 Section: debug
 Priority: extra
 Architecture: any
-Depends:
- libpsl0 (= ${binary:Version}),
- ${misc:Depends}
+Depends: libpsl0 (= ${binary:Version}), ${misc:Depends}
 Multi-Arch: same
 Description: Library for the Public Suffix List (debug symbols)
  Libpsl allows checking domains against the Public Suffix List.
