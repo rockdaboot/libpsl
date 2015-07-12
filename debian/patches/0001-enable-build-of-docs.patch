@@ -1,0 +1,25 @@
+From: Daniel Kahn Gillmor <dkg@fifthhorseman.net>
+Date: Sat, 11 Jul 2015 19:09:02 -0400
+Subject: enable build of docs
+
+Without this change, after ./autogen.sh, ./configure --enable-gtk-doc
+results in:
+
+config.status: error: cannot find input file: `docs/libpsl/Makefile.in'
+---
+ configure.ac | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/configure.ac b/configure.ac
+index 7fc1491..b5dcee8 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -253,7 +253,7 @@ AC_CONFIG_FILES([Makefile
+                  src/Makefile
+                  tools/Makefile
+                  po/Makefile.in
+-                 ${docdir_makefile}
++                 docs/libpsl/Makefile
+                  ${docdir_version_xml}
+                  data/Makefile
+                  tests/Makefile
