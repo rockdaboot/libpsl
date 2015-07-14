@@ -231,14 +231,14 @@ fi
 AC_ARG_WITH(psl-file,
   AC_HELP_STRING([--with-psl-file=[PATH]], [path to PSL file]),
   PSL_FILE=$withval,
-  PSL_FILE="\$(top_srcdir)/data/effective_tld_names.dat")
+  PSL_FILE="\$(top_srcdir)/list/public_suffix_list.dat")
 AC_SUBST(PSL_FILE)
 
 # Check for custom PSL test file
 AC_ARG_WITH(psl-testfile,
   AC_HELP_STRING([--with-psl-testfile=[PATH]], [path to PSL test file]),
   PSL_TESTFILE=$withval,
-  PSL_TESTFILE="\$(top_srcdir)/data/test_psl.txt")
+  PSL_TESTFILE="\$(top_srcdir)/list/tests/test_psl.txt")
 AC_SUBST(PSL_TESTFILE)
 
 # check for alloca / alloca.h
@@ -252,7 +252,6 @@ AC_CONFIG_FILES([Makefile
                  src/Makefile
                  tools/Makefile
                  po/Makefile.in
-                 data/Makefile
                  tests/Makefile
                  libpsl.pc:libpsl.pc.in])
 AC_OUTPUT

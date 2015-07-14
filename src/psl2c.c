@@ -143,7 +143,7 @@ int main(int argc, const char **argv)
 
 	if (argc != 3) {
 		fprintf(stderr, "Usage: psl2c <infile> <outfile>\n");
-		fprintf(stderr, "  <infile>  is the 'effective_tld_names.dat' (aka Public Suffix List), lowercase UTF-8 encoded\n");
+		fprintf(stderr, "  <infile>  is the 'public_suffix_list.dat', lowercase UTF-8 encoded\n");
 		fprintf(stderr, "  <outfile> is the the C filename to be generated from <infile>\n");
 		return 1;
 	}
