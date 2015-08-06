@@ -1,6 +1,6 @@
 # got some hints from https://gitorious.org/openismus-playground/examplelib/source
 
-SUBDIRS = po include src tools data $(LIBPSL_DOCS) tests
+SUBDIRS = po include src tools $(LIBPSL_DOCS) tests
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
@@ -14,4 +14,4 @@ ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libpsl.pc
 
-EXTRA_DIST = config.rpath
+EXTRA_DIST = config.rpath LICENSE list/public_suffix_list.dat list/tests/test_psl.txt

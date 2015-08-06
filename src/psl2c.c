@@ -143,7 +143,7 @@ int main(int argc, const char **argv)
 
 	if (argc != 3) {
 		fprintf(stderr, "Usage: psl2c <infile> <outfile>\n");
-		fprintf(stderr, "  <infile>  is the 'effective_tld_names.dat' (aka Public Suffix List), lowercase UTF-8 encoded\n");
+		fprintf(stderr, "  <infile>  is the 'public_suffix_list.dat', lowercase UTF-8 encoded\n");
 		fprintf(stderr, "  <outfile> is the the C filename to be generated from <infile>\n");
 		return 1;
 	}
@@ -157,6 +157,7 @@ int main(int argc, const char **argv)
 		struct stat st;
 		size_t cmdsize = 16 + strlen(argv[1]);
 		char *cmd = alloca(cmdsize), checksum[64] = "";
+		const char *source_date_epoch = NULL;
 
 #if 0
 		/* include library code did not generate punycode, so let's do it for the builtin data */
@@ -177,7 +178,10 @@ int main(int argc, const char **argv)
 		if (stat(argv[1], &st) != 0)
 			st.st_mtime = 0;
 		fprintf(fpout, "static time_t _psl_file_time = %lu;\n", st.st_mtime);
-		fprintf(fpout, "static time_t _psl_compile_time = %lu;\n", time(NULL));
+		if ((source_date_epoch = getenv("SOURCE_DATE_EPOCH")))
+			fprintf(fpout, "static time_t _psl_compile_time = %lu;\n", atol(source_date_epoch));
+		else
+			fprintf(fpout, "static time_t _psl_compile_time = %lu;\n", time(NULL));
 		fprintf(fpout, "static const char _psl_sha1_checksum[] = \"%s\";\n", checksum);
 		fprintf(fpout, "static const char _psl_filename[] = \"%s\";\n", argv[1]);
 

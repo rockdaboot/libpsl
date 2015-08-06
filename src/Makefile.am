@@ -22,7 +22,7 @@ endif
 
 noinst_PROGRAMS = psl2c
 psl2c_SOURCES = psl2c.c
-psl2c_CPPFLAGS = -I$(top_srcdir)/include -D _GNU_SOURCE
+psl2c_CPPFLAGS = -I$(top_srcdir)/include
 if BUILTIN_GENERATOR_LIBICU
   psl2c_LDADD = -licuuc
 endif

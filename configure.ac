@@ -1,5 +1,5 @@
 
-AC_INIT([libpsl], [0.7.1], [tim.ruehsen@gmx.de], [libpsl], [http://github.com/rockdaboot/libpsl])
+AC_INIT([libpsl], [0.8.0], [tim.ruehsen@gmx.de], [libpsl], [http://github.com/rockdaboot/libpsl])
 AC_PREREQ([2.59])
 AM_INIT_AUTOMAKE([1.10 -Wall no-define foreign])
 
@@ -37,8 +37,7 @@ AM_CONDITIONAL([GTK_DOC_USE_LIBTOOL], false)
 ])
 
 if test x"$have_gtk_doc" = xyes -a x"$enable_gtk_doc" = xyes; then
-  docdir_makefile=docs/libpsl/Makefile
-  docdir_version_xml=docs/libpsl/version.xml
+  AC_CONFIG_FILES([docs/libpsl/Makefile docs/libpsl/version.xml])
   AC_SUBST([LIBPSL_DOCS], [docs/libpsl])
 fi
 
@@ -77,7 +76,7 @@ PKG_PROG_PKG_CONFIG
 # 4. If any interfaces have been added, removed, or changed since the last update, increment current, and set revision to 0.
 # 5. If any interfaces have been added since the last public release, then increment age.
 # 6. If any existing interfaces have been removed or changed since the last public release, then set age to 0. 
-AC_SUBST([LIBPSL_SO_VERSION], [2:4:2])
+AC_SUBST([LIBPSL_SO_VERSION], [2:5:2])
 AC_SUBST([LIBPSL_VERSION], $VERSION)
 
 # Check for enable/disable builtin PSL data
@@ -232,14 +231,14 @@ fi
 AC_ARG_WITH(psl-file,
   AC_HELP_STRING([--with-psl-file=[PATH]], [path to PSL file]),
   PSL_FILE=$withval,
-  PSL_FILE="\$(top_srcdir)/data/effective_tld_names.dat")
+  PSL_FILE="\$(top_srcdir)/list/public_suffix_list.dat")
 AC_SUBST(PSL_FILE)
 
 # Check for custom PSL test file
 AC_ARG_WITH(psl-testfile,
   AC_HELP_STRING([--with-psl-testfile=[PATH]], [path to PSL test file]),
   PSL_TESTFILE=$withval,
-  PSL_TESTFILE="\$(top_srcdir)/data/test_psl.txt")
+  PSL_TESTFILE="\$(top_srcdir)/list/tests/test_psl.txt")
 AC_SUBST(PSL_TESTFILE)
 
 # check for alloca / alloca.h
@@ -253,9 +252,6 @@ AC_CONFIG_FILES([Makefile
                  src/Makefile
                  tools/Makefile
                  po/Makefile.in
-                 ${docdir_makefile}
-                 ${docdir_version_xml}
-                 data/Makefile
                  tests/Makefile
                  libpsl.pc:libpsl.pc.in])
 AC_OUTPUT

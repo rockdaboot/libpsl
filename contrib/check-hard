@@ -1,0 +1,67 @@
+#!/bin/sh
+#
+# Do some checking before 'git push'.
+
+# Set a stricter bash mode
+set -e
+set -u
+
+CORES=$(grep -c ^processor /proc/cpuinfo 2> /dev/null || echo 0)
+if [ $CORES -lt 1 ]; then CORES=1; fi
+
+echo "Running: make distclean"
+make distclean > /dev/null || true
+
+# We define _GNU_SOURCE to avoid warnings with missing prototypes.
+# C89 does not know snprintf, strdup, strndup, popen, pclose
+CFLAGS="-std=c89 -pedantic -O2 -g -Wall -Wextra -Wstrict-prototypes -Wold-style-definition -Wwrite-strings -Wshadow -Wformat -Wformat-security -Wunreachable-code -Wstrict-prototypes -Wmissing-prototypes -Wold-style-definition -D_GNU_SOURCE"
+
+CACHEFILE=$PWD/config_check.cache
+
+# measure time consumed and print it at the end of the script
+START=$(date +%s.%N)
+
+# avoid annoying ar warning
+export ARFLAGS="cr"
+export AR_FLAGS="cr"
+
+echo "Running: ./autogen.sh"
+./autogen.sh > /dev/null
+echo
+
+for CC in gcc clang; do
+  export CC
+  echo
+  echo "*** Testing with CC=$CC"
+
+  # the compiler changed, so we have to remove the cache file here
+  rm -f $CACHEFILE
+
+  for options in \
+  "--enable-runtime=libicu --enable-builtin=libicu" \
+  "--enable-runtime=libidn2 --enable-builtin=libidn2" \
+  "--enable-runtime=libidn --enable-builtin=libidn"; do
+    export DISTCHECK_CONFIGURE_FLAGS="-C --cache-file=$CACHEFILE $options"
+    echo
+    echo "  *** ./configure $DISTCHECK_CONFIGURE_FLAGS"
+    ./configure $DISTCHECK_CONFIGURE_FLAGS CFLAGS="$CFLAGS" > /dev/null
+
+    for xVALGRIND in 0 1; do
+      for xLCALL in C tr_TR.utf8; do
+        export TESTS_ENVIRONMENT="LC_ALL=$xLCALL VALGRIND_TESTS=$xVALGRIND"
+        echo "    *** TESTS_ENVIRONMENT=\"$TESTS_ENVIRONMENT\"" make check -j$CORES
+        make check -j$CORES > /dev/null
+      done
+    done
+
+    unset TESTS_ENVIRONMENT
+    export TESTS_ENVIRONMENT
+    echo
+    echo "  *** make distcheck CFLAGS=$CFLAGS -j$CORES"
+    make distcheck CFLAGS="$CFLAGS" -j$CORES > /dev/null
+  done
+done
+
+END=$(date +%s.%N)
+echo
+echo "Duration: "$(echo "$END - $START" | bc)

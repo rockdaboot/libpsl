@@ -21,7 +21,7 @@
  *
  * This file is part of the test suite of libpsl.
  *
- * Test psl_is_public_suffix() for all entries in effective_tld_names.dat
+ * Test psl_is_public_suffix() for all entries in public_suffix_list.dat
  *
  * Changelog
  * 19.03.2014  Tim Ruehsen  created
