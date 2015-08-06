@@ -1,3 +1,9 @@
+libpsl (0.8.0-1) unstable; urgency=medium
+
+  * new upstream release.
+
+ -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Thu, 06 Aug 2015 15:52:27 -0400
+
 libpsl (0.7.1-1) unstable; urgency=medium
 
   * New upstream release.
