@@ -1,5 +1,13 @@
 Copyright (C) 2014 Tim Rühsen
 
+06.08.2015 Release V0.8.0
+  * Add https://github.com/publicsuffix as git submodule
+  * Support Debian 'Reproducible Builds'
+  * Fix generation of docs
+  * Check UTF-8 sequences for validity (for libidn<=1.30)
+  * Add LICENSE to distribution tarball
+  * Fix compatibility function strndup 
+
 21.02.2015 Release V0.7.1
   * include configured PSL file into tarball
 
