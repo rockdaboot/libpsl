@@ -89,7 +89,7 @@
 #define countof(a) (sizeof(a)/sizeof(*(a)))
 
 #ifndef HAVE_STRNDUP
-// I found no strndup on my old SUSE 7.3 test system (gcc 2.95)
+/* I found no strndup on my old SUSE 7.3 test system (gcc 2.95) */
 
 static char *strndup(const char *s, size_t n)
 {
