@@ -3,7 +3,6 @@
 <ANCHOR id="libpsl-Public-Suffix-List-functions.stability-level" href="libpsl/libpsl-Public-Suffix-List-functions.html#libpsl-Public-Suffix-List-functions.stability-level">
 <ANCHOR id="libpsl-Public-Suffix-List-functions.functions" href="libpsl/libpsl-Public-Suffix-List-functions.html#libpsl-Public-Suffix-List-functions.functions">
 <ANCHOR id="libpsl-Public-Suffix-List-functions.other" href="libpsl/libpsl-Public-Suffix-List-functions.html#libpsl-Public-Suffix-List-functions.other">
-<ANCHOR id="libpsl-Public-Suffix-List-functions.object-hierarchy" href="libpsl/libpsl-Public-Suffix-List-functions.html#libpsl-Public-Suffix-List-functions.object-hierarchy">
 <ANCHOR id="libpsl-Public-Suffix-List-functions.includes" href="libpsl/libpsl-Public-Suffix-List-functions.html#libpsl-Public-Suffix-List-functions.includes">
 <ANCHOR id="libpsl-Public-Suffix-List-functions.description" href="libpsl/libpsl-Public-Suffix-List-functions.html#libpsl-Public-Suffix-List-functions.description">
 <ANCHOR id="libpsl-Public-Suffix-List-functions.functions_details" href="libpsl/libpsl-Public-Suffix-List-functions.html#libpsl-Public-Suffix-List-functions.functions_details">
@@ -25,4 +24,10 @@
 <ANCHOR id="psl-str-to-utf8lower" href="libpsl/libpsl-Public-Suffix-List-functions.html#psl-str-to-utf8lower">
 <ANCHOR id="libpsl-Public-Suffix-List-functions.other_details" href="libpsl/libpsl-Public-Suffix-List-functions.html#libpsl-Public-Suffix-List-functions.other_details">
 <ANCHOR id="psl-error-t" href="libpsl/libpsl-Public-Suffix-List-functions.html#psl-error-t">
+<ANCHOR id="PSL-SUCCESS:CAPS" href="libpsl/libpsl-Public-Suffix-List-functions.html#PSL-SUCCESS:CAPS">
+<ANCHOR id="PSL-ERR-INVALID-ARG:CAPS" href="libpsl/libpsl-Public-Suffix-List-functions.html#PSL-ERR-INVALID-ARG:CAPS">
+<ANCHOR id="PSL-ERR-CONVERTER:CAPS" href="libpsl/libpsl-Public-Suffix-List-functions.html#PSL-ERR-CONVERTER:CAPS">
+<ANCHOR id="PSL-ERR-TO-UTF16:CAPS" href="libpsl/libpsl-Public-Suffix-List-functions.html#PSL-ERR-TO-UTF16:CAPS">
+<ANCHOR id="PSL-ERR-TO-LOWER:CAPS" href="libpsl/libpsl-Public-Suffix-List-functions.html#PSL-ERR-TO-LOWER:CAPS">
+<ANCHOR id="PSL-ERR-TO-UTF8:CAPS" href="libpsl/libpsl-Public-Suffix-List-functions.html#PSL-ERR-TO-UTF8:CAPS">
 <ANCHOR id="psl-ctx-t" href="libpsl/libpsl-Public-Suffix-List-functions.html#psl-ctx-t">

@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
-<!DOCTYPE book PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "">
 <book xmlns="http://www.devhelp.net/book" title="Libpsl Reference Manual" link="index.html" author="" name="libpsl" version="2" language="c">
   <chapters>
     <sub name="Libpsl Overview" link="libpsl.html">
@@ -28,5 +27,11 @@
     <keyword type="function" name="psl_str_to_utf8lower ()" link="libpsl-Public-Suffix-List-functions.html#psl-str-to-utf8lower" since="0.4"/>
     <keyword type="enum" name="enum psl_error_t" link="libpsl-Public-Suffix-List-functions.html#psl-error-t"/>
     <keyword type="typedef" name="psl_ctx_t" link="libpsl-Public-Suffix-List-functions.html#psl-ctx-t"/>
+    <keyword type="constant" name="PSL_SUCCESS" link="libpsl-Public-Suffix-List-functions.html#PSL-SUCCESS:CAPS"/>
+    <keyword type="constant" name="PSL_ERR_INVALID_ARG" link="libpsl-Public-Suffix-List-functions.html#PSL-ERR-INVALID-ARG:CAPS"/>
+    <keyword type="constant" name="PSL_ERR_CONVERTER" link="libpsl-Public-Suffix-List-functions.html#PSL-ERR-CONVERTER:CAPS"/>
+    <keyword type="constant" name="PSL_ERR_TO_UTF16" link="libpsl-Public-Suffix-List-functions.html#PSL-ERR-TO-UTF16:CAPS"/>
+    <keyword type="constant" name="PSL_ERR_TO_LOWER" link="libpsl-Public-Suffix-List-functions.html#PSL-ERR-TO-LOWER:CAPS"/>
+    <keyword type="constant" name="PSL_ERR_TO_UTF8" link="libpsl-Public-Suffix-List-functions.html#PSL-ERR-TO-UTF8:CAPS"/>
   </functions>
 </book>
