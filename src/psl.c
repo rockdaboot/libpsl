@@ -776,13 +776,11 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 }
 
 /**
- * psl_load_free:
+ * psl_free:
  * @psl: PSL context pointer
  *
  * This function frees the the PSL context that has been retrieved via
  * psl_load_fp() or psl_load_file().
- *
- * Returns: Pointer to a PSL context private or %NULL on failure.
  *
  * Since: 0.1
  */
@@ -827,8 +825,6 @@ const psl_ctx_t *psl_builtin(void)
  * This function returns number of public suffixes maintained by @psl.
  * The number of exceptions within the Public Suffix List are not included.
  *
- * If the generation of built-in data has been disabled during compilation, 0 will be returned.
- *
  * Returns: Number of public suffixes entries in PSL context.
  *
  * Since: 0.1
@@ -848,8 +844,6 @@ int psl_suffix_count(const psl_ctx_t *psl)
  * @psl: PSL context pointer
  *
  * This function returns number of public suffix exceptions maintained by @psl.
- *
- * If the generation of built-in data has been disabled during compilation, 0 will be returned.
  *
  * Returns: Number of public suffix exceptions in PSL context.
  *
