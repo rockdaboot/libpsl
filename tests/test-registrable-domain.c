@@ -66,7 +66,7 @@ static void test(const psl_ctx_t *psl, const char *domain, const char *expected_
 	} else {
 		failed++;
 		printf("psl_registrable_domain(%s)=%s (expected %s)\n",
-			domain, result ? result : "NULL", expected_result ? expected_result : "NULL");
+			   domain ? domain : "NULL", result ? result : "NULL", expected_result ? expected_result : "NULL");
 	}
 
 	free(lower);
@@ -76,7 +76,8 @@ static void test_psl(void)
 {
 	FILE *fp;
 	const psl_ctx_t *psl;
-	char buf[256], domain[128], expected_regdom[128];
+	char buf[256], domain[128], expected_regdom[128], semicolon[2];
+	int er_is_null, d_is_null;
 
 	psl = psl_builtin();
 
@@ -110,15 +111,26 @@ static void test_psl(void)
 
 	if ((fp = fopen(PSL_TESTFILE, "r"))) {
 		while ((fgets(buf, sizeof(buf), fp))) {
-			if (sscanf(buf, " checkPublicSuffix('%127[^']' , '%127[^']", domain, expected_regdom) != 2) {
-				if (sscanf(buf, " checkPublicSuffix('%127[^']' , %127[nul]", domain, expected_regdom) != 2)
+			if (buf[0] == 0 || buf[0] == '\n' || (buf[0] == '/' && buf[1] == '/'))
+				continue; /* ignore comments and blank lines */
+			er_is_null = 0;
+			d_is_null = 0;
+			if (sscanf(buf, " checkPublicSuffix ( '%127[^']' , '%127[^']' ) %1[;]", domain, expected_regdom, semicolon) != 3) {
+				if (sscanf(buf, " checkPublicSuffix ( '%127[^']' , null ) %1[;]", domain, semicolon) == 2) {
+					er_is_null = 1;
+				} else if (sscanf(buf, " checkPublicSuffix ( null , '%127[^']' ) %1[;]", expected_regdom, semicolon) == 2) {
+					d_is_null = 1;
+				} else if (sscanf(buf, " checkPublicSuffix ( null , null ) %1[;]", semicolon) == 1) {
+					d_is_null = 1;
+					er_is_null = 1;
+				} else {
+					failed++;
+					printf("unknown line from '" PSL_TESTFILE "': %s", buf);
 					continue;
+				}
 			}
 
-			if (!strcmp(expected_regdom, "null"))
-				test(psl, domain, NULL);
-			else
-				test(psl, domain, expected_regdom);
+			test(psl, d_is_null ? NULL : domain, er_is_null ? NULL : expected_regdom);
 		}
 
 		fclose(fp);
