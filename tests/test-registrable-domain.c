@@ -76,6 +76,7 @@ static void test_psl(void)
 {
 	FILE *fp;
 	const psl_ctx_t *psl;
+	const char *p;
 	char buf[256], domain[128], expected_regdom[128], semicolon[2];
 	int er_is_null, d_is_null;
 
@@ -111,21 +112,27 @@ static void test_psl(void)
 
 	if ((fp = fopen(PSL_TESTFILE, "r"))) {
 		while ((fgets(buf, sizeof(buf), fp))) {
-			if (buf[0] == 0 || buf[0] == '\n' || (buf[0] == '/' && buf[1] == '/'))
+			/* advance over ASCII white space */
+			for (p = buf; *p == ' ' || *p == '\t' || *p == '\r' || *p == '\n'; p++)
+				;
+
+			if (!*p || (*p == '/' && p[1] == '/'))
 				continue; /* ignore comments and blank lines */
+
 			er_is_null = 0;
 			d_is_null = 0;
-			if (sscanf(buf, " checkPublicSuffix ( '%127[^']' , '%127[^']' ) %1[;]", domain, expected_regdom, semicolon) != 3) {
-				if (sscanf(buf, " checkPublicSuffix ( '%127[^']' , null ) %1[;]", domain, semicolon) == 2) {
+
+			if (sscanf(p, "checkPublicSuffix ( '%127[^']' , '%127[^']' ) %1[;]", domain, expected_regdom, semicolon) != 3) {
+				if (sscanf(p, "checkPublicSuffix ( '%127[^']' , null ) %1[;]", domain, semicolon) == 2) {
 					er_is_null = 1;
-				} else if (sscanf(buf, " checkPublicSuffix ( null , '%127[^']' ) %1[;]", expected_regdom, semicolon) == 2) {
+				} else if (sscanf(p, "checkPublicSuffix ( null , '%127[^']' ) %1[;]", expected_regdom, semicolon) == 2) {
 					d_is_null = 1;
-				} else if (sscanf(buf, " checkPublicSuffix ( null , null ) %1[;]", semicolon) == 1) {
+				} else if (sscanf(p, "checkPublicSuffix ( null , null ) %1[;]", semicolon) == 1) {
 					d_is_null = 1;
 					er_is_null = 1;
 				} else {
 					failed++;
-					printf("unknown line from '" PSL_TESTFILE "': %s", buf);
+					printf("Malformed line from '" PSL_TESTFILE "': %s", buf);
 					continue;
 				}
 			}
