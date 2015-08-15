@@ -1,5 +1,9 @@
 Copyright (C) 2014 Tim Rühsen
 
+14.08.2015 Release V0.8.1
+  * Fix documentation 
+  * Add syntax checking of tests_psl.txt
+
 06.08.2015 Release V0.8.0
   * Add https://github.com/publicsuffix as git submodule
   * Support Debian 'Reproducible Builds'
