@@ -104,12 +104,6 @@ static void test_psl(void)
 					failed++;
 					printf("psl_is_public_suffix(%s)=%d (expected 1)\n", p, result);
 				} else ok++;
-
-				snprintf(domain, sizeof(domain), "xxxx.%s", p);
-				if ((result = psl_is_public_suffix(psl, domain))) {
-					failed++;
-					printf("psl_is_public_suffix(%s)=%d (expected 0)\n", domain, result);
-				} else ok++;
 			}
 		}
 
