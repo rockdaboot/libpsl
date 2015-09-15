@@ -1,5 +1,11 @@
 Copyright (C) 2014 Tim Rühsen
 
+15.09.2015 Release V0.9.0
+  * Added semantic checks to PSL entries when generating built-in data
+  * Fix test suite for TLD exceptions (not used yet in reality)
+  * Removed wrong assumption from test suite
+  * Support explicit combination of 'foo.bar' and '*.foo.bar'
+
 14.08.2015 Release V0.8.1
   * Fix documentation 
   * Add syntax checking of tests_psl.txt
