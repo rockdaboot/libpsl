@@ -7,10 +7,10 @@
  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
  * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -18,7 +18,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- * 
+ *
  * This file is part of libpsl.
  *
  * Public Suffix List routines
@@ -172,7 +172,7 @@ static const psl_ctx_t
 static _psl_vector_t *_vector_alloc(int max, int (*cmp)(const _psl_entry_t **, const _psl_entry_t **))
 {
 	_psl_vector_t *v;
-	
+
 	if (!(v = calloc(1, sizeof(_psl_vector_t))))
 		return NULL;
 
@@ -267,7 +267,7 @@ static int _suffix_compare(const _psl_entry_t *s1, const _psl_entry_t *s2)
 	if ((n = s1->length - s2->length))
 		return n;  /* shorter rules first */
 
-	return strcmp(s1->label, s2->label ? s2->label : s2->label_buf);
+	return strcmp(s1->label ? s1->label : s1->label_buf, s2->label ? s2->label : s2->label_buf);
 }
 
 /* needed to sort array of pointers, given to qsort() */
@@ -357,6 +357,8 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
 	length_bak = suffix.length;
 
 	if ((suffix.label = strchr(suffix.label, '.'))) {
+		int pos = rule - suffixes;
+
 		suffix.label++;
 		suffix.length = strlen(suffix.label);
 		suffix.nlabels--;
@@ -364,9 +366,30 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
 		if (psl == &_builtin_psl)
 			rule = bsearch(&suffix, suffixes, countof(suffixes), sizeof(suffixes[0]), (int(*)(const void *, const void *))_suffix_compare);
 		else
-			rule = _vector_get(psl->suffixes, _vector_find(psl->suffixes, &suffix));
+			rule = _vector_get(psl->suffixes, (pos = _vector_find(psl->suffixes, &suffix)));
 
 		if (rule) {
+			if (!rule->wildcard) {
+				/* Due to binary search ambiguity we need the following check of neighbour entries.
+				 * TODO: The data structures needs a revision: wildcard and non-wildcard entries must be separated. */
+				if (psl == &_builtin_psl) {
+					pos = rule - suffixes;
+
+					if (pos > 0 && _suffix_compare(rule, &suffixes[pos - 1]) == 0 && suffixes[pos -1].wildcard)
+						rule = &suffixes[pos - 1];
+					else if (pos < (int) (countof(suffixes) - 1) && _suffix_compare(rule, &suffixes[pos + 1]) == 0 && suffixes[pos + 1].wildcard)
+						rule = &suffixes[pos + 1];
+				} else {
+					_psl_entry_t *e;
+
+					if (pos > 0 && _suffix_compare(rule, e = _vector_get(psl->suffixes, pos - 1)) == 0 && e->wildcard) {
+						rule = e;
+					}
+					else if (pos < psl->suffixes->cur - 1 && _suffix_compare(rule, e = _vector_get(psl->suffixes, pos + 1)) == 0 && e->wildcard) {
+						rule = e;
+					}
+				}
+			}
 			if (rule->wildcard) {
 				/* now that we matched a wildcard, we have to check for an exception */
 				suffix.label = label_bak;
