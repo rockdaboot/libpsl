@@ -56,7 +56,7 @@ static void test_psl(void)
 	FILE *fp;
 	psl_ctx_t *psl;
 	int result;
-	char buf[256], domain[64], *linep, *p;
+	char buf[256], *linep, *p;
 
 	psl = psl_load_file(PSL_FILE); /* PSL_FILE can be set by ./configure --with-psl-file=[PATH] */
 
