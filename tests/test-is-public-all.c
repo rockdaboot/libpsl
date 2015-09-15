@@ -80,10 +80,12 @@ static void test_psl(void)
 					printf("psl_is_public_suffix(%s)=%d (expected 0)\n", p, result);
 				} else ok++;
 
-				if (!(result = psl_is_public_suffix(psl, strchr(p, '.') + 1))) {
-					failed++;
-					printf("psl_is_public_suffix(%s)=%d (expected 1)\n", strchr(p, '.') + 1, result);
-				} else ok++;
+				if ((p = strchr(p, '.'))) {
+					if (!(result = psl_is_public_suffix(psl, p + 1))) {
+						failed++;
+						printf("psl_is_public_suffix(%s)=%d (expected 1)\n", p + 1, result);
+					} else ok++;
+				}
 			}
 			else if (*p == '*') { /* a wildcard, e.g. *.ck */
 				if (!(result = psl_is_public_suffix(psl, p + 1))) {
