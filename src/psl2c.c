@@ -54,6 +54,109 @@
 #	include "psl.c"
 #undef _LIBPSL_INCLUDED_BY_PSL2C
 
+static int _check_psl_entries(const _psl_vector_t *v)
+{
+	int it, doublet = 0, err = 0;
+
+	for (it = 0; it < v->cur - 1; it++) {
+		_psl_entry_t *cur = _vector_get(v, it);
+		_psl_entry_t *next = _vector_get(v, it + 1);
+
+		if (_suffix_compare(cur, next) == 0) {
+			/* we allow '*.foo' and 'foo' */
+			if (cur->wildcard == next->wildcard) {
+				fprintf(stderr, "Double entry '%s' detected\n", cur->label);
+				err = 1;
+			}
+			else if (++doublet > 1) {
+				fprintf(stderr, "Double entry '%s' detected\n", cur->label);
+				err = 1;
+			}
+		} else
+			doublet = 0;
+	}
+
+	return err;
+}
+
+static int _check_psl(const psl_ctx_t *psl)
+{
+	int it, pos, err = 0;
+
+	if (_check_psl_entries(psl->suffixes))
+		err = 1;
+
+	if (_check_psl_entries(psl->suffix_exceptions))
+		err = 1;
+
+	/* check if plain suffix also appears in exceptions */
+	for (it = 0; it < psl->suffixes->cur; it++) {
+		_psl_entry_t *e = _vector_get(psl->suffixes, it);
+
+		if (!e->wildcard && _vector_find(psl->suffix_exceptions, e) >= 0) {
+			fprintf(stderr, "Found entry '%s' also in exceptions\n", e->label);
+			err = 1;
+		}
+	}
+
+	/* check if exception also appears in suffix list as plain entry */
+	for (it = 0; it < psl->suffix_exceptions->cur; it++) {
+		_psl_entry_t *e2, *e = _vector_get(psl->suffix_exceptions, it);
+
+		if ((e2 = _vector_get(psl->suffixes, pos = _vector_find(psl->suffixes, e)))) {
+			if (!e2->wildcard) {
+				fprintf(stderr, "Found exception '!%s' also as suffix\n", e->label);
+				err = 1;
+			}
+			/* Two same domains in a row are allowed: wildcard and non-wildcard.
+			 * Binary search find either of them, so also check previous and next entry. */
+			else if (pos > 0 && _suffix_compare(e, e2 = _vector_get(psl->suffixes, pos - 1)) == 0 && !e2->wildcard) {
+				fprintf(stderr, "Found exception '!%s' also as suffix\n", e->label);
+				err = 1;
+			}
+			else if (pos < psl->suffixes->cur - 1 && _suffix_compare(e, e2 = _vector_get(psl->suffixes, pos + 1)) == 0 && !e2->wildcard) {
+				fprintf(stderr, "Found exception '!%s' also as suffix\n", e->label);
+				err = 1;
+			}
+		}
+	}
+
+	/* check if non-wildcard entry is already covered by wildcard entry */
+	for (it = 0; it < psl->suffixes->cur; it++) {
+		const char *p;
+		_psl_entry_t *e = _vector_get(psl->suffixes, it);
+
+		if (e->nlabels > 1 && !e->wildcard && (p = strchr(e->label, '.'))) {
+			_psl_entry_t *e2, *e3, suffix;
+
+			suffix.label = p + 1;
+			suffix.length = strlen(p + 1);
+			suffix.nlabels = e->nlabels - 1;
+
+			e2 = _vector_get(psl->suffixes, pos = _vector_find(psl->suffixes, &suffix));
+
+			if (e2) {
+				if (e2->wildcard) {
+					fprintf(stderr, "Found superfluous '%s' already covered by '*.%s'\n", e->label, e2->label);
+					err = 1;
+				}
+				/* Two same domains in a row are allowed: wildcard and non-wildcard.
+				* Binary search find either of them, so also check previous and next entry. */
+				else if (pos > 0 && _suffix_compare(e2, e3 = _vector_get(psl->suffixes, pos - 1)) == 0 && e3->wildcard) {
+					fprintf(stderr, "Found superfluous '%s' already covered by '*.%s'\n", e->label, e2->label);
+					err = 1;
+				}
+				else if (pos < psl->suffixes->cur - 1 && _suffix_compare(e2, e3 = _vector_get(psl->suffixes, pos + 1)) == 0 && e3->wildcard) {
+					fprintf(stderr, "Found superfluous '%s' already covered by '*.%s'\n", e->label, e2->label);
+					err = 1;
+				}
+			}
+		}
+	}
+
+	return err;
+}
+
 static void _print_psl_entries(FILE *fpout, const _psl_vector_t *v, const char *varname)
 {
 	int it;
@@ -151,6 +254,12 @@ int main(int argc, const char **argv)
 #ifdef _GENERATE_BUILTIN_DATA
 	if (!(psl = psl_load_file(argv[1])))
 		return 2;
+
+	/* look for ambigious or double entries */
+	if (_check_psl(psl)) {
+		psl_free(psl);
+		return 5;
+	}
 
 	if ((fpout = fopen(argv[2], "w"))) {
 		FILE *pp;
