@@ -12,6 +12,7 @@ psl_unregistrable_domain
 psl_registrable_domain
 psl_suffix_count
 psl_suffix_exception_count
+psl_suffix_wildcard_count
 psl_builtin_compile_time
 psl_builtin_file_time
 psl_builtin_sha1sum
