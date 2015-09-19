@@ -262,6 +262,7 @@ int main(int argc, const char **argv)
 			fprintf(fpout, "static time_t _psl_compile_time = %lu;\n", time(NULL));
 		fprintf(fpout, "static int _psl_nsuffixes = %d;\n", psl->nsuffixes);
 		fprintf(fpout, "static int _psl_nexceptions = %d;\n", psl->nexceptions);
+		fprintf(fpout, "static int _psl_nwildcards = %d;\n", psl->nwildcards);
 		fprintf(fpout, "static const char _psl_sha1_checksum[] = \"%s\";\n", checksum);
 		fprintf(fpout, "static const char _psl_filename[] = \"%s\";\n", argv[1]);
 
@@ -280,6 +281,7 @@ int main(int argc, const char **argv)
 		fprintf(fpout, "static time_t _psl_compile_time;\n");
 		fprintf(fpout, "static int _psl_nsuffixes = 0;\n");
 		fprintf(fpout, "static int _psl_nexceptions = 0;\n");
+		fprintf(fpout, "static int _psl_nwildcards = 0;\n");
 		fprintf(fpout, "static const char _psl_sha1_checksum[] = \"\";\n");
 		fprintf(fpout, "static const char _psl_filename[] = \"\";\n");
 

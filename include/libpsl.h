@@ -95,6 +95,9 @@ int
 /* just counts exceptions */
 int
 	psl_suffix_exception_count(const psl_ctx_t *psl);
+/* just counts wildcards */
+int
+	psl_suffix_wildcard_count(const psl_ctx_t *psl);
 /* returns compilation time */
 time_t
 	psl_builtin_compile_time(void);

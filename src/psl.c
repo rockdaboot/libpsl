@@ -155,7 +155,8 @@ struct _psl_ctx_st {
 		*suffixes;
 	int
 		nsuffixes,
-		nexceptions;
+		nexceptions,
+		nwildcards;
 };
 
 /* include the PSL data compiled by 'psl2c' */
@@ -168,6 +169,7 @@ struct _psl_ctx_st {
 	static time_t _psl_compile_time;
 	static int _psl_nsuffixes;
 	static int _psl_nexceptions;
+	static int _psl_nwildcards;
 	static const char _psl_sha1_checksum[] = "";
 	static const char _psl_filename[] = "";
 #endif
@@ -730,6 +732,7 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 			p++;
 			/* wildcard *.foo.bar implicitely make foo.bar a public suffix */
 			suffix.flags = _PSL_FLAG_WILDCARD | _PSL_FLAG_PLAIN;
+			psl->nwildcards++;
 			psl->nsuffixes++;
 		} else {
 			if (!strchr(p, '.'))
@@ -859,6 +862,26 @@ int psl_suffix_exception_count(const psl_ctx_t *psl)
 		return _psl_nexceptions;
 	else if (psl)
 		return psl->nexceptions;
+	else
+		return 0;
+}
+
+/**
+ * psl_suffix_wildcard_count:
+ * @psl: PSL context pointer
+ *
+ * This function returns number of public suffix wildcards maintained by @psl.
+ *
+ * Returns: Number of public suffix wildcards in PSL context.
+ *
+ * Since: 0.10.0
+ */
+int psl_suffix_wildcard_count(const psl_ctx_t *psl)
+{
+	if (psl == &_builtin_psl)
+		return _psl_nwildcards;
+	else if (psl)
+		return psl->nwildcards;
 	else
 		return 0;
 }
