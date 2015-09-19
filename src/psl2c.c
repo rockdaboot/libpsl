@@ -54,40 +54,10 @@
 #	include "psl.c"
 #undef _LIBPSL_INCLUDED_BY_PSL2C
 
-static int _check_psl_entries(const _psl_vector_t *v)
-{
-	int it, doublet = 0, err = 0;
-
-	for (it = 0; it < v->cur - 1; it++) {
-		_psl_entry_t *cur = _vector_get(v, it);
-		_psl_entry_t *next = _vector_get(v, it + 1);
-
-		if (_suffix_compare(cur, next) == 0) {
-			/* we allow '*.foo' and 'foo' */
-			if (cur->wildcard == next->wildcard) {
-				fprintf(stderr, "Double entry '%s' detected\n", cur->label);
-				err = 1;
-			}
-			else if (++doublet > 1) {
-				fprintf(stderr, "Double entry '%s' detected\n", cur->label);
-				err = 1;
-			}
-		} else
-			doublet = 0;
-	}
-
-	return err;
-}
-
+#if 0
 static int _check_psl(const psl_ctx_t *psl)
 {
 	int it, pos, err = 0;
-
-	if (_check_psl_entries(psl->suffixes))
-		err = 1;
-
-	if (_check_psl_entries(psl->suffix_exceptions))
-		err = 1;
 
 	/* check if plain suffix also appears in exceptions */
 	for (it = 0; it < psl->suffixes->cur; it++) {
@@ -156,6 +126,7 @@ static int _check_psl(const psl_ctx_t *psl)
 
 	return err;
 }
+#endif
 
 static void _print_psl_entries(FILE *fpout, const _psl_vector_t *v, const char *varname)
 {
@@ -184,7 +155,7 @@ static void _print_psl_entries(FILE *fpout, const _psl_vector_t *v, const char *
 		_psl_entry_t *e = _vector_get(v, it);
 
 		fprintf(fpout, "\t{ \"%s\", NULL, %hd, %d, %d },\n",
-			e->label_buf, e->length, (int) e->nlabels, (int) e->wildcard);
+			e->label_buf, e->length, (int) e->nlabels, (int) e->flags);
 	}
 
 	fprintf(fpout, "};\n");
@@ -256,11 +227,11 @@ int main(int argc, const char **argv)
 		return 2;
 
 	/* look for ambigious or double entries */
-	if (_check_psl(psl)) {
+/*	if (_check_psl(psl)) {
 		psl_free(psl);
 		return 5;
 	}
-
+*/
 	if ((fpout = fopen(argv[2], "w"))) {
 		FILE *pp;
 		struct stat st;
@@ -271,11 +242,9 @@ int main(int argc, const char **argv)
 #if 0
 		/* include library code did not generate punycode, so let's do it for the builtin data */
 		_add_punycode_if_needed(psl->suffixes);
-		_add_punycode_if_needed(psl->suffix_exceptions);
 #endif
 
 		_print_psl_entries(fpout, psl->suffixes, "suffixes");
-		_print_psl_entries(fpout, psl->suffix_exceptions, "suffix_exceptions");
 
 		snprintf(cmd, cmdsize, "sha1sum %s", argv[1]);
 		if ((pp = popen(cmd, "r"))) {
@@ -291,6 +260,8 @@ int main(int argc, const char **argv)
 			fprintf(fpout, "static time_t _psl_compile_time = %lu;\n", atol(source_date_epoch));
 		else
 			fprintf(fpout, "static time_t _psl_compile_time = %lu;\n", time(NULL));
+		fprintf(fpout, "static int _psl_nsuffixes = %d;\n", psl->nsuffixes);
+		fprintf(fpout, "static int _psl_nexceptions = %d;\n", psl->nexceptions);
 		fprintf(fpout, "static const char _psl_sha1_checksum[] = \"%s\";\n", checksum);
 		fprintf(fpout, "static const char _psl_filename[] = \"%s\";\n", argv[1]);
 
@@ -305,9 +276,10 @@ int main(int argc, const char **argv)
 #else
 	if ((fpout = fopen(argv[2], "w"))) {
 		fprintf(fpout, "static _psl_entry_t suffixes[1];\n");
-		fprintf(fpout, "static _psl_entry_t suffix_exceptions[1];\n");
 		fprintf(fpout, "static time_t _psl_file_time;\n");
 		fprintf(fpout, "static time_t _psl_compile_time;\n");
+		fprintf(fpout, "static int _psl_nsuffixes = 0;\n");
+		fprintf(fpout, "static int _psl_nexceptions = 0;\n");
 		fprintf(fpout, "static const char _psl_sha1_checksum[] = \"\";\n");
 		fprintf(fpout, "static const char _psl_filename[] = \"\";\n");
 

@@ -14,4 +14,4 @@ ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libpsl.pc
 
-EXTRA_DIST = config.rpath LICENSE list/public_suffix_list.dat list/tests/test_psl.txt
+EXTRA_DIST = config.rpath LICENSE $(PSL_FILE) list/tests/test_psl.txt
