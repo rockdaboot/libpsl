@@ -54,6 +54,9 @@
 #	define ngettext(STRING1,STRING2,N) STRING2
 #endif
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -84,6 +87,7 @@
 #endif
 
 #include <libpsl.h>
+#include <bits/stat.h>
 
 /* number of elements within an array */
 #define countof(a) (sizeof(a)/sizeof(*(a)))
@@ -949,6 +953,29 @@ const char *psl_builtin_sha1sum(void)
 const char *psl_builtin_filename(void)
 {
 	return _psl_filename;
+}
+
+/**
+ * psl_builtin_outdated:
+ *
+ * This function checks if the built-in data is older than the file it has been created from.
+ * If it is, it might be a good idea for the application to reload the PSL.
+ * The mtime is taken as reference.
+ *
+ * If the PSL file does not exist, it is assumed that the built-in data is not outdated.
+ *
+ * Returns: 1 if the built-in is outdated, 0 otherwise.
+ *
+ * Since: 0.10.0
+ */
+int psl_builtin_outdated(void)
+{
+	struct stat st;
+
+	if (stat(_psl_filename, &st) == 0 && st.st_mtime > _psl_file_time)
+		return 0;
+
+	return 1;
 }
 
 /**

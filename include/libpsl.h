@@ -113,7 +113,9 @@ const char *
 /* returns library version */
 const char *
 	psl_get_version(void);
-
+/* returns wether the built-in data is outdated or not */
+int
+	psl_builtin_outdated(void);
 
 #ifdef  __cplusplus
 }
