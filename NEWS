@@ -1,5 +1,9 @@
 Copyright (C) 2014-2015 Tim Rühsen
 
+23.09.2015 Release V0.11.0
+  * Add new function psl_check_version_number()
+  * Add version defines to include file
+
 19.09.2025 Release V0.10.0
   * Code simplified
   * Less data entries, faster lookups
