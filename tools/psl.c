@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2014 Tim Ruehsen
+ * Copyright(c) 2014-2015 Tim Ruehsen
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -120,7 +120,7 @@ int main(int argc, const char *const *argv)
 				printf("psl %s\n", PACKAGE_VERSION);
 				printf("libpsl %s\n", psl_get_version());
 				printf("\n");
-				printf("Copyright (C) 2014 Tim Ruehsen\n");
+				printf("Copyright (C) 2014-2015 Tim Ruehsen\n");
 				printf("License: MIT\n");
 				exit(0);
 			}
@@ -200,6 +200,7 @@ int main(int argc, const char *const *argv)
 		if (psl && psl != psl_builtin()) {
 			printf("suffixes: %d\n", psl_suffix_count(psl));
 			printf("exceptions: %d\n", psl_suffix_exception_count(psl));
+			printf("wildcards: %d\n", psl_suffix_wildcard_count(psl));
 		}
 
 		psl_free(psl);
@@ -208,6 +209,7 @@ int main(int argc, const char *const *argv)
 		if (psl) {
 			printf("builtin suffixes: %d\n", psl_suffix_count(psl));
 			printf("builtin exceptions: %d\n", psl_suffix_exception_count(psl));
+			printf("builtin wildcards: %d\n", psl_suffix_wildcard_count(psl));
 			printf("builtin filename: %s\n", psl_builtin_filename());
 			printf("builtin compile time: %ld (%s)\n", psl_builtin_compile_time(), time2str(psl_builtin_compile_time()));
 			printf("builtin file time: %ld (%s)\n", psl_builtin_file_time(), time2str(psl_builtin_file_time()));

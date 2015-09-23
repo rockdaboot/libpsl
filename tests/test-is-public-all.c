@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2014 Tim Ruehsen
+ * Copyright(c) 2014-2015 Tim Ruehsen
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -56,7 +56,7 @@ static void test_psl(void)
 	FILE *fp;
 	psl_ctx_t *psl;
 	int result;
-	char buf[256], domain[64], *linep, *p;
+	char buf[256], *linep, *p;
 
 	psl = psl_load_file(PSL_FILE); /* PSL_FILE can be set by ./configure --with-psl-file=[PATH] */
 
@@ -80,10 +80,12 @@ static void test_psl(void)
 					printf("psl_is_public_suffix(%s)=%d (expected 0)\n", p, result);
 				} else ok++;
 
-				if (!(result = psl_is_public_suffix(psl, strchr(p, '.') + 1))) {
-					failed++;
-					printf("psl_is_public_suffix(%s)=%d (expected 1)\n", strchr(p, '.') + 1, result);
-				} else ok++;
+				if ((p = strchr(p, '.'))) {
+					if (!(result = psl_is_public_suffix(psl, p + 1))) {
+						failed++;
+						printf("psl_is_public_suffix(%s)=%d (expected 1)\n", p + 1, result);
+					} else ok++;
+				}
 			}
 			else if (*p == '*') { /* a wildcard, e.g. *.ck */
 				if (!(result = psl_is_public_suffix(psl, p + 1))) {
@@ -101,12 +103,6 @@ static void test_psl(void)
 				if (!(result = psl_is_public_suffix(psl, p))) {
 					failed++;
 					printf("psl_is_public_suffix(%s)=%d (expected 1)\n", p, result);
-				} else ok++;
-
-				snprintf(domain, sizeof(domain), "xxxx.%s", p);
-				if ((result = psl_is_public_suffix(psl, domain))) {
-					failed++;
-					printf("psl_is_public_suffix(%s)=%d (expected 0)\n", domain, result);
 				} else ok++;
 			}
 		}

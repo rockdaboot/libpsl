@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2014 Tim Ruehsen
+ * Copyright(c) 2014-2015 Tim Ruehsen
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -33,6 +33,12 @@
 
 #include <stdio.h>
 #include <time.h>
+
+#define PSL_VERSION "@LIBPSL_VERSION@"
+#define PSL_VERSION_MAJOR @LIBPSL_VERSION_MAJOR@
+#define PSL_VERSION_MINOR @LIBPSL_VERSION_MINOR@
+#define PSL_VERSION_PATCH @LIBPSL_VERSION_PATCH@
+#define PSL_VERSION_NUMBER @LIBPSL_VERSION_NUMBER@
 
 #ifdef  __cplusplus
 extern "C" {
@@ -95,6 +101,9 @@ int
 /* just counts exceptions */
 int
 	psl_suffix_exception_count(const psl_ctx_t *psl);
+/* just counts wildcards */
+int
+	psl_suffix_wildcard_count(const psl_ctx_t *psl);
 /* returns compilation time */
 time_t
 	psl_builtin_compile_time(void);
@@ -107,10 +116,15 @@ const char *
 /* returns file name of PSL source file */
 const char *
 	psl_builtin_filename(void);
-/* returns library version */
+/* returns library version string */
 const char *
 	psl_get_version(void);
-
+/* checks library version number */
+int
+	psl_check_version_number(int version);
+/* returns wether the built-in data is outdated or not */
+int
+	psl_builtin_outdated(void);
 
 #ifdef  __cplusplus
 }

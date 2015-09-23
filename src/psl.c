@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2014 Tim Ruehsen
+ * Copyright(c) 2014-2015 Tim Ruehsen
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -7,10 +7,10 @@
  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
  * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -18,7 +18,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- * 
+ *
  * This file is part of libpsl.
  *
  * Public Suffix List routines
@@ -54,6 +54,9 @@
 #	define ngettext(STRING1,STRING2,N) STRING2
 #endif
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -84,6 +87,7 @@
 #endif
 
 #include <libpsl.h>
+#include <bits/stat.h>
 
 /* number of elements within an array */
 #define countof(a) (sizeof(a)/sizeof(*(a)))
@@ -123,6 +127,10 @@ static char *strndup(const char *s, size_t n)
 
 #define countof(a) (sizeof(a)/sizeof(*(a)))
 
+#define _PSL_FLAG_PLAIN     (1<<0)
+#define _PSL_FLAG_EXCEPTION (1<<1)
+#define _PSL_FLAG_WILDCARD  (1<<2)
+
 typedef struct {
 	char
 		label_buf[48];
@@ -132,7 +140,7 @@ typedef struct {
 		length;
 	unsigned char
 		nlabels, /* number of labels */
-		wildcard; /* this is a wildcard rule (e.g. *.sapporo.jp) */
+		flags;
 } _psl_entry_t;
 
 /* stripped down version libmget vector routines */
@@ -148,8 +156,11 @@ typedef struct {
 
 struct _psl_ctx_st {
 	_psl_vector_t
-		*suffixes,
-		*suffix_exceptions;
+		*suffixes;
+	int
+		nsuffixes,
+		nexceptions,
+		nwildcards;
 };
 
 /* include the PSL data compiled by 'psl2c' */
@@ -158,9 +169,11 @@ struct _psl_ctx_st {
 #else
 	/* if this source file is included by psl2c.c, provide empty builtin data */
 	static _psl_entry_t suffixes[1];
-	static _psl_entry_t suffix_exceptions[1];
 	static time_t _psl_file_time;
 	static time_t _psl_compile_time;
+	static int _psl_nsuffixes;
+	static int _psl_nexceptions;
+	static int _psl_nwildcards;
 	static const char _psl_sha1_checksum[] = "";
 	static const char _psl_filename[] = "";
 #endif
@@ -172,7 +185,7 @@ static const psl_ctx_t
 static _psl_vector_t *_vector_alloc(int max, int (*cmp)(const _psl_entry_t **, const _psl_entry_t **))
 {
 	_psl_vector_t *v;
-	
+
 	if (!(v = calloc(1, sizeof(_psl_vector_t))))
 		return NULL;
 
@@ -251,11 +264,6 @@ static void _vector_sort(_psl_vector_t *v)
 		qsort(v->entry, v->cur, sizeof(_psl_vector_t **), (int(*)(const void *, const void *))v->cmp);
 }
 
-static int _vector_size(_psl_vector_t *v)
-{
-	return v ? v->cur : 0;
-}
-
 /* by this kind of sorting, we can easily see if a domain matches or not */
 static int _suffix_compare(const _psl_entry_t *s1, const _psl_entry_t *s2)
 {
@@ -267,7 +275,7 @@ static int _suffix_compare(const _psl_entry_t *s1, const _psl_entry_t *s2)
 	if ((n = s1->length - s2->length))
 		return n;  /* shorter rules first */
 
-	return strcmp(s1->label, s2->label ? s2->label : s2->label_buf);
+	return strcmp(s1->label ? s1->label : s1->label_buf, s2->label ? s2->label : s2->label_buf);
 }
 
 /* needed to sort array of pointers, given to qsort() */
@@ -289,19 +297,7 @@ static int _suffix_init(_psl_entry_t *suffix, const char *rule, size_t length)
 		return -1;
 	}
 
-	if (*rule == '*') {
-		if (*++rule != '.') {
-			suffix->nlabels = 0;
-			/* fprintf(stderr, _("Unsupported kind of rule (ignored): %s\n"), rule); */
-			return -2;
-		}
-		rule++;
-		suffix->wildcard = 1;
-		suffix->length = (unsigned char)length - 2;
-	} else {
-		suffix->wildcard = 0;
-		suffix->length = (unsigned char)length;
-	}
+	suffix->length = (unsigned char)length;
 
 	suffix->nlabels = 1;
 
@@ -318,18 +314,23 @@ static int _suffix_init(_psl_entry_t *suffix, const char *rule, size_t length)
 static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
 {
 	_psl_entry_t suffix, *rule;
-	const char *p, *label_bak;
-	unsigned short length_bak;
+	const char *p;
 
 	/* this function should be called without leading dots, just make sure */
 	suffix.label = domain + (*domain == '.');
 	suffix.length = strlen(suffix.label);
-	suffix.wildcard = 0;
 	suffix.nlabels = 1;
 
 	for (p = suffix.label; *p; p++)
 		if (*p == '.')
 			suffix.nlabels++;
+
+	if (suffix.nlabels == 1) {
+		/* TLD, this is the prevailing '*' match.
+		 * We don't currently support exception TLDs (TLDs that are not a public suffix)
+		 */
+		return 1;
+	}
 
 	/* if domain has enough labels, it is public */
 	if (psl == &_builtin_psl)
@@ -347,16 +348,15 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
 
 	if (rule) {
 		/* definitely a match, no matter if the found rule is a wildcard or not */
-		return 1;
-	} else if (suffix.nlabels == 1) {
-		/* unknown TLD, this is the prevailing '*' match */
-		return 1;
+		if (rule->flags & _PSL_FLAG_EXCEPTION)
+			return 0;
+		if (rule->flags & _PSL_FLAG_PLAIN)
+			return 1;
 	}
 
-	label_bak = suffix.label;
-	length_bak = suffix.length;
-
 	if ((suffix.label = strchr(suffix.label, '.'))) {
+		int pos = rule - suffixes;
+
 		suffix.label++;
 		suffix.length = strlen(suffix.label);
 		suffix.nlabels--;
@@ -364,25 +364,11 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
 		if (psl == &_builtin_psl)
 			rule = bsearch(&suffix, suffixes, countof(suffixes), sizeof(suffixes[0]), (int(*)(const void *, const void *))_suffix_compare);
 		else
-			rule = _vector_get(psl->suffixes, _vector_find(psl->suffixes, &suffix));
+			rule = _vector_get(psl->suffixes, (pos = _vector_find(psl->suffixes, &suffix)));
 
 		if (rule) {
-			if (rule->wildcard) {
-				/* now that we matched a wildcard, we have to check for an exception */
-				suffix.label = label_bak;
-				suffix.length = length_bak;
-				suffix.nlabels++;
-
-				if (psl == &_builtin_psl) {
-					if (bsearch(&suffix, suffix_exceptions, countof(suffix_exceptions), sizeof(suffix_exceptions[0]), (int(*)(const void *, const void *))_suffix_compare))
-						return 0; /* found an exception, so 'domain' is not a public suffix */
-				} else {
-					if (_vector_get(psl->suffix_exceptions, _vector_find(psl->suffix_exceptions, &suffix)) != 0)
-						return 0; /* found an exception, so 'domain' is not a public suffix */
-				}
-
+			if ((rule->flags & _PSL_FLAG_WILDCARD))
 				return 1;
-			}
 		}
 	}
 
@@ -573,7 +559,7 @@ static void _add_punycode_if_needed(UIDNA *idna, _psl_vector_t *v, _psl_entry_t 
 
 						/* fprintf(stderr, "libicu '%s' -> '%s'\n", e->label_buf, lookupname); */
 						_suffix_init(&suffix, lookupname, strlen(lookupname));
-						suffix.wildcard = e->wildcard;
+						suffix.flags = e->flags;
 						suffixp = _vector_get(v, _vector_add(v, &suffix));
 						suffixp->label = suffixp->label_buf; /* set label to changed address */
 					} /* else ignore */
@@ -618,7 +604,7 @@ static void _add_punycode_if_needed(_psl_vector_t *v, _psl_entry_t *e)
 
 			/* fprintf(stderr, "libidn '%s' -> '%s'\n", e->label_buf, lookupname); */
 			_suffix_init(&suffix, lookupname, strlen(lookupname));
-			suffix.wildcard = e->wildcard;
+			suffix.flags = e->flags;
 			suffixp = _vector_get(v, _vector_add(v, &suffix));
 			suffixp->label = suffixp->label_buf; /* set label to changed address */
 		} /* else ignore */
@@ -650,7 +636,7 @@ static void _add_punycode_if_needed(_psl_vector_t *v, _psl_entry_t *e)
 
 			/* fprintf(stderr, "libidn '%s' -> '%s'\n", e->label_buf, lookupname); */
 			_suffix_init(&suffix, lookupname, strlen(lookupname));
-			suffix.wildcard = e->wildcard;
+			suffix.flags = e->flags;
 			suffixp = _vector_get(v, _vector_add(v, &suffix));
 			suffixp->label = suffixp->label_buf; /* set label to changed address */
 		} /* else ignore */
@@ -726,7 +712,6 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 	 *  as of 19.02.2014, the list at http://publicsuffix.org/list/ contains ~6500 rules and 19 exceptions.
 	 */
 	psl->suffixes = _vector_alloc(8*1024, _suffix_compare_array);
-	psl->suffix_exceptions = _vector_alloc(64, _suffix_compare_array);
 
 	while ((linep = fgets(buf, sizeof(buf), fp))) {
 		while (_isspace_ascii(*linep)) linep++; /* ignore leading whitespace */
@@ -740,31 +725,58 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 		*linep = 0;
 
 		if (*p == '!') {
-			/* add to exceptions */
-			if (_suffix_init(&suffix, p + 1, linep - p - 1) == 0) {
-				suffixp = _vector_get(psl->suffix_exceptions, _vector_add(psl->suffix_exceptions, &suffix));
-				suffixp->label = suffixp->label_buf; /* set label to changed address */
-#ifdef WITH_LIBICU
-				_add_punycode_if_needed(idna, psl->suffix_exceptions, suffixp);
-#elif defined(WITH_LIBIDN2) || defined(WITH_LIBIDN)
-				_add_punycode_if_needed(psl->suffix_exceptions, suffixp);
-#endif
+			p++;
+			suffix.flags = _PSL_FLAG_EXCEPTION;
+			psl->nexceptions++;
+		} else if (*p == '*') {
+			if (*++p != '.') {
+				/* fprintf(stderr, _("Unsupported kind of rule (ignored): %s\n"), p - 1); */
+				continue;
 			}
+			p++;
+			/* wildcard *.foo.bar implicitely make foo.bar a public suffix */
+			suffix.flags = _PSL_FLAG_WILDCARD | _PSL_FLAG_PLAIN;
+			psl->nwildcards++;
+			psl->nsuffixes++;
 		} else {
-			/* add to suffixes */
-			if (_suffix_init(&suffix, p, linep - p) == 0) {
+			if (!strchr(p, '.'))
+				continue; /* we do not need an explicit plain TLD rule, already covered by implicit '*' rule */
+			suffix.flags = _PSL_FLAG_PLAIN;
+			psl->nsuffixes++;
+		}
+
+		if (_suffix_init(&suffix, p, linep - p) == 0) {
+			int index;
+
+			if ((index = _vector_find(psl->suffixes, &suffix)) >= 0) {
+				/* Found existing entry:
+				 * Combination of exception and plain rule is ambigous
+				 * !foo.bar
+				 * foo.bar
+				 *
+				 * Allowed:
+				 * !foo.bar + *.foo.bar
+				 * foo.bar + *.foo.bar
+				 *
+				 * We do not check here, let's do it later.
+				 */
+
+				suffixp = _vector_get(psl->suffixes, index);
+				suffixp->flags |= suffix.flags;
+			} else {
+				/* New entry */
 				suffixp = _vector_get(psl->suffixes, _vector_add(psl->suffixes, &suffix));
-				suffixp->label = suffixp->label_buf; /* set label to changed address */
-#ifdef WITH_LIBICU
-				_add_punycode_if_needed(idna, psl->suffixes, suffixp);
-#elif defined(WITH_LIBIDN2) || defined(WITH_LIBIDN)
-				_add_punycode_if_needed(psl->suffixes, suffixp);
-#endif
 			}
+
+			suffixp->label = suffixp->label_buf; /* set label to changed address */
+#ifdef WITH_LIBICU
+			_add_punycode_if_needed(idna, psl->suffixes, suffixp);
+#elif defined(WITH_LIBIDN2) || defined(WITH_LIBIDN)
+			_add_punycode_if_needed(psl->suffixes, suffixp);
+#endif
 		}
 	}
 
-	_vector_sort(psl->suffix_exceptions);
 	_vector_sort(psl->suffixes);
 
 #ifdef WITH_LIBICU
@@ -788,7 +800,6 @@ void psl_free(psl_ctx_t *psl)
 {
 	if (psl && psl != &_builtin_psl) {
 		_vector_free(&psl->suffixes);
-		_vector_free(&psl->suffix_exceptions);
 		free(psl);
 	}
 }
@@ -832,9 +843,9 @@ const psl_ctx_t *psl_builtin(void)
 int psl_suffix_count(const psl_ctx_t *psl)
 {
 	if (psl == &_builtin_psl)
-		return countof(suffixes);
+		return _psl_nsuffixes;
 	else if (psl)
-		return _vector_size(psl->suffixes);
+		return psl->nsuffixes;
 	else
 		return 0;
 }
@@ -852,9 +863,29 @@ int psl_suffix_count(const psl_ctx_t *psl)
 int psl_suffix_exception_count(const psl_ctx_t *psl)
 {
 	if (psl == &_builtin_psl)
-		return countof(suffix_exceptions);
+		return _psl_nexceptions;
 	else if (psl)
-		return _vector_size(psl->suffix_exceptions);
+		return psl->nexceptions;
+	else
+		return 0;
+}
+
+/**
+ * psl_suffix_wildcard_count:
+ * @psl: PSL context pointer
+ *
+ * This function returns number of public suffix wildcards maintained by @psl.
+ *
+ * Returns: Number of public suffix wildcards in PSL context.
+ *
+ * Since: 0.10.0
+ */
+int psl_suffix_wildcard_count(const psl_ctx_t *psl)
+{
+	if (psl == &_builtin_psl)
+		return _psl_nwildcards;
+	else if (psl)
+		return psl->nwildcards;
 	else
 		return 0;
 }
@@ -925,6 +956,29 @@ const char *psl_builtin_filename(void)
 }
 
 /**
+ * psl_builtin_outdated:
+ *
+ * This function checks if the built-in data is older than the file it has been created from.
+ * If it is, it might be a good idea for the application to reload the PSL.
+ * The mtime is taken as reference.
+ *
+ * If the PSL file does not exist, it is assumed that the built-in data is not outdated.
+ *
+ * Returns: 1 if the built-in is outdated, 0 otherwise.
+ *
+ * Since: 0.10.0
+ */
+int psl_builtin_outdated(void)
+{
+	struct stat st;
+
+	if (stat(_psl_filename, &st) == 0 && st.st_mtime > _psl_file_time)
+		return 0;
+
+	return 1;
+}
+
+/**
  * psl_get_version:
  *
  * Get libpsl version.
@@ -944,6 +998,37 @@ const char *psl_get_version(void)
 #else
 	return PACKAGE_VERSION " (no IDNA support)";
 #endif
+}
+
+/**
+ * psl_check_version_number:
+ * @version: Version number (hex) to check against.
+ *
+ * Check the given version number is at minimum the current library version number.
+ * The version number must be a hexadecimal number like 0x000a01 (V0.10.1).
+ *
+ * Returns: Returns the library version number if the given version number is at least
+ * the version of the library, else return 0; If the argument is 0, the function returns
+ * the library version number without performing a check.
+ *
+ * Since: 0.11.0
+ **/
+int psl_check_version_number(int version)
+{
+	if (version) {
+		int major = version >> 16;
+		int minor = (version >> 8) & 0xFF;
+		int patch = version & 0xFF;
+
+		if (major < PSL_VERSION_MAJOR
+			|| (major == PSL_VERSION_MAJOR && minor < PSL_VERSION_MINOR)
+			|| (major == PSL_VERSION_MAJOR && minor == PSL_VERSION_MINOR && patch < PSL_VERSION_PATCH))
+		{
+			return 0;
+		}
+	}
+
+	return PSL_VERSION_NUMBER;
 }
 
 /* return whether hostname is an IP address or not */

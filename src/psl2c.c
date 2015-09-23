@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2014 Tim Ruehsen
+ * Copyright(c) 2014-2015 Tim Ruehsen
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -54,6 +54,80 @@
 #	include "psl.c"
 #undef _LIBPSL_INCLUDED_BY_PSL2C
 
+#if 0
+static int _check_psl(const psl_ctx_t *psl)
+{
+	int it, pos, err = 0;
+
+	/* check if plain suffix also appears in exceptions */
+	for (it = 0; it < psl->suffixes->cur; it++) {
+		_psl_entry_t *e = _vector_get(psl->suffixes, it);
+
+		if (!e->wildcard && _vector_find(psl->suffix_exceptions, e) >= 0) {
+			fprintf(stderr, "Found entry '%s' also in exceptions\n", e->label);
+			err = 1;
+		}
+	}
+
+	/* check if exception also appears in suffix list as plain entry */
+	for (it = 0; it < psl->suffix_exceptions->cur; it++) {
+		_psl_entry_t *e2, *e = _vector_get(psl->suffix_exceptions, it);
+
+		if ((e2 = _vector_get(psl->suffixes, pos = _vector_find(psl->suffixes, e)))) {
+			if (!e2->wildcard) {
+				fprintf(stderr, "Found exception '!%s' also as suffix\n", e->label);
+				err = 1;
+			}
+			/* Two same domains in a row are allowed: wildcard and non-wildcard.
+			 * Binary search find either of them, so also check previous and next entry. */
+			else if (pos > 0 && _suffix_compare(e, e2 = _vector_get(psl->suffixes, pos - 1)) == 0 && !e2->wildcard) {
+				fprintf(stderr, "Found exception '!%s' also as suffix\n", e->label);
+				err = 1;
+			}
+			else if (pos < psl->suffixes->cur - 1 && _suffix_compare(e, e2 = _vector_get(psl->suffixes, pos + 1)) == 0 && !e2->wildcard) {
+				fprintf(stderr, "Found exception '!%s' also as suffix\n", e->label);
+				err = 1;
+			}
+		}
+	}
+
+	/* check if non-wildcard entry is already covered by wildcard entry */
+	for (it = 0; it < psl->suffixes->cur; it++) {
+		const char *p;
+		_psl_entry_t *e = _vector_get(psl->suffixes, it);
+
+		if (e->nlabels > 1 && !e->wildcard && (p = strchr(e->label, '.'))) {
+			_psl_entry_t *e2, *e3, suffix;
+
+			suffix.label = p + 1;
+			suffix.length = strlen(p + 1);
+			suffix.nlabels = e->nlabels - 1;
+
+			e2 = _vector_get(psl->suffixes, pos = _vector_find(psl->suffixes, &suffix));
+
+			if (e2) {
+				if (e2->wildcard) {
+					fprintf(stderr, "Found superfluous '%s' already covered by '*.%s'\n", e->label, e2->label);
+					err = 1;
+				}
+				/* Two same domains in a row are allowed: wildcard and non-wildcard.
+				* Binary search find either of them, so also check previous and next entry. */
+				else if (pos > 0 && _suffix_compare(e2, e3 = _vector_get(psl->suffixes, pos - 1)) == 0 && e3->wildcard) {
+					fprintf(stderr, "Found superfluous '%s' already covered by '*.%s'\n", e->label, e2->label);
+					err = 1;
+				}
+				else if (pos < psl->suffixes->cur - 1 && _suffix_compare(e2, e3 = _vector_get(psl->suffixes, pos + 1)) == 0 && e3->wildcard) {
+					fprintf(stderr, "Found superfluous '%s' already covered by '*.%s'\n", e->label, e2->label);
+					err = 1;
+				}
+			}
+		}
+	}
+
+	return err;
+}
+#endif
+
 static void _print_psl_entries(FILE *fpout, const _psl_vector_t *v, const char *varname)
 {
 	int it;
@@ -81,7 +155,7 @@ static void _print_psl_entries(FILE *fpout, const _psl_vector_t *v, const char *
 		_psl_entry_t *e = _vector_get(v, it);
 
 		fprintf(fpout, "\t{ \"%s\", NULL, %hd, %d, %d },\n",
-			e->label_buf, e->length, (int) e->nlabels, (int) e->wildcard);
+			e->label_buf, e->length, (int) e->nlabels, (int) e->flags);
 	}
 
 	fprintf(fpout, "};\n");
@@ -152,6 +226,12 @@ int main(int argc, const char **argv)
 	if (!(psl = psl_load_file(argv[1])))
 		return 2;
 
+	/* look for ambigious or double entries */
+/*	if (_check_psl(psl)) {
+		psl_free(psl);
+		return 5;
+	}
+*/
 	if ((fpout = fopen(argv[2], "w"))) {
 		FILE *pp;
 		struct stat st;
@@ -162,11 +242,9 @@ int main(int argc, const char **argv)
 #if 0
 		/* include library code did not generate punycode, so let's do it for the builtin data */
 		_add_punycode_if_needed(psl->suffixes);
-		_add_punycode_if_needed(psl->suffix_exceptions);
 #endif
 
 		_print_psl_entries(fpout, psl->suffixes, "suffixes");
-		_print_psl_entries(fpout, psl->suffix_exceptions, "suffix_exceptions");
 
 		snprintf(cmd, cmdsize, "sha1sum %s", argv[1]);
 		if ((pp = popen(cmd, "r"))) {
@@ -182,6 +260,9 @@ int main(int argc, const char **argv)
 			fprintf(fpout, "static time_t _psl_compile_time = %lu;\n", atol(source_date_epoch));
 		else
 			fprintf(fpout, "static time_t _psl_compile_time = %lu;\n", time(NULL));
+		fprintf(fpout, "static int _psl_nsuffixes = %d;\n", psl->nsuffixes);
+		fprintf(fpout, "static int _psl_nexceptions = %d;\n", psl->nexceptions);
+		fprintf(fpout, "static int _psl_nwildcards = %d;\n", psl->nwildcards);
 		fprintf(fpout, "static const char _psl_sha1_checksum[] = \"%s\";\n", checksum);
 		fprintf(fpout, "static const char _psl_filename[] = \"%s\";\n", argv[1]);
 
@@ -196,9 +277,11 @@ int main(int argc, const char **argv)
 #else
 	if ((fpout = fopen(argv[2], "w"))) {
 		fprintf(fpout, "static _psl_entry_t suffixes[1];\n");
-		fprintf(fpout, "static _psl_entry_t suffix_exceptions[1];\n");
 		fprintf(fpout, "static time_t _psl_file_time;\n");
 		fprintf(fpout, "static time_t _psl_compile_time;\n");
+		fprintf(fpout, "static int _psl_nsuffixes = 0;\n");
+		fprintf(fpout, "static int _psl_nexceptions = 0;\n");
+		fprintf(fpout, "static int _psl_nwildcards = 0;\n");
 		fprintf(fpout, "static const char _psl_sha1_checksum[] = \"\";\n");
 		fprintf(fpout, "static const char _psl_filename[] = \"\";\n");
 

@@ -1,4 +1,20 @@
-Copyright (C) 2014 Tim Rühsen
+Copyright (C) 2014-2015 Tim Rühsen
+
+23.09.2015 Release V0.11.0
+  * Add new function psl_check_version_number()
+  * Add version defines to include file
+
+19.09.2025 Release V0.10.0
+  * Code simplified
+  * Less data entries, faster lookups
+  * Add new function psl_suffix_wildcard_count()
+  * Add new helper function psl_builtin_outdated()
+
+15.09.2015 Release V0.9.0
+  * Added semantic checks to PSL entries when generating built-in data
+  * Fix test suite for TLD exceptions (not used yet in reality)
+  * Removed wrong assumption from test suite
+  * Support explicit combination of 'foo.bar' and '*.foo.bar'
 
 14.08.2015 Release V0.8.1
   * Fix documentation 
