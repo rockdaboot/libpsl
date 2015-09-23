@@ -1000,6 +1000,37 @@ const char *psl_get_version(void)
 #endif
 }
 
+/**
+ * psl_check_version_number:
+ * @version: Version number (hex) to check against.
+ *
+ * Check the given version number is at minimum the current library version number.
+ * The version number must be a hexadecimal number like 0x000a01 (V0.10.1).
+ *
+ * Returns: Returns the library version number if the given version number is at least
+ * the version of the library, else return 0; If the argument is 0, the function returns
+ * the library version number without performing a check.
+ *
+ * Since: 0.11.0
+ **/
+int psl_check_version_number(int version)
+{
+	if (version) {
+		int major = version >> 16;
+		int minor = (version >> 8) & 0xFF;
+		int patch = version & 0xFF;
+
+		if (major < PSL_VERSION_MAJOR
+			|| (major == PSL_VERSION_MAJOR && minor < PSL_VERSION_MINOR)
+			|| (major == PSL_VERSION_MAJOR && minor == PSL_VERSION_MINOR && patch < PSL_VERSION_PATCH))
+		{
+			return 0;
+		}
+	}
+
+	return PSL_VERSION_NUMBER;
+}
+
 /* return whether hostname is an IP address or not */
 static int _isip(const char *hostname)
 {

@@ -116,9 +116,12 @@ const char *
 /* returns file name of PSL source file */
 const char *
 	psl_builtin_filename(void);
-/* returns library version */
+/* returns library version string */
 const char *
 	psl_get_version(void);
+/* checks library version number */
+int
+	psl_check_version_number(int version);
 /* returns wether the built-in data is outdated or not */
 int
 	psl_builtin_outdated(void);
