@@ -38,7 +38,9 @@ docs/libpsl/libpsl.prerequisites
 docs/libpsl/libpsl.signals
 docs/libpsl/version.xml
 docs/libpsl/xml/
+gtk-doc.m4
 gtk-doc.make
+include/libpsl.h
 install-sh
 libpsl.pc
 libtool
