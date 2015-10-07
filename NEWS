@@ -4,7 +4,7 @@ Copyright (C) 2014-2015 Tim Rühsen
   * Add new function psl_check_version_number()
   * Add version defines to include file
 
-19.09.2025 Release V0.10.0
+19.09.2015 Release V0.10.0
   * Code simplified
   * Less data entries, faster lookups
   * Add new function psl_suffix_wildcard_count()
