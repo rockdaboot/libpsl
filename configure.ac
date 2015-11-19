@@ -20,9 +20,9 @@ AC_C_INLINE
 #
 # Generate version defines for include file
 #
-AC_SUBST([LIBPSL_VERSION_MAJOR], [`echo -n $VERSION|cut -d'.' -f1`])
-AC_SUBST([LIBPSL_VERSION_MINOR], [`echo -n $VERSION|cut -d'.' -f2`])
-AC_SUBST([LIBPSL_VERSION_PATCH], [`echo -n $VERSION|cut -d'.' -f3`])
+AC_SUBST([LIBPSL_VERSION_MAJOR], [`echo $VERSION|cut -d'.' -f1`])
+AC_SUBST([LIBPSL_VERSION_MINOR], [`echo $VERSION|cut -d'.' -f2`])
+AC_SUBST([LIBPSL_VERSION_PATCH], [`echo $VERSION|cut -d'.' -f3`])
 AC_SUBST([LIBPSL_VERSION_NUMBER], [`printf '0x%02x%02x%02x' $LIBPSL_VERSION_MAJOR $LIBPSL_VERSION_MINOR $LIBPSL_VERSION_PATCH`])
 AC_CONFIG_FILES([include/libpsl.h])
 
