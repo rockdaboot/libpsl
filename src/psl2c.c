@@ -237,6 +237,7 @@ int main(int argc, const char **argv)
 		struct stat st;
 		size_t cmdsize = 16 + strlen(argv[1]);
 		char *cmd = alloca(cmdsize), checksum[64] = "";
+		char *abs_srcfile;
 		const char *source_date_epoch = NULL;
 
 #if 0
@@ -256,6 +257,7 @@ int main(int argc, const char **argv)
 		if (stat(argv[1], &st) != 0)
 			st.st_mtime = 0;
 		fprintf(fpout, "static time_t _psl_file_time = %lu;\n", st.st_mtime);
+
 		if ((source_date_epoch = getenv("SOURCE_DATE_EPOCH")))
 			fprintf(fpout, "static time_t _psl_compile_time = %lu;\n", atol(source_date_epoch));
 		else
@@ -264,7 +266,14 @@ int main(int argc, const char **argv)
 		fprintf(fpout, "static int _psl_nexceptions = %d;\n", psl->nexceptions);
 		fprintf(fpout, "static int _psl_nwildcards = %d;\n", psl->nwildcards);
 		fprintf(fpout, "static const char _psl_sha1_checksum[] = \"%s\";\n", checksum);
-		fprintf(fpout, "static const char _psl_filename[] = \"%s\";\n", argv[1]);
+
+		/* We need an absolute path here, else psl_builtin_outdated() won't work reliable */
+		/* Caveat: symbolic links are resolved by realpath() */
+		if ((abs_srcfile = realpath(argv[1], NULL))) {
+			fprintf(fpout, "static const char _psl_filename[] = \"%s\";\n", abs_srcfile);
+			free(abs_srcfile);
+		} else
+			fprintf(fpout, "static const char _psl_filename[] = \"%s\";\n", argv[1]);
 
 		if (fclose(fpout) != 0)
 			ret = 4;
