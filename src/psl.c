@@ -87,7 +87,6 @@
 #endif
 
 #include <libpsl.h>
-#include <bits/stat.h>
 
 /* number of elements within an array */
 #define countof(a) (sizeof(a)/sizeof(*(a)))
