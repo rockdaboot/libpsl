@@ -45,6 +45,9 @@
 static int
 	ok,
 	failed;
+#ifdef HAVE_CLOCK_GETTIME
+	struct timespec ts1, ts2;
+#endif
 
 static inline int _isspace_ascii(const char c)
 {
@@ -63,6 +66,10 @@ static void test_psl(void)
 	printf("loaded %d suffixes and %d exceptions\n", psl_suffix_count(psl), psl_suffix_exception_count(psl));
 
 	if ((fp = fopen(PSL_FILE, "r"))) {
+#ifdef HAVE_CLOCK_GETTIME
+		clock_gettime(CLOCK_REALTIME, &ts1);
+#endif
+
 		while ((linep = fgets(buf, sizeof(buf), fp))) {
 			while (_isspace_ascii(*linep)) linep++; /* ignore leading whitespace */
 			if (!*linep) continue; /* skip empty lines */
@@ -107,6 +114,9 @@ static void test_psl(void)
 			}
 		}
 
+#ifdef HAVE_CLOCK_GETTIME
+		clock_gettime(CLOCK_REALTIME, &ts2);
+#endif
 		fclose(fp);
 	} else {
 		printf("Failed to open %s\n", PSL_FILE);
@@ -118,6 +128,10 @@ static void test_psl(void)
 
 int main(int argc, const char * const *argv)
 {
+#ifdef HAVE_CLOCK_GETTIME
+	long ns;
+#endif
+
 	/* if VALGRIND testing is enabled, we have to call ourselves with valgrind checking */
 	if (argc == 1) {
 		const char *valgrind = getenv("TESTS_VALGRIND");
@@ -138,6 +152,21 @@ int main(int argc, const char * const *argv)
 		return 1;
 	}
 
-	printf("Summary: All %d tests passed\n", ok + failed);
+#ifdef HAVE_CLOCK_GETTIME
+	if (ts1.tv_sec == ts2.tv_sec)
+		ns = ts2.tv_nsec - ts1.tv_nsec;
+	else if (ts1.tv_sec == ts2.tv_sec - 1)
+		ns = 1000000000L - (ts2.tv_nsec - ts1.tv_nsec);
+	else
+		ns = 0; /* let's assume something is wrong and skip outputting measured time */
+
+	if (ns)
+		printf("Summary: All %d tests passed in %ld.%06ld ms\n", ok, ns / 1000000, ns % 1000000000);
+	else
+		printf("Summary: All %d tests passed\n", ok);
+#else
+	printf("Summary: All %d tests passed\n", ok);
+#endif
+
 	return 0;
 }

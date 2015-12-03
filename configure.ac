@@ -216,6 +216,9 @@ elif test -n "$NEEDS_NSL" ; then
   LIBS="$LIBS -lnsl"
 fi
 
+# Check for clock_gettime() used for performance measurement
+AC_SEARCH_LIBS(clock_gettime, rt)
+
 # Check for valgrind
 ac_enable_valgrind=no
 AC_ARG_ENABLE(valgrind-tests,
@@ -252,7 +255,7 @@ AC_SUBST(PSL_TESTFILE)
 
 # check for alloca / alloca.h
 AC_FUNC_ALLOCA
-AC_CHECK_FUNCS([strndup])
+AC_CHECK_FUNCS([strndup clock_gettime])
 
 # Override the template file name of the generated .pc file, so that there
 # is no need to rename the template file when the API version changes.
