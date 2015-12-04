@@ -442,16 +442,16 @@ def parse_gperf(infile):
   """Parses gperf file and extract strings and return code"""
   lines = [line.strip() for line in infile]
   # Extract strings after the first '%%' and before the second '%%'.
-  begin = lines.index('%%') + 1
-  end = lines.index('%%', begin)
-  lines = lines[begin:end]
+  #begin = lines.index('%%') + 1
+  #end = lines.index('%%', begin)
+  #lines = lines[begin:end]
   for line in lines:
     if line[-3:-1] != ', ':
       raise InputError('Expected "domainname, <digit>", found "%s"' % line)
     # Technically the DAFSA format could support return values in range [0-31],
     # but the values below are the only with a defined meaning.
-    if line[-1] not in '0124':
-      raise InputError('Expected value to be one of {0,1,2,4}, found "%s"' %
+    if line[-1] not in '01245':
+      raise InputError('Expected value to be one of {0,1,2,4,5}, found "%s"' %
                        line[-1])
   return [line[:-3] + line[-1] for line in lines]
 
@@ -460,8 +460,12 @@ def main():
   if len(sys.argv) != 3:
     print('usage: %s infile outfile' % sys.argv[0])
     return 1
-  with open(sys.argv[1], 'r') as infile, open(sys.argv[2], 'w') as outfile:
-    outfile.write(words_to_cxx(parse_gperf(infile)))
+  if sys.argv[1] == '-':
+    with open(sys.argv[2], 'w') as outfile:
+      outfile.write(words_to_cxx(parse_gperf(sys.stdin)))
+  else:
+    with open(sys.argv[1], 'r') as infile, open(sys.argv[2], 'w') as outfile:
+      outfile.write(words_to_cxx(parse_gperf(infile)))
   return 0
 
 

@@ -37,3 +37,4 @@ endif
 # PSL_FILE can be set by ./configure --with-psl-file=[PATH]
 suffixes.c: $(PSL_FILE) psl2c$(EXEEXT)
 	./psl2c$(EXEEXT) "$(PSL_FILE)" suffixes.c
+	./psl2c$(EXEEXT) --dafsa "$(PSL_FILE)" suffixes_dafsa.c
