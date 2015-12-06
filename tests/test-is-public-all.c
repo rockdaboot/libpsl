@@ -58,7 +58,7 @@ static void test_psl(void)
 {
 	FILE *fp;
 	psl_ctx_t *psl;
-	int result;
+	int result, type = 0;
 	char buf[256], *linep, *p;
 
 	psl = psl_load_file(PSL_FILE); /* PSL_FILE can be set by ./configure --with-psl-file=[PATH] */
@@ -74,8 +74,20 @@ static void test_psl(void)
 			while (_isspace_ascii(*linep)) linep++; /* ignore leading whitespace */
 			if (!*linep) continue; /* skip empty lines */
 
-			if (*linep == '/' && linep[1] == '/')
+			if (*linep == '/' && linep[1] == '/') {
+				if (!type) {
+					if (strstr(linep + 2, "===BEGIN ICANN DOMAINS==="))
+						type = PSL_TYPE_ICANN;
+					else if (!type && strstr(linep + 2, "===BEGIN PRIVATE DOMAINS==="))
+						type = PSL_TYPE_PRIVATE;
+				}
+				else if (type == PSL_TYPE_ICANN && strstr(linep + 2, "===END ICANN DOMAINS==="))
+					type = 0;
+				else if (type == PSL_TYPE_PRIVATE && strstr(linep + 2, "===END PRIVATE DOMAINS==="))
+					type = 0;
+
 				continue; /* skip comments */
+			}
 
 			/* parse suffix rule */
 			for (p = linep; *linep && !_isspace_ascii(*linep);) linep++;
@@ -111,6 +123,39 @@ static void test_psl(void)
 					failed++;
 					printf("psl_is_public_suffix(%s)=%d (expected 1)\n", p, result);
 				} else ok++;
+
+				if (!(strchr(p, '.'))) {
+					/* TLDs are always expected to be Publix Suffixes */
+					if (!(result = psl_is_public_suffix2(psl, p, PSL_TYPE_PRIVATE))) {
+						failed++;
+						printf("psl_is_public_suffix2(%s, PSL_TYPE_PRIVATE)=%d (expected 1)\n", p, result);
+					} else ok++;
+
+					if (!(result = psl_is_public_suffix2(psl, p, PSL_TYPE_ICANN))) {
+						failed++;
+						printf("psl_is_public_suffix2(%s, PSL_TYPE_ICANN)=%d (expected 0)\n", p, result);
+					} else ok++;
+				} else if (type == PSL_TYPE_PRIVATE) {
+					if (!(result = psl_is_public_suffix2(psl, p, PSL_TYPE_PRIVATE))) {
+						failed++;
+						printf("psl_is_public_suffix2(%s, PSL_TYPE_PRIVATE)=%d (expected 1)\n", p, result);
+					} else ok++;
+
+					if ((result = psl_is_public_suffix2(psl, p, PSL_TYPE_ICANN))) {
+						failed++;
+						printf("psl_is_public_suffix2(%s, PSL_TYPE_ICANN)=%d (expected 0)\n", p, result);
+					} else ok++;
+				} else if (type == PSL_TYPE_ICANN) {
+					if (!(result = psl_is_public_suffix2(psl, p, PSL_TYPE_ICANN))) {
+						failed++;
+						printf("psl_is_public_suffix2(%s, PSL_TYPE_ICANN)=%d (expected 1)\n", p, result);
+					} else ok++;
+
+					if ((result = psl_is_public_suffix2(psl, p, PSL_TYPE_PRIVATE))) {
+						failed++;
+						printf("psl_is_public_suffix2(%s, PSL_TYPE_PRIVATE)=%d (expected 0)\n", p, result);
+					} else ok++;
+				}
 			}
 		}
 
