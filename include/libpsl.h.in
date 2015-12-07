@@ -44,6 +44,11 @@
 extern "C" {
 #endif
 
+/* types for psl_is_publix_suffix2() */
+#define PSL_TYPE_ICANN   (1<<0)
+#define PSL_TYPE_PRIVATE (1<<1)
+#define PSL_TYPE_ANY     (PSL_TYPE_ICANN | PSL_TYPE_PRIVATE)
+
 /**
  * psl_error_t:
  * @PSL_SUCCESS: Successful return.
@@ -71,57 +76,79 @@ typedef struct _psl_ctx_st psl_ctx_t;
 /* frees PSL context */
 void
 	psl_free(psl_ctx_t *psl);
+
 /* loads PSL data from file */
 psl_ctx_t *
 	psl_load_file(const char *fname);
+
 /* loads PSL data from FILE pointer */
 psl_ctx_t *
 	psl_load_fp(FILE *fp);
+
 /* retrieves builtin PSL data */
 const psl_ctx_t *
 	psl_builtin(void);
+
 /* checks whether domain is a public suffix or not */
 int
 	psl_is_public_suffix(const psl_ctx_t *psl, const char *domain);
+
+/* checks whether domain is a public suffix regarding the type or not */
+int
+	psl_is_public_suffix2(const psl_ctx_t *psl, const char *domain, int type);
+
 /* checks whether cookie_domain is acceptable for domain or not */
 int
 	psl_is_cookie_domain_acceptable(const psl_ctx_t *psl, const char *hostname, const char *cookie_domain);
+
 /* returns the longest not registrable domain within 'domain' or NULL if none found */
 const char *
 	psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain);
+
 /* returns the shortest possible registrable domain part or NULL if domain is not registrable at all */
 const char *
 	psl_registrable_domain(const psl_ctx_t *psl, const char *domain);
+
 /* convert a string into lowercase UTF-8 */
 psl_error_t
 	psl_str_to_utf8lower(const char *str, const char *encoding, const char *locale, char **lower);
+
 /* does not include exceptions */
 int
 	psl_suffix_count(const psl_ctx_t *psl);
+
 /* just counts exceptions */
 int
 	psl_suffix_exception_count(const psl_ctx_t *psl);
+
 /* just counts wildcards */
 int
 	psl_suffix_wildcard_count(const psl_ctx_t *psl);
+
 /* returns compilation time */
 time_t
 	psl_builtin_compile_time(void);
+
 /* returns mtime of PSL source file */
 time_t
 	psl_builtin_file_time(void);
+
 /* returns SHA1 checksum (hex-encoded, lowercase) of PSL source file */
 const char *
 	psl_builtin_sha1sum(void);
+
 /* returns file name of PSL source file */
 const char *
 	psl_builtin_filename(void);
+
 /* returns library version string */
 const char *
 	psl_get_version(void);
+
 /* checks library version number */
 int
 	psl_check_version_number(int version);
+
 /* returns wether the built-in data is outdated or not */
 int
 	psl_builtin_outdated(void);

@@ -126,9 +126,11 @@ static char *strndup(const char *s, size_t n)
 
 #define countof(a) (sizeof(a)/sizeof(*(a)))
 
-#define _PSL_FLAG_PLAIN     (1<<0)
-#define _PSL_FLAG_EXCEPTION (1<<1)
-#define _PSL_FLAG_WILDCARD  (1<<2)
+#define _PSL_FLAG_EXCEPTION (1<<0)
+#define _PSL_FLAG_WILDCARD  (1<<1)
+#define _PSL_FLAG_ICANN     (1<<2) /* entry of ICANN section */
+#define _PSL_FLAG_PRIVATE   (1<<3) /* entry of PRIVATE section */
+#define _PSL_FLAG_PLAIN     (1<<4) /* just used for PSL syntax checking */
 
 typedef struct {
 	char
@@ -157,6 +159,7 @@ struct _psl_ctx_st {
 	_psl_vector_t
 		*suffixes;
 	int
+		mode,
 		nsuffixes,
 		nexceptions,
 		nwildcards;
@@ -177,7 +180,7 @@ struct _psl_ctx_st {
 	static const char _psl_filename[] = "";
 #endif
 
-/* references to this PSL will result in lookups to built-in data */
+/* references to these PSLs will result in lookups to built-in data */
 static const psl_ctx_t
 	_builtin_psl;
 
@@ -310,10 +313,11 @@ static int _suffix_init(_psl_entry_t *suffix, const char *rule, size_t length)
 	return 0;
 }
 
-static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
+static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int type)
 {
 	_psl_entry_t suffix, *rule;
 	const char *p;
+	int builtin;
 
 	/* this function should be called without leading dots, just make sure */
 	suffix.label = domain + (*domain == '.');
@@ -332,7 +336,9 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
 	}
 
 	/* if domain has enough labels, it is public */
-	if (psl == &_builtin_psl)
+	builtin = (psl == &_builtin_psl);
+
+	if (builtin)
 		rule = &suffixes[0];
 	else
 		rule = _vector_get(psl->suffixes, 0);
@@ -340,12 +346,18 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
 	if (!rule || rule->nlabels < suffix.nlabels - 1)
 		return 0;
 
-	if (psl == &_builtin_psl)
+	if (rule == &suffixes[0])
 		rule = bsearch(&suffix, suffixes, countof(suffixes), sizeof(suffixes[0]), (int(*)(const void *, const void *))_suffix_compare);
 	else
 		rule = _vector_get(psl->suffixes, _vector_find(psl->suffixes, &suffix));
 
 	if (rule) {
+		/* check for correct rule type */
+		if (type == PSL_TYPE_ICANN && !(rule->flags & _PSL_FLAG_ICANN))
+			return 0;
+		else if (type == PSL_TYPE_PRIVATE && !(rule->flags & _PSL_FLAG_PRIVATE))
+			return 0;
+
 		/* definitely a match, no matter if the found rule is a wildcard or not */
 		if (rule->flags & _PSL_FLAG_EXCEPTION)
 			return 0;
@@ -360,12 +372,18 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
 		suffix.length = strlen(suffix.label);
 		suffix.nlabels--;
 
-		if (psl == &_builtin_psl)
+		if (builtin)
 			rule = bsearch(&suffix, suffixes, countof(suffixes), sizeof(suffixes[0]), (int(*)(const void *, const void *))_suffix_compare);
 		else
 			rule = _vector_get(psl->suffixes, (pos = _vector_find(psl->suffixes, &suffix)));
 
 		if (rule) {
+			/* check for correct rule type */
+			if (type == PSL_TYPE_ICANN && !(rule->flags & _PSL_FLAG_ICANN))
+				return 0;
+			else if (type == PSL_TYPE_PRIVATE && !(rule->flags & _PSL_FLAG_PRIVATE))
+				return 0;
+
 			if ((rule->flags & _PSL_FLAG_WILDCARD))
 				return 1;
 		}
@@ -399,7 +417,37 @@ int psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
 	if (!psl || !domain)
 		return 1;
 
-	return _psl_is_public_suffix(psl, domain);
+	return _psl_is_public_suffix(psl, domain, PSL_TYPE_ANY);
+}
+
+/**
+ * psl_is_public_suffix2:
+ * @psl: PSL context
+ * @domain: Domain string
+ * @type: Domain type
+ *
+ * This function checks if @domain is a public suffix by the means of the
+ * [Mozilla Public Suffix List](http://publicsuffix.org).
+ *
+ * @type specifies the PSL section where to perform the lookup. Valid values are
+ * %PSL_TYPE_PRIVATE, %PSL_TYPE_ICANN and %PSL_TYPE_ANY.
+ *
+ * International @domain names have to be either in lowercase UTF-8 or in ASCII form (punycode).
+ * Other encodings result in unexpected behavior.
+ *
+ * @psl is a context returned by either psl_load_file(), psl_load_fp() or
+ * psl_builtin().
+ *
+ * Returns: 1 if domain is a public suffix, 0 if not.
+ *
+ * Since: 0.1
+ */
+int psl_is_public_suffix2(const psl_ctx_t *psl, const char *domain, int type)
+{
+	if (!psl || !domain)
+		return 1;
+
+	return _psl_is_public_suffix(psl, domain, type);
 }
 
 /**
@@ -431,7 +479,7 @@ const char *psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain)
 	 *   'forgot.his.name' and 'name' are in the PSL while 'his.name' is not.
 	 */
 
-	while (!_psl_is_public_suffix(psl, domain)) {
+	while (!_psl_is_public_suffix(psl, domain, 0)) {
 		if ((domain = strchr(domain, '.')))
 			domain++;
 		else
@@ -472,7 +520,7 @@ const char *psl_registrable_domain(const psl_ctx_t *psl, const char *domain)
 	 *   'forgot.his.name' and 'name' are in the PSL while 'his.name' is not.
 	 */
 
-	while (!_psl_is_public_suffix(psl, domain)) {
+	while (!_psl_is_public_suffix(psl, domain, 0)) {
 		if ((p = strchr(domain, '.'))) {
 			regdom = domain;
 			domain = p + 1;
@@ -691,6 +739,7 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 	psl_ctx_t *psl;
 	_psl_entry_t suffix, *suffixp;
 	char buf[256], *linep, *p;
+	int type = 0;
 #ifdef WITH_LIBICU
 	UIDNA *idna;
 	UErrorCode status = 0;
@@ -716,8 +765,20 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 		while (_isspace_ascii(*linep)) linep++; /* ignore leading whitespace */
 		if (!*linep) continue; /* skip empty lines */
 
-		if (*linep == '/' && linep[1] == '/')
+		if (*linep == '/' && linep[1] == '/') {
+			if (!type) {
+				if (strstr(linep + 2, "===BEGIN ICANN DOMAINS==="))
+					type = _PSL_FLAG_ICANN;
+				else if (!type && strstr(linep + 2, "===BEGIN PRIVATE DOMAINS==="))
+					type = _PSL_FLAG_PRIVATE;
+			}
+			else if (type == _PSL_FLAG_ICANN && strstr(linep + 2, "===END ICANN DOMAINS==="))
+				type = 0;
+			else if (type == _PSL_FLAG_PRIVATE && strstr(linep + 2, "===END PRIVATE DOMAINS==="))
+				type = 0;
+
 			continue; /* skip comments */
+		}
 
 		/* parse suffix rule */
 		for (p = linep; *linep && !_isspace_ascii(*linep);) linep++;
@@ -725,7 +786,7 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 
 		if (*p == '!') {
 			p++;
-			suffix.flags = _PSL_FLAG_EXCEPTION;
+			suffix.flags = _PSL_FLAG_EXCEPTION | type;
 			psl->nexceptions++;
 		} else if (*p == '*') {
 			if (*++p != '.') {
@@ -734,13 +795,13 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 			}
 			p++;
 			/* wildcard *.foo.bar implicitely make foo.bar a public suffix */
-			suffix.flags = _PSL_FLAG_WILDCARD | _PSL_FLAG_PLAIN;
+			suffix.flags = _PSL_FLAG_WILDCARD | _PSL_FLAG_PLAIN | type;
 			psl->nwildcards++;
 			psl->nsuffixes++;
 		} else {
 			if (!strchr(p, '.'))
 				continue; /* we do not need an explicit plain TLD rule, already covered by implicit '*' rule */
-			suffix.flags = _PSL_FLAG_PLAIN;
+			suffix.flags = _PSL_FLAG_PLAIN | type;
 			psl->nsuffixes++;
 		}
 
@@ -812,7 +873,7 @@ void psl_free(psl_ctx_t *psl)
  * The builtin data also contains punycode entries, one for each international domain name.
  *
  * If the generation of built-in data has been disabled during compilation, %NULL will be returned.
- * So if using the builtin psl context, you can provide UTF-8 or punycode representations of domains to
+ * When using the builtin psl context, you can provide UTF-8 or punycode representations of domains to
  * functions like psl_is_public_suffix().
  *
  * Returns: Pointer to the built in PSL data or NULL if this data is not available.
