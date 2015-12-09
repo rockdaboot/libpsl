@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
+# found in the LICENSE.chromium file.
 
 """
 A Deterministic acyclic finite state automaton (DAFSA) is a compact
@@ -421,7 +421,7 @@ def to_cxx(data):
   text += 'The byte array encodes effective tld names. See make_dafsa.py for'
   text += ' documentation.'
   text += '*/\n\n'
-  text += 'const unsigned char kDafsa[%s] = {\n' % len(data)
+  text += 'static const unsigned char kDafsa[%s] = {\n' % len(data)
   for i in range(0, len(data), 12):
     text += '  '
     text += ', '.join('0x%02x' % byte for byte in data[i:i + 12])
@@ -450,7 +450,7 @@ def parse_gperf(infile):
       raise InputError('Expected "domainname, <digit>", found "%s"' % line)
     # Technically the DAFSA format could support return values in range [0-31],
     # but the values below are the only with a defined meaning.
-    if line[-1] not in '01245':
+    if line[-1] not in '0123456789ABCDEF':
       raise InputError('Expected value to be one of {0,1,2,4,5}, found "%s"' %
                        line[-1])
   return [line[:-3] + line[-1] for line in lines]

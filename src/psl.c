@@ -32,6 +32,18 @@
 # include <config.h>
 #endif
 
+#if defined(__GNUC__) && defined(__GNUC_MINOR__)
+#       define _GCC_VERSION_AT_LEAST(major, minor) ((__GNUC__ > (major)) || (__GNUC__ == (major) && __GNUC_MINOR__ >= (minor)))
+#else
+#       define _GCC_VERSION_AT_LEAST(major, minor) 0
+#endif
+
+#if _GCC_VERSION_AT_LEAST(2,95)
+#  define _UNUSED __attribute__ ((unused))
+#else
+#  define _UNUSED
+#endif
+
 /* if this file is included by psl2c, redefine to use requested library for builtin data */
 #ifdef _LIBPSL_INCLUDED_BY_PSL2C
 #	undef WITH_LIBICU
@@ -167,10 +179,10 @@ struct _psl_ctx_st {
 
 /* include the PSL data compiled by 'psl2c' */
 #ifndef _LIBPSL_INCLUDED_BY_PSL2C
-#	include "suffixes.c"
+#  include "suffixes_dafsa.c"
 #else
 	/* if this source file is included by psl2c.c, provide empty builtin data */
-	static _psl_entry_t suffixes[1];
+	static const unsigned char kDafsa[1];
 	static time_t _psl_file_time;
 	static time_t _psl_compile_time;
 	static int _psl_nsuffixes;
@@ -313,20 +325,196 @@ static int _suffix_init(_psl_entry_t *suffix, const char *rule, size_t length)
 	return 0;
 }
 
+
+static inline int _isspace_ascii(const char c)
+{
+	return c == ' ' || c == '\t' || c == '\r' || c == '\n';
+}
+
+static int _str_is_ascii(const char *s)
+{
+	while (*s && *((unsigned char *)s) < 128) s++;
+
+	return !*s;
+}
+
+#if defined(WITH_LIBIDN)
+/*
+ * Work around a libidn <= 1.30 vulnerability.
+ *
+ * The function checks for a valid UTF-8 character sequence before
+ * passing it to idna_to_ascii_8z().
+ *
+ * [1] http://lists.gnu.org/archive/html/help-libidn/2015-05/msg00002.html
+ * [2] https://lists.gnu.org/archive/html/bug-wget/2015-06/msg00002.html
+ * [3] http://curl.haxx.se/mail/lib-2015-06/0143.html
+ */
+static int _utf8_is_valid(const char *utf8)
+{
+	const unsigned char *s = (const unsigned char *) utf8;
+
+	while (*s) {
+		if ((*s & 0x80) == 0) /* 0xxxxxxx ASCII char */
+			s++;
+		else if ((*s & 0xE0) == 0xC0) /* 110xxxxx 10xxxxxx */ {
+			if ((s[1] & 0xC0) != 0x80)
+				return 0;
+			s += 2;
+		} else if ((*s & 0xF0) == 0xE0) /* 1110xxxx 10xxxxxx 10xxxxxx */ {
+			if ((s[1] & 0xC0) != 0x80 || (s[2] & 0xC0) != 0x80)
+				return 0;
+			s += 3;
+		} else if ((*s & 0xF8) == 0xF0) /* 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx */ {
+			if ((s[1] & 0xC0) != 0x80 || (s[2] & 0xC0) != 0x80 || (s[3] & 0xC0) != 0x80)
+				return 0;
+			s += 4;
+		} else
+			return 0;
+	}
+
+	return 1;
+}
+#endif
+
+typedef void *_psl_idna_t;
+
+static _psl_idna_t *_psl_idna_open(void)
+{
+#if defined(WITH_LIBICU)
+	UErrorCode status = 0;
+	return (void *)uidna_openUTS46(UIDNA_USE_STD3_RULES, &status);
+#endif
+	return NULL;
+}
+
+static void _psl_idna_close(_psl_idna_t *idna _UNUSED)
+{
+#if defined(WITH_LIBICU)
+	if (idna)
+		uidna_close((UIDNA *)idna);
+#endif
+}
+
+static int _psl_idna_toASCII(_psl_idna_t *idna _UNUSED, const char *utf8, char **ascii)
+{
+	int ret = -1;
+
+#if defined(WITH_LIBICU)
+	/* IDNA2008 UTS#46 punycode conversion */
+	if (idna) {
+		char lookupname[128] = "";
+		UErrorCode status = 0;
+		UIDNAInfo info = UIDNA_INFO_INITIALIZER;
+		UChar utf16_dst[128], utf16_src[128];
+		int32_t utf16_src_length;
+
+		u_strFromUTF8(utf16_src, sizeof(utf16_src)/sizeof(utf16_src[0]), &utf16_src_length, utf8, -1, &status);
+		if (U_SUCCESS(status)) {
+			int32_t dst_length = uidna_nameToASCII((UIDNA *)idna, utf16_src, utf16_src_length, utf16_dst, sizeof(utf16_dst)/sizeof(utf16_dst[0]), &info, &status);
+			if (U_SUCCESS(status)) {
+				u_strToUTF8(lookupname, sizeof(lookupname), NULL, utf16_dst, dst_length, &status);
+				if (U_SUCCESS(status)) {
+					if (ascii)
+						*ascii = strdup(lookupname);
+					ret = 0;
+				} /* else
+					fprintf(stderr, "Failed to convert UTF-16 to UTF-8 (status %d)\n", status); */
+			} /* else
+				fprintf(stderr, "Failed to convert to ASCII (status %d)\n", status); */
+		} /* else
+			fprintf(stderr, "Failed to convert UTF-8 to UTF-16 (status %d)\n", status); */
+	}
+#elif defined(WITH_LIBIDN2)
+	int rc;
+	uint8_t *lower, resbuf[256];
+	size_t len = sizeof(resbuf) - 1; /* leave space for additional \0 byte */
+
+	/* we need a conversion to lowercase */
+	lower = u8_tolower((uint8_t *)utf8, u8_strlen((uint8_t *)utf8), 0, UNINORM_NFKC, resbuf, &len);
+	if (!lower) {
+		/* fprintf(stderr, "u8_tolower(%s) failed (%d)\n", utf8, errno); */
+		return -1;
+	}
+
+	/* u8_tolower() does not terminate the result string */
+	if (lower == resbuf) {
+		lower[len]=0;
+	} else {
+		uint8_t *tmp = lower;
+		lower = (uint8_t *)strndup((char *)lower, len);
+		free(tmp);
+	}
+
+	if ((rc = idn2_lookup_u8(lower, (uint8_t **)ascii, 0)) == IDN2_OK) {
+		ret = 0;
+	} /* else
+		fprintf(stderr, "toASCII(%s) failed (%d): %s\n", lower, rc, idn2_strerror(rc)); */
+
+	if (lower != resbuf)
+		free(lower);
+#elif defined(WITH_LIBIDN)
+	int rc;
+
+	if (!_utf8_is_valid(utf8)) {
+		/* fprintf(_(stderr, "Invalid UTF-8 sequence not converted: '%s'\n"), utf8); */
+		return -1;
+	}
+
+	/* idna_to_ascii_8z() automatically converts UTF-8 to lowercase */
+
+	if ((rc = idna_to_ascii_8z(utf8, ascii, IDNA_USE_STD3_ASCII_RULES)) == IDNA_SUCCESS) {
+		ret = 0;
+	} /* else
+		fprintf(_(stderr, "toASCII failed (%d): %s\n"), rc, idna_strerror(rc)); */
+#endif
+
+	return ret;
+}
+
+static void _add_punycode_if_needed(_psl_idna_t *idna, _psl_vector_t *v, _psl_entry_t *e)
+{
+	char *lookupname;
+
+	if (_str_is_ascii(e->label_buf))
+		return;
+
+	if (_psl_idna_toASCII(idna, e->label_buf, &lookupname) == 0) {
+		if (strcmp(e->label_buf, lookupname)) {
+			_psl_entry_t suffix, *suffixp;
+
+			/* fprintf(stderr, "toASCII '%s' -> '%s'\n", e->label_buf, lookupname); */
+			_suffix_init(&suffix, lookupname, strlen(lookupname));
+			suffix.flags = e->flags;
+			suffixp = _vector_get(v, _vector_add(v, &suffix));
+			suffixp->label = suffixp->label_buf; /* set label to changed address */
+		} /* else ignore */
+
+		free(lookupname);
+	}
+}
+
+/* prototype */
+int LookupStringInFixedSet(const unsigned char* graph, size_t length, const char* key, size_t key_length);
+
 static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int type)
 {
-	_psl_entry_t suffix, *rule;
+	_psl_entry_t suffix;
 	const char *p;
-	int builtin;
+	char *punycode = NULL;
+	int need_conversion = 0;
 
 	/* this function should be called without leading dots, just make sure */
-	suffix.label = domain + (*domain == '.');
-	suffix.length = strlen(suffix.label);
+	if (*domain == '.')
+		domain++;
+
 	suffix.nlabels = 1;
 
-	for (p = suffix.label; *p; p++)
+	for (p = domain; *p; p++) {
 		if (*p == '.')
 			suffix.nlabels++;
+		else if (*((unsigned char *)p) < 128)
+			need_conversion = 1; /* in case domain is non-ascii we need a toASCII conversion */
+	}
 
 	if (suffix.nlabels == 1) {
 		/* TLD, this is the prevailing '*' match.
@@ -335,61 +523,111 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int t
 		return 1;
 	}
 
-	/* if domain has enough labels, it is public */
-	builtin = (psl == &_builtin_psl);
+	if (need_conversion) {
+		_psl_idna_t *idna = _psl_idna_open();
 
-	if (builtin)
-		rule = &suffixes[0];
-	else
-		rule = _vector_get(psl->suffixes, 0);
+		if (_psl_idna_toASCII(idna, domain, &punycode) == 0) {
+			suffix.label = punycode;
+			suffix.length = strlen(punycode);
+		} else {
+			/* fallback */
+			suffix.label = domain;
+			suffix.length = p - suffix.label;
+		}
 
-	if (!rule || rule->nlabels < suffix.nlabels - 1)
-		return 0;
-
-	if (rule == &suffixes[0])
-		rule = bsearch(&suffix, suffixes, countof(suffixes), sizeof(suffixes[0]), (int(*)(const void *, const void *))_suffix_compare);
-	else
-		rule = _vector_get(psl->suffixes, _vector_find(psl->suffixes, &suffix));
-
-	if (rule) {
-		/* check for correct rule type */
-		if (type == PSL_TYPE_ICANN && !(rule->flags & _PSL_FLAG_ICANN))
-			return 0;
-		else if (type == PSL_TYPE_PRIVATE && !(rule->flags & _PSL_FLAG_PRIVATE))
-			return 0;
-
-		/* definitely a match, no matter if the found rule is a wildcard or not */
-		if (rule->flags & _PSL_FLAG_EXCEPTION)
-			return 0;
-		if (rule->flags & _PSL_FLAG_PLAIN)
-			return 1;
+		_psl_idna_close(idna);
+	} else {
+		suffix.label = domain;
+		suffix.length = p - suffix.label;
 	}
 
-	if ((suffix.label = strchr(suffix.label, '.'))) {
-		int pos = rule - suffixes;
+	if (psl == &_builtin_psl) {
+		int rc = LookupStringInFixedSet(kDafsa, sizeof(kDafsa), suffix.label, suffix.length);
+		if (rc != -1) {
+			/* check for correct rule type */
+			if (type == PSL_TYPE_ICANN && !(rc & _PSL_FLAG_ICANN))
+				goto suffix_no;
+			else if (type == PSL_TYPE_PRIVATE && !(rc & _PSL_FLAG_PRIVATE))
+				goto suffix_no;
 
-		suffix.label++;
-		suffix.length = strlen(suffix.label);
-		suffix.nlabels--;
+			if (rc & _PSL_FLAG_EXCEPTION)
+				goto suffix_no;
 
-		if (builtin)
-			rule = bsearch(&suffix, suffixes, countof(suffixes), sizeof(suffixes[0]), (int(*)(const void *, const void *))_suffix_compare);
-		else
-			rule = _vector_get(psl->suffixes, (pos = _vector_find(psl->suffixes, &suffix)));
+			/* wildcard *.foo.bar implicitly make foo.bar a public suffix */
+			/* definitely a match, no matter if the found rule is a wildcard or not */
+			goto suffix_yes;
+		}
+		if ((suffix.label = strchr(suffix.label, '.'))) {
+			suffix.label++;
+			suffix.length = strlen(suffix.label);
+			suffix.nlabels--;
+
+			rc = LookupStringInFixedSet(kDafsa, sizeof(kDafsa), suffix.label, suffix.length);
+			if (rc != -1) {
+				/* check for correct rule type */
+				if (type == PSL_TYPE_ICANN && !(rc & _PSL_FLAG_ICANN))
+					goto suffix_no;
+				else if (type == PSL_TYPE_PRIVATE && !(rc & _PSL_FLAG_PRIVATE))
+					goto suffix_no;
+
+				if (rc & _PSL_FLAG_WILDCARD)
+					goto suffix_yes;
+			}
+		}
+	} else {
+		_psl_entry_t *rule = _vector_get(psl->suffixes, 0);
+
+		if (!rule || rule->nlabels < suffix.nlabels - 1)
+			return 0;
+
+		rule = _vector_get(psl->suffixes, _vector_find(psl->suffixes, &suffix));
 
 		if (rule) {
 			/* check for correct rule type */
 			if (type == PSL_TYPE_ICANN && !(rule->flags & _PSL_FLAG_ICANN))
-				return 0;
+				goto suffix_no;
 			else if (type == PSL_TYPE_PRIVATE && !(rule->flags & _PSL_FLAG_PRIVATE))
-				return 0;
+				goto suffix_no;
 
-			if ((rule->flags & _PSL_FLAG_WILDCARD))
-				return 1;
+			if (rule->flags & _PSL_FLAG_EXCEPTION)
+				goto suffix_no;
+
+			/* wildcard *.foo.bar implicitly make foo.bar a public suffix */
+			/* definitely a match, no matter if the found rule is a wildcard or not */
+			goto suffix_yes;
+		}
+
+		if ((suffix.label = strchr(suffix.label, '.'))) {
+			int pos;
+
+			suffix.label++;
+			suffix.length = strlen(suffix.label);
+			suffix.nlabels--;
+
+			rule = _vector_get(psl->suffixes, (pos = _vector_find(psl->suffixes, &suffix)));
+
+			if (rule) {
+				/* check for correct rule type */
+				if (type == PSL_TYPE_ICANN && !(rule->flags & _PSL_FLAG_ICANN))
+					goto suffix_no;
+				else if (type == PSL_TYPE_PRIVATE && !(rule->flags & _PSL_FLAG_PRIVATE))
+					goto suffix_no;
+
+				if (rule->flags & _PSL_FLAG_WILDCARD)
+					goto suffix_yes;
+			}
 		}
 	}
 
+suffix_no:
+	if (punycode)
+		free(punycode);
 	return 0;
+
+suffix_yes:
+	if (punycode)
+		free(punycode);
+	return 1;
 }
 
 /**
@@ -531,167 +769,6 @@ const char *psl_registrable_domain(const psl_ctx_t *psl, const char *domain)
 	return regdom;
 }
 
-static inline int _isspace_ascii(const char c)
-{
-	return c == ' ' || c == '\t' || c == '\r' || c == '\n';
-}
-
-static int _str_is_ascii(const char *s)
-{
-	while (*s && *((unsigned char *)s) < 128) s++;
-
-	return !*s;
-}
-
-#if defined(WITH_LIBIDN)
-/*
- * Work around a libidn <= 1.30 vulnerability.
- *
- * The function checks for a valid UTF-8 character sequence before
- * passing it to idna_to_ascii_8z().
- *
- * [1] http://lists.gnu.org/archive/html/help-libidn/2015-05/msg00002.html
- * [2] https://lists.gnu.org/archive/html/bug-wget/2015-06/msg00002.html
- * [3] http://curl.haxx.se/mail/lib-2015-06/0143.html
- */
-static int _utf8_is_valid(const char *utf8)
-{
-	const unsigned char *s = (const unsigned char *) utf8;
-
-	while (*s) {
-		if ((*s & 0x80) == 0) /* 0xxxxxxx ASCII char */
-			s++;
-		else if ((*s & 0xE0) == 0xC0) /* 110xxxxx 10xxxxxx */ {
-			if ((s[1] & 0xC0) != 0x80)
-				return 0;
-			s += 2;
-		} else if ((*s & 0xF0) == 0xE0) /* 1110xxxx 10xxxxxx 10xxxxxx */ {
-			if ((s[1] & 0xC0) != 0x80 || (s[2] & 0xC0) != 0x80)
-				return 0;
-			s += 3;
-		} else if ((*s & 0xF8) == 0xF0) /* 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx */ {
-			if ((s[1] & 0xC0) != 0x80 || (s[2] & 0xC0) != 0x80 || (s[3] & 0xC0) != 0x80)
-				return 0;
-			s += 4;
-		} else
-			return 0;
-	}
-
-	return 1;
-}
-#endif
-
-#if defined(WITH_LIBICU)
-static void _add_punycode_if_needed(UIDNA *idna, _psl_vector_t *v, _psl_entry_t *e)
-{
-	if (_str_is_ascii(e->label_buf))
-		return;
-
-	/* IDNA2008 UTS#46 punycode conversion */
-	if (idna) {
-		char lookupname[128] = "";
-		UErrorCode status = 0;
-		UIDNAInfo info = UIDNA_INFO_INITIALIZER;
-		UChar utf16_dst[128], utf16_src[128];
-		int32_t utf16_src_length;
-
-		u_strFromUTF8(utf16_src, sizeof(utf16_src)/sizeof(utf16_src[0]), &utf16_src_length, e->label_buf, -1, &status);
-		if (U_SUCCESS(status)) {
-			int32_t dst_length = uidna_nameToASCII(idna, utf16_src, utf16_src_length, utf16_dst, sizeof(utf16_dst)/sizeof(utf16_dst[0]), &info, &status);
-			if (U_SUCCESS(status)) {
-				u_strToUTF8(lookupname, sizeof(lookupname), NULL, utf16_dst, dst_length, &status);
-				if (U_SUCCESS(status)) {
-					if (strcmp(e->label_buf, lookupname)) {
-						_psl_entry_t suffix, *suffixp;
-
-						/* fprintf(stderr, "libicu '%s' -> '%s'\n", e->label_buf, lookupname); */
-						_suffix_init(&suffix, lookupname, strlen(lookupname));
-						suffix.flags = e->flags;
-						suffixp = _vector_get(v, _vector_add(v, &suffix));
-						suffixp->label = suffixp->label_buf; /* set label to changed address */
-					} /* else ignore */
-				} /* else
-					fprintf(stderr, "Failed to convert UTF-16 to UTF-8 (status %d)\n", status); */
-			} /* else
-				fprintf(stderr, "Failed to convert to ASCII (status %d)\n", status); */
-		} /* else
-			fprintf(stderr, "Failed to convert UTF-8 to UTF-16 (status %d)\n", status); */
-	}
-}
-#elif defined(WITH_LIBIDN2)
-static void _add_punycode_if_needed(_psl_vector_t *v, _psl_entry_t *e)
-{
-	char *lookupname = NULL;
-	int rc;
-	uint8_t *lower, resbuf[256];
-	size_t len = sizeof(resbuf) - 1; /* leave space for additional \0 byte */
-
-	if (_str_is_ascii(e->label_buf))
-		return;
-
-	/* we need a conversion to lowercase */
-	lower = u8_tolower((uint8_t *)e->label_buf, u8_strlen((uint8_t *)e->label_buf), 0, UNINORM_NFKC, resbuf, &len);
-	if (!lower) {
-		/* fprintf(stderr, "u8_tolower(%s) failed (%d)\n", e->label_buf, errno); */
-		return;
-	}
-
-	/* u8_tolower() does not terminate the result string */
-	if (lower == resbuf) {
-		lower[len]=0;
-	} else {
-		uint8_t *tmp = lower;
-		lower = (uint8_t *)strndup((char *)lower, len);
-		free(tmp);
-	}
-
-	if ((rc = idn2_lookup_u8(lower, (uint8_t **)&lookupname, 0)) == IDN2_OK) {
-		if (strcmp(e->label_buf, lookupname)) {
-			_psl_entry_t suffix, *suffixp;
-
-			/* fprintf(stderr, "libidn '%s' -> '%s'\n", e->label_buf, lookupname); */
-			_suffix_init(&suffix, lookupname, strlen(lookupname));
-			suffix.flags = e->flags;
-			suffixp = _vector_get(v, _vector_add(v, &suffix));
-			suffixp->label = suffixp->label_buf; /* set label to changed address */
-		} /* else ignore */
-	} /* else
-		fprintf(stderr, "toASCII(%s) failed (%d): %s\n", lower, rc, idn2_strerror(rc)); */
-
-	if (lower != resbuf)
-		free(lower);
-}
-#elif defined(WITH_LIBIDN)
-static void _add_punycode_if_needed(_psl_vector_t *v, _psl_entry_t *e)
-{
-	char *lookupname = NULL;
-	int rc;
-
-	if (_str_is_ascii(e->label_buf))
-		return;
-
-	if (!_utf8_is_valid(e->label_buf)) {
-		/* fprintf(_(stderr, "Invalid UTF-8 sequence not converted: '%s'\n"), e->label_buf); */
-		return;
-	}
-
-	/* idna_to_ascii_8z() automatically converts UTF-8 to lowercase */
-
-	if ((rc = idna_to_ascii_8z(e->label_buf, &lookupname, IDNA_USE_STD3_ASCII_RULES)) == IDNA_SUCCESS) {
-		if (strcmp(e->label_buf, lookupname)) {
-			_psl_entry_t suffix, *suffixp;
-
-			/* fprintf(stderr, "libidn '%s' -> '%s'\n", e->label_buf, lookupname); */
-			_suffix_init(&suffix, lookupname, strlen(lookupname));
-			suffix.flags = e->flags;
-			suffixp = _vector_get(v, _vector_add(v, &suffix));
-			suffixp->label = suffixp->label_buf; /* set label to changed address */
-		} /* else ignore */
-	} /* else
-		fprintf(_(stderr, "toASCII failed (%d): %s\n"), rc, idna_strerror(rc)); */
-}
-#endif
-
 /**
  * psl_load_file:
  * @fname: Name of PSL file
@@ -740,10 +817,7 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 	_psl_entry_t suffix, *suffixp;
 	char buf[256], *linep, *p;
 	int type = 0;
-#ifdef WITH_LIBICU
-	UIDNA *idna;
-	UErrorCode status = 0;
-#endif
+	_psl_idna_t *idna;
 
 	if (!fp)
 		return NULL;
@@ -751,9 +825,7 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 	if (!(psl = calloc(1, sizeof(psl_ctx_t))))
 		return NULL;
 
-#ifdef WITH_LIBICU
-	idna = uidna_openUTS46(UIDNA_USE_STD3_RULES, &status);
-#endif
+	idna = _psl_idna_open();
 
 	/*
 	 *  as of 02.11.2012, the list at http://publicsuffix.org/list/ contains ~6000 rules and 40 exceptions.
@@ -794,7 +866,7 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 				continue;
 			}
 			p++;
-			/* wildcard *.foo.bar implicitely make foo.bar a public suffix */
+			/* wildcard *.foo.bar implicitly make foo.bar a public suffix */
 			suffix.flags = _PSL_FLAG_WILDCARD | _PSL_FLAG_PLAIN | type;
 			psl->nwildcards++;
 			psl->nsuffixes++;
@@ -829,20 +901,14 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 			}
 
 			suffixp->label = suffixp->label_buf; /* set label to changed address */
-#ifdef WITH_LIBICU
+
 			_add_punycode_if_needed(idna, psl->suffixes, suffixp);
-#elif defined(WITH_LIBIDN2) || defined(WITH_LIBIDN)
-			_add_punycode_if_needed(psl->suffixes, suffixp);
-#endif
 		}
 	}
 
 	_vector_sort(psl->suffixes);
 
-#ifdef WITH_LIBICU
-	if (idna)
-		uidna_close(idna);
-#endif
+	_psl_idna_close(idna);
 
 	return psl;
 }
@@ -1184,7 +1250,7 @@ int psl_is_cookie_domain_acceptable(const psl_ctx_t *psl, const char *hostname, 
  *
  * Since: 0.4
  */
-psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding, const char *locale, char **lower)
+psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding, const char *locale _UNUSED, char **lower)
 {
 	int ret = PSL_ERR_INVALID_ARG;
 
