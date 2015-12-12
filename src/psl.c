@@ -1098,7 +1098,7 @@ int psl_builtin_outdated(void)
 {
 	struct stat st;
 
-	if (stat(_psl_filename, &st) == 0 && st.st_mtime < _psl_file_time)
+	if (stat(_psl_filename, &st) == 0 && st.st_mtime > _psl_file_time)
 		return 1;
 
 	return 0;
