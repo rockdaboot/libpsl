@@ -1,3 +1,11 @@
+libpsl (0.11.0-2) unstable; urgency=medium
+
+  * Recommend the publicsuffix package.
+  * fix psl_builtin_outdated() and update psl --print-info and --version
+    (pulled from upstream)
+
+ -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Fri, 11 Dec 2015 22:34:03 -0500
+
 libpsl (0.11.0-1) unstable; urgency=medium
 
   * new upstream release

@@ -1,1 +1,3 @@
 0001-remove-git-submodules.patch
+0002-Fix-psl_builtin_outdated.patch
+0003-Extend-tools-psl-print-info-and-version.patch

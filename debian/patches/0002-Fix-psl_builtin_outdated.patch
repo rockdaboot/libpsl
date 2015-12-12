@@ -1,0 +1,25 @@
+From: =?utf-8?q?Tim_R=C3=BChsen?= <tim.ruehsen@gmx.de>
+Date: Sun, 27 Sep 2015 19:14:13 +0200
+Subject: Fix psl_builtin_outdated()
+
+(amended by dkg for the proper logic)
+---
+ src/psl.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/psl.c b/src/psl.c
+index e9bcae2..39ef107 100644
+--- a/src/psl.c
++++ b/src/psl.c
+@@ -973,9 +973,9 @@ int psl_builtin_outdated(void)
+ 	struct stat st;
+ 
+ 	if (stat(_psl_filename, &st) == 0 && st.st_mtime > _psl_file_time)
+-		return 0;
++		return 1;
+ 
+-	return 1;
++	return 0;
+ }
+ 
+ /**

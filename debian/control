@@ -34,6 +34,7 @@ Description: Library for Public Suffix List (development headers)
 Package: libpsl0
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}
+Recommends: publicsuffix
 Multi-Arch: same
 Description: Library for Public Suffix List (shared libraries)
  Libpsl allows checking domains against the Public Suffix List.
