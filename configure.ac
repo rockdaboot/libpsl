@@ -96,7 +96,6 @@ AC_ARG_ENABLE(runtime,
         libicu [[default]]: IDNA2008 UTS#46 library
         libidn2:          IDNA2008 library (also needs libunistring)
         libidn:           IDNA2003 library (also needs libunistring)
-  --disable-runtime       Do not link runtime IDNA functionality
   ], [
     if test "$enableval" = "libicu" -o "$enableval" = "yes"; then
       enable_runtime=libicu
@@ -107,8 +106,6 @@ AC_ARG_ENABLE(runtime,
     elif test "$enableval" = "libidn"; then
       enable_runtime=libidn
       AC_DEFINE([WITH_LIBIDN], [1], [generate PSL data using libidn])
-    elif test "$enableval" = "no"; then
-      enable_runtime=no
     else
       AC_MSG_ERROR([Unknown value $enableval for --enable-runtime])
     fi
