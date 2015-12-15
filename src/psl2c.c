@@ -305,7 +305,7 @@ int main(int argc, const char **argv)
 	psl_free(psl);
 #else
 	if ((fpout = fopen(argv[argpos + 1], "w"))) {
-		fprintf(fpout, "static _psl_entry_t suffixes[1];\n");
+		fprintf(fpout, "static const unsigned char kDafsa[1];\n");
 		fprintf(fpout, "static time_t _psl_file_time;\n");
 		fprintf(fpout, "static time_t _psl_compile_time;\n");
 		fprintf(fpout, "static int _psl_nsuffixes = 0;\n");
