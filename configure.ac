@@ -154,8 +154,10 @@ if test "$enable_runtime" = "libicu" -o "$enable_builtin" = "libicu"; then
   # using AC_SEARCH_LIBS also don't work since functions have the library version appended
   PKG_CHECK_MODULES([LIBICU], [icu-uc], [
     HAVE_LIBICU=yes
-    LIBS="$LIBICU_LIBS $LIBS"
-    CFLAGS="$LIBICU_CFLAGS $CFLAGS"
+    if test "$enable_runtime" = "libicu"; then
+      LIBS="$LIBICU_LIBS $LIBS"
+      CFLAGS="$LIBICU_CFLAGS $CFLAGS"
+    fi
   ], [
     OLDLIBS=$LIBS
     LIBS="-licuuc $LIBS"
