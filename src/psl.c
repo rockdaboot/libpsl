@@ -829,8 +829,6 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int t
 		suffix.length = p - suffix.label;
 	}
 
-	printf("domain=%s label=%s\n", domain, suffix.label);
-
 	if (psl == &_builtin_psl) {
 		int rc = LookupStringInFixedSet(kDafsa, sizeof(kDafsa), suffix.label, suffix.length);
 		if (rc != -1) {
