@@ -74,6 +74,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
+#include <limits.h> /* for UINT_MAX */
 #include <langinfo.h>
 #include <arpa/inet.h>
 #ifdef HAVE_ALLOCA_H
@@ -325,6 +326,285 @@ static int _suffix_init(_psl_entry_t *suffix, const char *rule, size_t length)
 	return 0;
 }
 
+#if !defined(WITH_LIBIDN) && !defined(WITH_LIBIDN2) && !defined(WITH_LIBICU)
+/*
+ * When configured without runtime IDNA support (./configure --disable-runtime), we need a pure ASCII
+ * representation of non-ASCII characters in labels as found in UTF-8 domain names.
+ * This is because the current DAFSA format used may only hold character values [21..127].
+ *
+  Code copied from http://www.nicemice.net/idn/punycode-spec.gz on
+  2011-01-04 with SHA-1 a966a8017f6be579d74a50a226accc7607c40133
+  labeled punycode-spec 1.0.3 (2006-Mar-24-Thu).  It is modified for
+  libpsl by Tim Rühsen.  License on the original code:
+
+  punycode-spec 1.0.3 (2006-Mar-23-Thu)
+  http://www.nicemice.net/idn/
+  Adam M. Costello
+  http://www.nicemice.net/amc/
+
+  B. Disclaimer and license
+
+    Regarding this entire document or any portion of it (including
+    the pseudocode and C code), the author makes no guarantees and
+    is not responsible for any damage resulting from its use.  The
+    author grants irrevocable permission to anyone to use, modify,
+    and distribute it in any way that does not diminish the rights
+    of anyone else to use, modify, and distribute it, provided that
+    redistributed derivative works do not contain misleading author or
+    version information.  Derivative works need not be licensed under
+    similar terms.
+
+  C. Punycode sample implementation
+
+  punycode-sample.c 2.0.0 (2004-Mar-21-Sun)
+  http://www.nicemice.net/idn/
+  Adam M. Costello
+  http://www.nicemice.net/amc/
+
+  This is ANSI C code (C89) implementing Punycode 1.0.x.
+ */
+enum punycode_status {
+	punycode_success = 0,
+	punycode_bad_input = 1, /* Input is invalid.                       */
+	punycode_big_output = 2, /* Output would exceed the space provided. */
+	punycode_overflow = 3 /* Wider integers needed to process input. */
+};
+
+#ifdef PUNYCODE_UINT
+	typedef PUNYCODE_UINT punycode_uint;
+#elif UINT_MAX >= (1 << 26) - 1
+	typedef unsigned int punycode_uint;
+#else
+	typedef unsigned long punycode_uint;
+#endif
+
+/*** Bootstring parameters for Punycode ***/
+enum {
+	base = 36, tmin = 1, tmax = 26, skew = 38, damp = 700,
+	initial_bias = 72, initial_n = 0x80, delimiter = 0x2D
+};
+
+static char encode_digit(punycode_uint d)
+{
+	return d + 22 + 75 * (d < 26);
+	/*  0..25 map to ASCII a..z or A..Z */
+	/* 26..35 map to ASCII 0..9         */
+}
+#define flagged(bcp) ((punycode_uint)(bcp) - 65 < 26)
+static const punycode_uint maxint = -1;
+
+static punycode_uint adapt(punycode_uint delta, punycode_uint numpoints, int firsttime)
+{
+	punycode_uint k;
+
+	delta = firsttime ? delta / damp : delta >> 1;
+	/* delta >> 1 is a faster way of doing delta / 2 */
+	delta += delta / numpoints;
+
+	for (k = 0; delta > ((base - tmin) * tmax) / 2; k += base) {
+		delta /= base - tmin;
+	}
+
+	return k + (base - tmin + 1) * delta / (delta + skew);
+}
+
+static enum punycode_status punycode_encode(
+	size_t input_length_orig,
+	const punycode_uint input[],
+	size_t *output_length,
+	char output[])
+{
+	punycode_uint input_length, n, delta, h, b, bias, j, m, q, k, t;
+	size_t out, max_out;
+
+	/* The Punycode spec assumes that the input length is the same type */
+	/* of integer as a code point, so we need to convert the size_t to  */
+	/* a punycode_uint, which could overflow.                           */
+
+	if (input_length_orig > maxint)
+		return punycode_overflow;
+
+	input_length = (punycode_uint) input_length_orig;
+
+	/* Initialize the state: */
+
+	n = initial_n;
+	delta = 0;
+	out = 0;
+	max_out = *output_length;
+	bias = initial_bias;
+
+	/* Handle the basic code points: */
+	for (j = 0; j < input_length; ++j) {
+		if (input[j] < 0x80) {
+			if (max_out - out < 2)
+				return punycode_big_output;
+			output[out++] = (char) input[j];
+		}
+		/* else if (input[j] < n) return punycode_bad_input; */
+		/* (not needed for Punycode with unsigned code points) */
+	}
+
+	h = b = (punycode_uint) out;
+	/* cannot overflow because out <= input_length <= maxint */
+
+	/* h is the number of code points that have been handled, b is the  */
+	/* number of basic code points, and out is the number of ASCII code */
+	/* points that have been output.                                    */
+
+	if (b > 0)
+		output[out++] = delimiter;
+
+	/* Main encoding loop: */
+
+	while (h < input_length) {
+		/* All non-basic code points < n have been     */
+		/* handled already.  Find the next larger one: */
+
+		for (m = maxint, j = 0; j < input_length; ++j) {
+			/* if (basic(input[j])) continue; */
+			/* (not needed for Punycode) */
+			if (input[j] >= n && input[j] < m)
+				m = input[j];
+		}
+
+		/* Increase delta enough to advance the decoder's    */
+		/* <n,i> state to <m,0>, but guard against overflow: */
+
+		if (m - n > (maxint - delta) / (h + 1))
+			return punycode_overflow;
+		delta += (m - n) * (h + 1);
+		n = m;
+
+		for (j = 0; j < input_length; ++j) {
+			/* Punycode does not need to check whether input[j] is basic: */
+			if (input[j] < n /* || basic(input[j]) */) {
+				if (++delta == 0)
+					return punycode_overflow;
+			}
+
+			if (input[j] == n) {
+				/* Represent delta as a generalized variable-length integer: */
+
+				for (q = delta, k = base;; k += base) {
+					if (out >= max_out)
+						return punycode_big_output;
+					t = k <= bias /* + tmin */ ? tmin : /* +tmin not needed */
+						k >= bias + tmax ? tmax : k - bias;
+					if (q < t)
+						break;
+					output[out++] = encode_digit(t + (q - t) % (base - t));
+					q = (q - t) / (base - t);
+				}
+
+				output[out++] = encode_digit(q);
+				bias = adapt(delta, h + 1, h == b);
+				delta = 0;
+				++h;
+			}
+		}
+
+		++delta, ++n;
+	}
+
+	*output_length = out;
+	return punycode_success;
+}
+
+static ssize_t _utf8_to_utf32(const char *in, size_t inlen, punycode_uint *out, size_t outlen)
+{
+	size_t n = 0;
+	unsigned char *s;
+
+	if (!outlen)
+		return -1;
+
+	outlen--;
+
+	s = alloca(inlen + 1);
+	memcpy(s, in, inlen);
+	s[inlen] = 0;
+
+	while (*s && n < outlen) {
+		if ((*s & 0x80) == 0) { /* 0xxxxxxx ASCII char */
+			out[n++] = *s;
+			s++;
+		} else if ((*s & 0xE0) == 0xC0) /* 110xxxxx 10xxxxxx */ {
+			if ((s[1] & 0xC0) != 0x80)
+				return -1;
+			out[n++] = ((*s & 0x1F) << 6) | (s[1] & 0x3F);
+			s += 2;
+		} else if ((*s & 0xF0) == 0xE0) /* 1110xxxx 10xxxxxx 10xxxxxx */ {
+			if ((s[1] & 0xC0) != 0x80 || (s[2] & 0xC0) != 0x80)
+				return -1;
+			out[n++] = ((*s & 0x0F) << 12) | ((s[1] & 0x3F) << 6) | (s[2] & 0x3F);
+			s += 3;
+		} else if ((*s & 0xF8) == 0xF0) /* 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx */ {
+			if ((s[1] & 0xC0) != 0x80 || (s[2] & 0xC0) != 0x80 || (s[3] & 0xC0) != 0x80)
+				return -1;
+			out[n++] = ((*s & 0x07) << 18) | ((s[1] & 0x3F) << 12) | ((s[1] & 0x3F) << 6) | (s[2] & 0x3F);
+			s += 4;
+		} else
+			return -1;
+	}
+
+	return n;
+}
+
+static int _mem_is_ascii(const char *s, size_t n)
+{
+	while (n--)
+		if (*((unsigned char *)s++) >= 128)
+			return 0;
+
+	return 1;
+}
+
+static int _domain_to_punycode(const char *domain, char *out, size_t outsize)
+{
+	size_t outlen = 0, labellen;
+	punycode_uint input[256];
+	const char *label, *e;
+
+	for (e = label = domain; e; label = e + 1) {
+		e = strchr(label, '.');
+		labellen = e ? (size_t) (e - label) : strlen(label);
+		/* printf("s=%s inlen=%zd\n", label, labellen); */
+
+		if (_mem_is_ascii(label, labellen)) {
+			if (outlen + labellen + (e != NULL)>= outsize)
+				return 1;
+
+			/* printf("outlen=%zd labellen=%zd\n", outlen, labellen); */
+			memcpy(out + outlen, label, labellen);
+			outlen += labellen;
+		} else {
+			ssize_t inputlen = 0;
+
+			if (outlen + labellen + (e != NULL) + 4 >= outsize)
+				return 1;
+
+			if ((inputlen = _utf8_to_utf32(label, labellen, input, sizeof (input) / sizeof (input[0]))) < 0)
+				return 1;
+
+			memcpy(out + outlen, "xn--", 4);
+			outlen += 4;
+
+			labellen = outsize - outlen;
+			/* printf("n=%zd space_left=%zd\n", n, labellen); */
+			if (punycode_encode(inputlen, input, &labellen, out + outlen))
+				return 1;
+			outlen += labellen;
+		}
+
+		if (e)
+			out[outlen++] = '.';
+		out[outlen] = 0;
+	}
+
+	return 0;
+}
+#endif
 
 static inline int _isspace_ascii(const char c)
 {
@@ -466,6 +746,14 @@ static int _psl_idna_toASCII(_psl_idna_t *idna _UNUSED, const char *utf8, char *
 		ret = 0;
 	} /* else
 		fprintf(_(stderr, "toASCII failed (%d): %s\n"), rc, idna_strerror(rc)); */
+#else
+	char lookupname[128];
+
+	if (_domain_to_punycode(utf8, lookupname, sizeof(lookupname)) == 0) {
+		if (ascii)
+			*ascii = strdup(lookupname);
+		ret = 0;
+	}
 #endif
 
 	return ret;
@@ -540,6 +828,8 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int t
 		suffix.label = domain;
 		suffix.length = p - suffix.label;
 	}
+
+	printf("domain=%s label=%s\n", domain, suffix.label);
 
 	if (psl == &_builtin_psl) {
 		int rc = LookupStringInFixedSet(kDafsa, sizeof(kDafsa), suffix.label, suffix.length);
@@ -1250,7 +1540,7 @@ int psl_is_cookie_domain_acceptable(const psl_ctx_t *psl, const char *hostname, 
  *
  * Since: 0.4
  */
-psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding, const char *locale _UNUSED, char **lower)
+psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding _UNUSED, const char *locale _UNUSED, char **lower)
 {
 	int ret = PSL_ERR_INVALID_ARG;
 
