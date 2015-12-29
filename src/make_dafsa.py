@@ -430,12 +430,22 @@ def to_cxx(data):
   return text
 
 
-def words_to_cxx(words):
+def words_to_whatever(words, converter):
   """Generates C++ code from a word list"""
   dafsa = to_dafsa(words)
   for fun in (reverse, join_suffixes, reverse, join_suffixes, join_labels):
     dafsa = fun(dafsa)
-  return to_cxx(encode(dafsa))
+  return converter(encode(dafsa))
+
+
+def words_to_cxx(words):
+  """Generates C++ code from a word list"""
+  return words_to_whatever(words, to_cxx)
+
+
+def words_to_binary(words):
+  """Generates C++ code from a word list"""
+  return words_to_whatever(words, bytearray)
 
 
 def parse_gperf(infile):
@@ -457,15 +467,24 @@ def parse_gperf(infile):
 
 
 def main():
-  if len(sys.argv) != 3:
-    print('usage: %s infile outfile' % sys.argv[0])
+  if len(sys.argv) < 3:
+    print('usage: %s [--binary] infile outfile' % sys.argv[0])
     return 1
-  if sys.argv[1] == '-':
-    with open(sys.argv[2], 'w') as outfile:
-      outfile.write(words_to_cxx(parse_gperf(sys.stdin)))
+
+  argpos = 1
+  converter = words_to_cxx
+
+  if sys.argv[argpos] == '--binary':
+    converter = words_to_binary
+    argpos += 1
+
+  if sys.argv[argpos] == '-':
+    with open(sys.argv[argpos + 1], 'w') as outfile:
+      outfile.write(converter(parse_gperf(sys.stdin)))
   else:
-    with open(sys.argv[1], 'r') as infile, open(sys.argv[2], 'w') as outfile:
-      outfile.write(words_to_cxx(parse_gperf(infile)))
+    with open(sys.argv[argpos], 'r') as infile, open(sys.argv[argpos + 1], 'w') as outfile:
+      outfile.write(converter(parse_gperf(infile)))
+
   return 0
 
 

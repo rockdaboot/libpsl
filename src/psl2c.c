@@ -180,52 +180,50 @@ static void _print_psl_entries_dafsa(FILE *fpout, const _psl_vector_t *v)
 	unlink("in.tmp");
 	unlink("out.tmp");
 }
+#endif /* _GENERATE_BUILTIN_DATA */
 
-#if 0
-#if !defined(WITH_LIBICU) && !defined(WITH_IDN2)
-static int _str_needs_encoding(const char *s)
+static int _print_psl_entries_dafsa_binary(const char *fname, const _psl_vector_t *v)
 {
-	while (*s && *((unsigned char *)s) < 128) s++;
+	FILE *fp;
+	int ret = 0, it, rc;
+	char cmd[256];
 
-	return !!*s;
-}
+	if ((fp = fopen("in.tmp", "w"))) {
+		for (it = 0; it < v->cur; it++) {
+			_psl_entry_t *e = _vector_get(v, it);
+			unsigned char *s = (unsigned char *)e->label_buf;
 
-static void _add_punycode_if_needed(_psl_vector_t *v)
-{
-	int it, n;
+			/* search for non-ASCII label and skip it */
+			while (*s && *s < 128) s++;
+			if (*s) continue;
 
-	/* do not use 'it < v->cur' since v->cur is changed by _vector_add() ! */
-	for (it = 0, n = v->cur; it < n; it++) {
-		_psl_entry_t *e = _vector_get(v, it);
-
-		if (_str_needs_encoding(e->label_buf)) {
-			_psl_entry_t suffix, *suffixp;
-			char lookupname[64] = "";
-
-			/* this is much slower than the libidn2 API but should have no license issues */
-			FILE *pp;
-			char cmd[16 + sizeof(e->label_buf)];
-			snprintf(cmd, sizeof(cmd), "idn2 '%s'", e->label_buf);
-			if ((pp = popen(cmd, "r"))) {
-				if (fscanf(pp, "%63s", lookupname) >= 1 && strcmp(e->label_buf, lookupname)) {
-					/* fprintf(stderr, "idn2 '%s' -> '%s'\n", e->label_buf, lookupname); */
-					_suffix_init(&suffix, lookupname, strlen(lookupname));
-					suffix.wildcard = e->wildcard;
-					suffixp = _vector_get(v, _vector_add(v, &suffix));
-					suffixp->label = suffixp->label_buf; /* set label to changed address */
-				}
-				pclose(pp);
-			} else
-				fprintf(stderr, "Failed to call popen(%s, \"r\")\n", cmd);
+			fprintf(fp, "%s, %X\n", e->label_buf, (int) (e->flags & 0x0F));
 		}
+
+		fclose(fp);
+	} else {
+		fprintf(stderr, "Failed to write open 'in.tmp'\n");
+		return 3;
 	}
 
-	_vector_sort(v);
-}
-#endif /* !defined(WITH_LIBICU) && !defined(WITH_IDN2) */
-#endif
+	snprintf(cmd, sizeof(cmd), MAKE_DAFSA " --binary in.tmp %s", fname);
+	if ((rc = system(cmd))) {
+		fprintf(stderr, "Failed to execute '%s' (%d)\n", cmd, rc);
+		ret = 2;
+	}
 
-#endif /* _GENERATE_BUILTIN_DATA */
+	unlink("in.tmp");
+	return ret;
+}
+
+static void usage(void)
+{
+	fprintf(stderr, "Usage: psl2c [--binary] <infile> <outfile>\n");
+	fprintf(stderr, "  <infile>  is the 'public_suffix_list.dat', lowercase UTF-8 encoded\n");
+	fprintf(stderr, "  <outfile> is the the filename to be generated from <infile>\n");
+	fprintf(stderr, "  --binary  Generate binary DAFSA output (default: C code for psl.c)\n");
+	exit(1);
+}
 
 int main(int argc, const char **argv)
 {
@@ -233,20 +231,34 @@ int main(int argc, const char **argv)
 #ifdef _GENERATE_BUILTIN_DATA
 	psl_ctx_t *psl;
 #endif
-	int ret = 0, argpos = 1;
+	int ret = 0, argpos = 1, binary = 0;
 
-	if (argc - argpos != 2) {
-		fprintf(stderr, "Usage: psl2c <infile> <outfile>\n");
-		fprintf(stderr, "  <infile>  is the 'public_suffix_list.dat', lowercase UTF-8 encoded\n");
-		fprintf(stderr, "  <outfile> is the the C filename to be generated from <infile>\n");
-		return 1;
+	if (argc < 3)
+		usage();
+
+	if (strcmp(argv[argpos], "--binary") == 0) {
+		argpos++;
+		binary = 1;
+	}
+
+	if (argc - argpos != 2)
+		usage();
+
+	if (binary) {
+		if (!(psl = psl_load_file(argv[argpos])))
+			return 2;
+
+		ret = _print_psl_entries_dafsa_binary(argv[argpos + 1], psl->suffixes);
+
+		psl_free(psl);
+		return ret;
 	}
 
 #ifdef _GENERATE_BUILTIN_DATA
 	if (!(psl = psl_load_file(argv[argpos])))
 		return 2;
 
-	/* look for ambigious or double entries */
+	/* look for ambiguous or double entries */
 /*	if (_check_psl(psl)) {
 		psl_free(psl);
 		return 5;
@@ -259,11 +271,6 @@ int main(int argc, const char **argv)
 		char *cmd = alloca(cmdsize), checksum[64] = "";
 		char *abs_srcfile;
 		const char *source_date_epoch = NULL;
-
-#if 0
-		/* include library code did not generate punycode, so let's do it for the builtin data */
-		_add_punycode_if_needed(psl->suffixes);
-#endif
 
 		_print_psl_entries_dafsa(fpout, psl->suffixes);
 
