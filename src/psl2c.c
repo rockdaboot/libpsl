@@ -45,14 +45,14 @@
 #	define _GENERATE_BUILTIN_DATA
 #endif
 
-#ifdef _GENERATE_BUILTIN_DATA
-
 #include <libpsl.h>
 
 /* here we include the library source code to have access to internal functions and data structures */
 #define _LIBPSL_INCLUDED_BY_PSL2C
 #	include "psl.c"
 #undef _LIBPSL_INCLUDED_BY_PSL2C
+
+#ifdef _GENERATE_BUILTIN_DATA
 
 #if 0
 static int _check_psl(const psl_ctx_t *psl)
@@ -228,9 +228,7 @@ static void usage(void)
 int main(int argc, const char **argv)
 {
 	FILE *fpout;
-#ifdef _GENERATE_BUILTIN_DATA
 	psl_ctx_t *psl;
-#endif
 	int ret = 0, argpos = 1, binary = 0;
 
 	if (argc < 3)
