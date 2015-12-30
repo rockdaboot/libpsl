@@ -1170,7 +1170,7 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 
 			if ((index = _vector_find(psl->suffixes, &suffix)) >= 0) {
 				/* Found existing entry:
-				 * Combination of exception and plain rule is ambigous
+				 * Combination of exception and plain rule is ambiguous
 				 * !foo.bar
 				 * foo.bar
 				 *
