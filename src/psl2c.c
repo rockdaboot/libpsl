@@ -268,7 +268,6 @@ int main(int argc, const char **argv)
 		size_t cmdsize = 16 + strlen(argv[argpos]);
 		char *cmd = alloca(cmdsize), checksum[64] = "";
 		char *abs_srcfile;
-		const char *source_date_epoch = NULL;
 
 		_print_psl_entries_dafsa(fpout, psl->suffixes);
 
