@@ -80,6 +80,10 @@ static void test_psl(void)
 		{ ".forgot.his.name", 1 },
 		{ "whoever.his.name", 0 },
 		{ "whoever.forgot.his.name", 0 },
+		{ "whatever.platform.sh", 1 },
+		{ ".platform.sh", 1 },
+		{ "whatever.yokohama.jp", 1 },
+		{ ".yokohama.jp", 1 },
 		{ ".", 1 }, /* special case */
 		{ "", 1 },  /* special case */
 		{ NULL, 1 },  /* special case */
