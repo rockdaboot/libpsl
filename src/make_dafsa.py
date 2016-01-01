@@ -211,7 +211,7 @@ def to_dafsa(words):
     if not 0x1F < ord(word[0]) < 0x80:
       raise InputError('Domain names must be printable 7-bit ASCII')
     if len(word) == 1:
-      return chr(ord(word[0]) & 0x0F), [None]
+      return chr(int(word[0], 16) & 0x0F), [None]
     return word[0], [to_nodes(word[1:])]
   return [to_nodes(word) for word in words]
 
