@@ -104,9 +104,6 @@ static void test_psl(void)
 		}
 	}
 
-	printf("psl_builtin_compile_time()=%ld\n", psl_builtin_compile_time());
-	psl_builtin_compile_time() == 0 ? failed++ : ok++;
-
 	printf("psl_builtin_file_time()=%ld\n", psl_builtin_file_time());
 	psl_builtin_file_time() == 0 ? failed++ : ok++;
 

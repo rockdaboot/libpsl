@@ -185,7 +185,6 @@ struct _psl_ctx_st {
 	/* if this source file is included by psl2c.c, provide empty builtin data */
 	static const unsigned char kDafsa[1];
 	static time_t _psl_file_time;
-	static time_t _psl_compile_time;
 	static int _psl_nsuffixes;
 	static int _psl_nexceptions;
 	static int _psl_nwildcards;
@@ -1302,22 +1301,6 @@ int psl_suffix_wildcard_count(const psl_ctx_t *psl)
 		return psl->nwildcards;
 	else
 		return 0;
-}
-
-/**
- * psl_builtin_compile_time:
- *
- * This function returns the time when the Publix Suffix List has been compiled into C code (by psl2c).
- *
- * If the generation of built-in data has been disabled during compilation, 0 will be returned.
- *
- * Returns: time_t value or 0.
- *
- * Since: 0.1
- */
-time_t psl_builtin_compile_time(void)
-{
-	return _psl_compile_time;
 }
 
 /**

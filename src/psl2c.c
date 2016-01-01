@@ -283,10 +283,6 @@ int main(int argc, const char **argv)
 			st.st_mtime = 0;
 		fprintf(fpout, "static time_t _psl_file_time = %lu;\n", st.st_mtime);
 
-		if ((source_date_epoch = getenv("SOURCE_DATE_EPOCH")))
-			fprintf(fpout, "static time_t _psl_compile_time = %lu;\n", atol(source_date_epoch));
-		else
-			fprintf(fpout, "static time_t _psl_compile_time = %lu;\n", time(NULL));
 		fprintf(fpout, "static int _psl_nsuffixes = %d;\n", psl->nsuffixes);
 		fprintf(fpout, "static int _psl_nexceptions = %d;\n", psl->nexceptions);
 		fprintf(fpout, "static int _psl_nwildcards = %d;\n", psl->nwildcards);
@@ -312,7 +308,6 @@ int main(int argc, const char **argv)
 	if ((fpout = fopen(argv[argpos + 1], "w"))) {
 		fprintf(fpout, "static const unsigned char kDafsa[1];\n");
 		fprintf(fpout, "static time_t _psl_file_time;\n");
-		fprintf(fpout, "static time_t _psl_compile_time;\n");
 		fprintf(fpout, "static int _psl_nsuffixes = 0;\n");
 		fprintf(fpout, "static int _psl_nexceptions = 0;\n");
 		fprintf(fpout, "static int _psl_nwildcards = 0;\n");
