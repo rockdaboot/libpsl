@@ -171,6 +171,10 @@ typedef struct {
 struct _psl_ctx_st {
 	_psl_vector_t
 		*suffixes;
+	unsigned char
+		*dafsa;
+	size_t
+		dafsa_size;
 	int
 		mode,
 		nsuffixes,
@@ -799,7 +803,7 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int t
 	for (p = domain; *p; p++) {
 		if (*p == '.')
 			suffix.nlabels++;
-		else if (*((unsigned char *)p) < 128)
+		else if (*((unsigned char *)p) >= 128)
 			need_conversion = 1; /* in case domain is non-ascii we need a toASCII conversion */
 	}
 
@@ -818,6 +822,7 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int t
 			suffix.length = strlen(punycode);
 		} else {
 			/* fallback */
+
 			suffix.label = domain;
 			suffix.length = p - suffix.label;
 		}
@@ -828,8 +833,10 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int t
 		suffix.length = p - suffix.label;
 	}
 
-	if (psl == &_builtin_psl) {
-		int rc = LookupStringInFixedSet(kDafsa, sizeof(kDafsa), suffix.label, suffix.length);
+	if (psl == &_builtin_psl || psl->dafsa) {
+		size_t dafsa_size = psl == &_builtin_psl ? sizeof(kDafsa) : psl->dafsa_size;
+		const unsigned char *dafsa = psl == &_builtin_psl ? kDafsa : psl->dafsa;
+		int rc = LookupStringInFixedSet(dafsa, dafsa_size, suffix.label, suffix.length);
 		if (rc != -1) {
 			/* check for correct rule type */
 			if (type == PSL_TYPE_ICANN && !(rc & _PSL_FLAG_ICANN))
@@ -849,7 +856,7 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int t
 			suffix.length = strlen(suffix.label);
 			suffix.nlabels--;
 
-			rc = LookupStringInFixedSet(kDafsa, sizeof(kDafsa), suffix.label, suffix.length);
+			rc = LookupStringInFixedSet(dafsa, dafsa_size, suffix.label, suffix.length);
 			if (rc != -1) {
 				/* check for correct rule type */
 				if (type == PSL_TYPE_ICANN && !(rc & _PSL_FLAG_ICANN))
@@ -1103,6 +1110,7 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 	psl_ctx_t *psl;
 	_psl_entry_t suffix, *suffixp;
 	char buf[256], *linep, *p;
+	size_t n;
 	int type = 0;
 	_psl_idna_t *idna;
 
@@ -1111,6 +1119,35 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 
 	if (!(psl = calloc(1, sizeof(psl_ctx_t))))
 		return NULL;
+
+	/* read first line to allow ASCII / DAFSA detection */
+	if ((n = fread(buf, 1, sizeof(buf) - 1, fp)) < 1)
+		goto fail;
+
+	buf[n] = 0;
+
+	if (!strstr(buf, "This Source Code Form is subject to")) {
+		size_t size = 65536, len = n;
+
+		if (!(psl->dafsa = malloc(size)))
+			goto fail;
+
+		memcpy(psl->dafsa, buf, len);
+
+		while ((n = fread(psl->dafsa + len, 1, size - len, fp)) > 0) {
+			len += n;
+			if (len >= size) {
+				void *m = realloc(psl->dafsa, size *= 2);
+				if (!m)
+					goto fail;
+				psl->dafsa = m;
+			}
+		}
+
+		return psl;
+	}
+
+	rewind(fp);
 
 	idna = _psl_idna_open();
 
@@ -1198,6 +1235,10 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 	_psl_idna_close(idna);
 
 	return psl;
+
+fail:
+	psl_free(psl);
+	return NULL;
 }
 
 /**
@@ -1213,6 +1254,7 @@ void psl_free(psl_ctx_t *psl)
 {
 	if (psl && psl != &_builtin_psl) {
 		_vector_free(&psl->suffixes);
+		free(psl->dafsa);
 		free(psl);
 	}
 }
