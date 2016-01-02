@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2014-2015 Tim Ruehsen
+ * Copyright(c) 2014-2016 Tim Ruehsen
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -80,6 +80,10 @@ static void test_psl(void)
 		{ ".forgot.his.name", 1 },
 		{ "whoever.his.name", 0 },
 		{ "whoever.forgot.his.name", 0 },
+		{ "whatever.platform.sh", 1 },
+		{ ".platform.sh", 1 },
+		{ "whatever.yokohama.jp", 1 },
+		{ ".yokohama.jp", 1 },
 		{ ".", 1 }, /* special case */
 		{ "", 1 },  /* special case */
 		{ NULL, 1 },  /* special case */
@@ -103,9 +107,6 @@ static void test_psl(void)
 			printf("psl_is_public_suffix(%s)=%d (expected %d)\n", t->domain, result, t->result);
 		}
 	}
-
-	printf("psl_builtin_compile_time()=%ld\n", psl_builtin_compile_time());
-	psl_builtin_compile_time() == 0 ? failed++ : ok++;
 
 	printf("psl_builtin_file_time()=%ld\n", psl_builtin_file_time());
 	psl_builtin_file_time() == 0 ? failed++ : ok++;

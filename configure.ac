@@ -1,5 +1,5 @@
 
-AC_INIT([libpsl], [0.11.0], [tim.ruehsen@gmx.de], [libpsl], [http://github.com/rockdaboot/libpsl])
+AC_INIT([libpsl], [0.12.0], [tim.ruehsen@gmx.de], [libpsl], [http://github.com/rockdaboot/libpsl])
 AC_PREREQ([2.59])
 AM_INIT_AUTOMAKE([1.10 -Wall no-define foreign])
 
@@ -20,9 +20,9 @@ AC_C_INLINE
 #
 # Generate version defines for include file
 #
-AC_SUBST([LIBPSL_VERSION_MAJOR], [`echo -n $VERSION|cut -d'.' -f1`])
-AC_SUBST([LIBPSL_VERSION_MINOR], [`echo -n $VERSION|cut -d'.' -f2`])
-AC_SUBST([LIBPSL_VERSION_PATCH], [`echo -n $VERSION|cut -d'.' -f3`])
+AC_SUBST([LIBPSL_VERSION_MAJOR], [`echo $VERSION|cut -d'.' -f1`])
+AC_SUBST([LIBPSL_VERSION_MINOR], [`echo $VERSION|cut -d'.' -f2`])
+AC_SUBST([LIBPSL_VERSION_PATCH], [`echo $VERSION|cut -d'.' -f3`])
 AC_SUBST([LIBPSL_VERSION_NUMBER], [`printf '0x%02x%02x%02x' $LIBPSL_VERSION_MAJOR $LIBPSL_VERSION_MINOR $LIBPSL_VERSION_PATCH`])
 AC_CONFIG_FILES([include/libpsl.h])
 
@@ -85,7 +85,7 @@ PKG_PROG_PKG_CONFIG
 # 4. If any interfaces have been added, removed, or changed since the last update, increment current, and set revision to 0.
 # 5. If any interfaces have been added since the last public release, then increment age.
 # 6. If any existing interfaces have been removed or changed since the last public release, then set age to 0. 
-AC_SUBST([LIBPSL_SO_VERSION], [4:0:4])
+AC_SUBST([LIBPSL_SO_VERSION], [5:0:0])
 AC_SUBST([LIBPSL_VERSION], $VERSION)
 
 # Check for enable/disable builtin PSL data
@@ -154,8 +154,10 @@ if test "$enable_runtime" = "libicu" -o "$enable_builtin" = "libicu"; then
   # using AC_SEARCH_LIBS also don't work since functions have the library version appended
   PKG_CHECK_MODULES([LIBICU], [icu-uc], [
     HAVE_LIBICU=yes
-    LIBS="$LIBICU_LIBS $LIBS"
-    CFLAGS="$LIBICU_CFLAGS $CFLAGS"
+    if test "$enable_runtime" = "libicu"; then
+      LIBS="$LIBICU_LIBS $LIBS"
+      CFLAGS="$LIBICU_CFLAGS $CFLAGS"
+    fi
   ], [
     OLDLIBS=$LIBS
     LIBS="-licuuc $LIBS"
@@ -216,6 +218,9 @@ elif test -n "$NEEDS_NSL" ; then
   LIBS="$LIBS -lnsl"
 fi
 
+# Check for clock_gettime() used for performance measurement
+AC_SEARCH_LIBS(clock_gettime, rt)
+
 # Check for valgrind
 ac_enable_valgrind=no
 AC_ARG_ENABLE(valgrind-tests,
@@ -252,7 +257,7 @@ AC_SUBST(PSL_TESTFILE)
 
 # check for alloca / alloca.h
 AC_FUNC_ALLOCA
-AC_CHECK_FUNCS([strndup])
+AC_CHECK_FUNCS([strndup clock_gettime])
 
 # Override the template file name of the generated .pc file, so that there
 # is no need to rename the template file when the API version changes.

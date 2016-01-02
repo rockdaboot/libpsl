@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2014-2015 Tim Ruehsen
+ * Copyright(c) 2014-2016 Tim Ruehsen
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -32,6 +32,18 @@
 # include <config.h>
 #endif
 
+#if defined(__GNUC__) && defined(__GNUC_MINOR__)
+#       define _GCC_VERSION_AT_LEAST(major, minor) ((__GNUC__ > (major)) || (__GNUC__ == (major) && __GNUC_MINOR__ >= (minor)))
+#else
+#       define _GCC_VERSION_AT_LEAST(major, minor) 0
+#endif
+
+#if _GCC_VERSION_AT_LEAST(2,95)
+#  define _UNUSED __attribute__ ((unused))
+#else
+#  define _UNUSED
+#endif
+
 /* if this file is included by psl2c, redefine to use requested library for builtin data */
 #ifdef _LIBPSL_INCLUDED_BY_PSL2C
 #	undef WITH_LIBICU
@@ -62,6 +74,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
+#include <limits.h> /* for UINT_MAX */
 #include <langinfo.h>
 #include <arpa/inet.h>
 #ifdef HAVE_ALLOCA_H
@@ -87,7 +100,6 @@
 #endif
 
 #include <libpsl.h>
-#include <bits/stat.h>
 
 /* number of elements within an array */
 #define countof(a) (sizeof(a)/sizeof(*(a)))
@@ -127,9 +139,11 @@ static char *strndup(const char *s, size_t n)
 
 #define countof(a) (sizeof(a)/sizeof(*(a)))
 
-#define _PSL_FLAG_PLAIN     (1<<0)
-#define _PSL_FLAG_EXCEPTION (1<<1)
-#define _PSL_FLAG_WILDCARD  (1<<2)
+#define _PSL_FLAG_EXCEPTION (1<<0)
+#define _PSL_FLAG_WILDCARD  (1<<1)
+#define _PSL_FLAG_ICANN     (1<<2) /* entry of ICANN section */
+#define _PSL_FLAG_PRIVATE   (1<<3) /* entry of PRIVATE section */
+#define _PSL_FLAG_PLAIN     (1<<4) /* just used for PSL syntax checking */
 
 typedef struct {
 	char
@@ -157,7 +171,12 @@ typedef struct {
 struct _psl_ctx_st {
 	_psl_vector_t
 		*suffixes;
+	unsigned char
+		*dafsa;
+	size_t
+		dafsa_size;
 	int
+		mode,
 		nsuffixes,
 		nexceptions,
 		nwildcards;
@@ -165,12 +184,11 @@ struct _psl_ctx_st {
 
 /* include the PSL data compiled by 'psl2c' */
 #ifndef _LIBPSL_INCLUDED_BY_PSL2C
-#	include "suffixes.c"
+#  include "suffixes_dafsa.c"
 #else
 	/* if this source file is included by psl2c.c, provide empty builtin data */
-	static _psl_entry_t suffixes[1];
+	static const unsigned char kDafsa[1];
 	static time_t _psl_file_time;
-	static time_t _psl_compile_time;
 	static int _psl_nsuffixes;
 	static int _psl_nexceptions;
 	static int _psl_nwildcards;
@@ -178,7 +196,7 @@ struct _psl_ctx_st {
 	static const char _psl_filename[] = "";
 #endif
 
-/* references to this PSL will result in lookups to built-in data */
+/* references to these PSLs will result in lookups to built-in data */
 static const psl_ctx_t
 	_builtin_psl;
 
@@ -311,178 +329,285 @@ static int _suffix_init(_psl_entry_t *suffix, const char *rule, size_t length)
 	return 0;
 }
 
-static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
+#if !defined(WITH_LIBIDN) && !defined(WITH_LIBIDN2) && !defined(WITH_LIBICU)
+/*
+ * When configured without runtime IDNA support (./configure --disable-runtime), we need a pure ASCII
+ * representation of non-ASCII characters in labels as found in UTF-8 domain names.
+ * This is because the current DAFSA format used may only hold character values [21..127].
+ *
+  Code copied from http://www.nicemice.net/idn/punycode-spec.gz on
+  2011-01-04 with SHA-1 a966a8017f6be579d74a50a226accc7607c40133
+  labeled punycode-spec 1.0.3 (2006-Mar-24-Thu).  It is modified for
+  libpsl by Tim Rühsen.  License on the original code:
+
+  punycode-spec 1.0.3 (2006-Mar-23-Thu)
+  http://www.nicemice.net/idn/
+  Adam M. Costello
+  http://www.nicemice.net/amc/
+
+  B. Disclaimer and license
+
+    Regarding this entire document or any portion of it (including
+    the pseudocode and C code), the author makes no guarantees and
+    is not responsible for any damage resulting from its use.  The
+    author grants irrevocable permission to anyone to use, modify,
+    and distribute it in any way that does not diminish the rights
+    of anyone else to use, modify, and distribute it, provided that
+    redistributed derivative works do not contain misleading author or
+    version information.  Derivative works need not be licensed under
+    similar terms.
+
+  C. Punycode sample implementation
+
+  punycode-sample.c 2.0.0 (2004-Mar-21-Sun)
+  http://www.nicemice.net/idn/
+  Adam M. Costello
+  http://www.nicemice.net/amc/
+
+  This is ANSI C code (C89) implementing Punycode 1.0.x.
+ */
+enum punycode_status {
+	punycode_success = 0,
+	punycode_bad_input = 1, /* Input is invalid.                       */
+	punycode_big_output = 2, /* Output would exceed the space provided. */
+	punycode_overflow = 3 /* Wider integers needed to process input. */
+};
+
+#ifdef PUNYCODE_UINT
+	typedef PUNYCODE_UINT punycode_uint;
+#elif UINT_MAX >= (1 << 26) - 1
+	typedef unsigned int punycode_uint;
+#else
+	typedef unsigned long punycode_uint;
+#endif
+
+/*** Bootstring parameters for Punycode ***/
+enum {
+	base = 36, tmin = 1, tmax = 26, skew = 38, damp = 700,
+	initial_bias = 72, initial_n = 0x80, delimiter = 0x2D
+};
+
+static char encode_digit(punycode_uint d)
 {
-	_psl_entry_t suffix, *rule;
-	const char *p;
+	return d + 22 + 75 * (d < 26);
+	/*  0..25 map to ASCII a..z or A..Z */
+	/* 26..35 map to ASCII 0..9         */
+}
+#define flagged(bcp) ((punycode_uint)(bcp) - 65 < 26)
+static const punycode_uint maxint = -1;
 
-	/* this function should be called without leading dots, just make sure */
-	suffix.label = domain + (*domain == '.');
-	suffix.length = strlen(suffix.label);
-	suffix.nlabels = 1;
+static punycode_uint adapt(punycode_uint delta, punycode_uint numpoints, int firsttime)
+{
+	punycode_uint k;
 
-	for (p = suffix.label; *p; p++)
-		if (*p == '.')
-			suffix.nlabels++;
+	delta = firsttime ? delta / damp : delta >> 1;
+	/* delta >> 1 is a faster way of doing delta / 2 */
+	delta += delta / numpoints;
 
-	if (suffix.nlabels == 1) {
-		/* TLD, this is the prevailing '*' match.
-		 * We don't currently support exception TLDs (TLDs that are not a public suffix)
-		 */
-		return 1;
+	for (k = 0; delta > ((base - tmin) * tmax) / 2; k += base) {
+		delta /= base - tmin;
 	}
 
-	/* if domain has enough labels, it is public */
-	if (psl == &_builtin_psl)
-		rule = &suffixes[0];
-	else
-		rule = _vector_get(psl->suffixes, 0);
+	return k + (base - tmin + 1) * delta / (delta + skew);
+}
 
-	if (!rule || rule->nlabels < suffix.nlabels - 1)
-		return 0;
+static enum punycode_status punycode_encode(
+	size_t input_length_orig,
+	const punycode_uint input[],
+	size_t *output_length,
+	char output[])
+{
+	punycode_uint input_length, n, delta, h, b, bias, j, m, q, k, t;
+	size_t out, max_out;
 
-	if (psl == &_builtin_psl)
-		rule = bsearch(&suffix, suffixes, countof(suffixes), sizeof(suffixes[0]), (int(*)(const void *, const void *))_suffix_compare);
-	else
-		rule = _vector_get(psl->suffixes, _vector_find(psl->suffixes, &suffix));
+	/* The Punycode spec assumes that the input length is the same type */
+	/* of integer as a code point, so we need to convert the size_t to  */
+	/* a punycode_uint, which could overflow.                           */
 
-	if (rule) {
-		/* definitely a match, no matter if the found rule is a wildcard or not */
-		if (rule->flags & _PSL_FLAG_EXCEPTION)
-			return 0;
-		if (rule->flags & _PSL_FLAG_PLAIN)
-			return 1;
-	}
+	if (input_length_orig > maxint)
+		return punycode_overflow;
 
-	if ((suffix.label = strchr(suffix.label, '.'))) {
-		int pos = rule - suffixes;
+	input_length = (punycode_uint) input_length_orig;
 
-		suffix.label++;
-		suffix.length = strlen(suffix.label);
-		suffix.nlabels--;
+	/* Initialize the state: */
 
-		if (psl == &_builtin_psl)
-			rule = bsearch(&suffix, suffixes, countof(suffixes), sizeof(suffixes[0]), (int(*)(const void *, const void *))_suffix_compare);
-		else
-			rule = _vector_get(psl->suffixes, (pos = _vector_find(psl->suffixes, &suffix)));
+	n = initial_n;
+	delta = 0;
+	out = 0;
+	max_out = *output_length;
+	bias = initial_bias;
 
-		if (rule) {
-			if ((rule->flags & _PSL_FLAG_WILDCARD))
-				return 1;
+	/* Handle the basic code points: */
+	for (j = 0; j < input_length; ++j) {
+		if (input[j] < 0x80) {
+			if (max_out - out < 2)
+				return punycode_big_output;
+			output[out++] = (char) input[j];
 		}
+		/* else if (input[j] < n) return punycode_bad_input; */
+		/* (not needed for Punycode with unsigned code points) */
+	}
+
+	h = b = (punycode_uint) out;
+	/* cannot overflow because out <= input_length <= maxint */
+
+	/* h is the number of code points that have been handled, b is the  */
+	/* number of basic code points, and out is the number of ASCII code */
+	/* points that have been output.                                    */
+
+	if (b > 0)
+		output[out++] = delimiter;
+
+	/* Main encoding loop: */
+
+	while (h < input_length) {
+		/* All non-basic code points < n have been     */
+		/* handled already.  Find the next larger one: */
+
+		for (m = maxint, j = 0; j < input_length; ++j) {
+			/* if (basic(input[j])) continue; */
+			/* (not needed for Punycode) */
+			if (input[j] >= n && input[j] < m)
+				m = input[j];
+		}
+
+		/* Increase delta enough to advance the decoder's    */
+		/* <n,i> state to <m,0>, but guard against overflow: */
+
+		if (m - n > (maxint - delta) / (h + 1))
+			return punycode_overflow;
+		delta += (m - n) * (h + 1);
+		n = m;
+
+		for (j = 0; j < input_length; ++j) {
+			/* Punycode does not need to check whether input[j] is basic: */
+			if (input[j] < n /* || basic(input[j]) */) {
+				if (++delta == 0)
+					return punycode_overflow;
+			}
+
+			if (input[j] == n) {
+				/* Represent delta as a generalized variable-length integer: */
+
+				for (q = delta, k = base;; k += base) {
+					if (out >= max_out)
+						return punycode_big_output;
+					t = k <= bias /* + tmin */ ? tmin : /* +tmin not needed */
+						k >= bias + tmax ? tmax : k - bias;
+					if (q < t)
+						break;
+					output[out++] = encode_digit(t + (q - t) % (base - t));
+					q = (q - t) / (base - t);
+				}
+
+				output[out++] = encode_digit(q);
+				bias = adapt(delta, h + 1, h == b);
+				delta = 0;
+				++h;
+			}
+		}
+
+		++delta, ++n;
+	}
+
+	*output_length = out;
+	return punycode_success;
+}
+
+static ssize_t _utf8_to_utf32(const char *in, size_t inlen, punycode_uint *out, size_t outlen)
+{
+	size_t n = 0;
+	unsigned char *s;
+
+	if (!outlen)
+		return -1;
+
+	outlen--;
+
+	s = alloca(inlen + 1);
+	memcpy(s, in, inlen);
+	s[inlen] = 0;
+
+	while (*s && n < outlen) {
+		if ((*s & 0x80) == 0) { /* 0xxxxxxx ASCII char */
+			out[n++] = *s;
+			s++;
+		} else if ((*s & 0xE0) == 0xC0) /* 110xxxxx 10xxxxxx */ {
+			if ((s[1] & 0xC0) != 0x80)
+				return -1;
+			out[n++] = ((*s & 0x1F) << 6) | (s[1] & 0x3F);
+			s += 2;
+		} else if ((*s & 0xF0) == 0xE0) /* 1110xxxx 10xxxxxx 10xxxxxx */ {
+			if ((s[1] & 0xC0) != 0x80 || (s[2] & 0xC0) != 0x80)
+				return -1;
+			out[n++] = ((*s & 0x0F) << 12) | ((s[1] & 0x3F) << 6) | (s[2] & 0x3F);
+			s += 3;
+		} else if ((*s & 0xF8) == 0xF0) /* 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx */ {
+			if ((s[1] & 0xC0) != 0x80 || (s[2] & 0xC0) != 0x80 || (s[3] & 0xC0) != 0x80)
+				return -1;
+			out[n++] = ((*s & 0x07) << 18) | ((s[1] & 0x3F) << 12) | ((s[1] & 0x3F) << 6) | (s[2] & 0x3F);
+			s += 4;
+		} else
+			return -1;
+	}
+
+	return n;
+}
+
+static int _mem_is_ascii(const char *s, size_t n)
+{
+	while (n--)
+		if (*((unsigned char *)s++) >= 128)
+			return 0;
+
+	return 1;
+}
+
+static int _domain_to_punycode(const char *domain, char *out, size_t outsize)
+{
+	size_t outlen = 0, labellen;
+	punycode_uint input[256];
+	const char *label, *e;
+
+	for (e = label = domain; e; label = e + 1) {
+		e = strchr(label, '.');
+		labellen = e ? (size_t) (e - label) : strlen(label);
+		/* printf("s=%s inlen=%zd\n", label, labellen); */
+
+		if (_mem_is_ascii(label, labellen)) {
+			if (outlen + labellen + (e != NULL)>= outsize)
+				return 1;
+
+			/* printf("outlen=%zd labellen=%zd\n", outlen, labellen); */
+			memcpy(out + outlen, label, labellen);
+			outlen += labellen;
+		} else {
+			ssize_t inputlen = 0;
+
+			if (outlen + labellen + (e != NULL) + 4 >= outsize)
+				return 1;
+
+			if ((inputlen = _utf8_to_utf32(label, labellen, input, sizeof (input) / sizeof (input[0]))) < 0)
+				return 1;
+
+			memcpy(out + outlen, "xn--", 4);
+			outlen += 4;
+
+			labellen = outsize - outlen;
+			/* printf("n=%zd space_left=%zd\n", n, labellen); */
+			if (punycode_encode(inputlen, input, &labellen, out + outlen))
+				return 1;
+			outlen += labellen;
+		}
+
+		if (e)
+			out[outlen++] = '.';
+		out[outlen] = 0;
 	}
 
 	return 0;
 }
-
-/**
- * psl_is_public_suffix:
- * @psl: PSL context
- * @domain: Domain string
- *
- * This function checks if @domain is a public suffix by the means of the
- * [Mozilla Public Suffix List](http://publicsuffix.org).
- *
- * For cookie domain checking see psl_is_cookie_domain_acceptable().
- *
- * International @domain names have to be either in lowercase UTF-8 or in ASCII form (punycode).
- * Other encodings result in unexpected behavior.
- *
- * @psl is a context returned by either psl_load_file(), psl_load_fp() or
- * psl_builtin().
- *
- * Returns: 1 if domain is a public suffix, 0 if not.
- *
- * Since: 0.1
- */
-int psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
-{
-	if (!psl || !domain)
-		return 1;
-
-	return _psl_is_public_suffix(psl, domain);
-}
-
-/**
- * psl_unregistrable_domain:
- * @psl: PSL context
- * @domain: Domain string
- *
- * This function finds the longest publix suffix part of @domain by the means
- * of the [Mozilla Public Suffix List](http://publicsuffix.org).
- *
- * International @domain names have to be either in lowercase UTF-8 or in ASCII form (punycode).
- * Other encodings result in unexpected behavior.
- *
- * @psl is a context returned by either psl_load_file(), psl_load_fp() or
- * psl_builtin().
- *
- * Returns: Pointer to longest public suffix part of @domain or %NULL if @domain
- * does not contain a public suffix (or if @psl is %NULL).
- *
- * Since: 0.1
- */
-const char *psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain)
-{
-	if (!psl || !domain)
-		return NULL;
-
-	/*
-	 *  We check from left to right to catch special PSL entries like 'forgot.his.name':
-	 *   'forgot.his.name' and 'name' are in the PSL while 'his.name' is not.
-	 */
-
-	while (!_psl_is_public_suffix(psl, domain)) {
-		if ((domain = strchr(domain, '.')))
-			domain++;
-		else
-			break; /* prevent endless loop if psl_is_public_suffix() is broken. */
-	}
-
-	return domain;
-}
-
-/**
- * psl_registrable_domain:
- * @psl: PSL context
- * @domain: Domain string
- *
- * This function finds the shortest private suffix part of @domain by the means
- * of the [Mozilla Public Suffix List](http://publicsuffix.org).
- *
- * International @domain names have to be either in lowercase UTF-8 or in ASCII form (punycode).
- * Other encodings result in unexpected behavior.
- *
- * @psl is a context returned by either psl_load_file(), psl_load_fp() or
- * psl_builtin().
- *
- * Returns: Pointer to shortest private suffix part of @domain or %NULL if @domain
- * does not contain a private suffix (or if @psl is %NULL).
- *
- * Since: 0.1
- */
-const char *psl_registrable_domain(const psl_ctx_t *psl, const char *domain)
-{
-	const char *p, *regdom = NULL;
-
-	if (!psl || !domain || *domain == '.')
-		return NULL;
-
-	/*
-	 *  We check from left to right to catch special PSL entries like 'forgot.his.name':
-	 *   'forgot.his.name' and 'name' are in the PSL while 'his.name' is not.
-	 */
-
-	while (!_psl_is_public_suffix(psl, domain)) {
-		if ((p = strchr(domain, '.'))) {
-			regdom = domain;
-			domain = p + 1;
-		} else
-			break; /* prevent endless loop if psl_is_public_suffix() is broken. */
-	}
-
-	return regdom;
-}
+#endif
 
 static inline int _isspace_ascii(const char c)
 {
@@ -534,12 +659,30 @@ static int _utf8_is_valid(const char *utf8)
 }
 #endif
 
-#if defined(WITH_LIBICU)
-static void _add_punycode_if_needed(UIDNA *idna, _psl_vector_t *v, _psl_entry_t *e)
-{
-	if (_str_is_ascii(e->label_buf))
-		return;
+typedef void *_psl_idna_t;
 
+static _psl_idna_t *_psl_idna_open(void)
+{
+#if defined(WITH_LIBICU)
+	UErrorCode status = 0;
+	return (void *)uidna_openUTS46(UIDNA_USE_STD3_RULES, &status);
+#endif
+	return NULL;
+}
+
+static void _psl_idna_close(_psl_idna_t *idna _UNUSED)
+{
+#if defined(WITH_LIBICU)
+	if (idna)
+		uidna_close((UIDNA *)idna);
+#endif
+}
+
+static int _psl_idna_toASCII(_psl_idna_t *idna _UNUSED, const char *utf8, char **ascii)
+{
+	int ret = -1;
+
+#if defined(WITH_LIBICU)
 	/* IDNA2008 UTS#46 punycode conversion */
 	if (idna) {
 		char lookupname[128] = "";
@@ -548,21 +691,15 @@ static void _add_punycode_if_needed(UIDNA *idna, _psl_vector_t *v, _psl_entry_t 
 		UChar utf16_dst[128], utf16_src[128];
 		int32_t utf16_src_length;
 
-		u_strFromUTF8(utf16_src, sizeof(utf16_src)/sizeof(utf16_src[0]), &utf16_src_length, e->label_buf, -1, &status);
+		u_strFromUTF8(utf16_src, sizeof(utf16_src)/sizeof(utf16_src[0]), &utf16_src_length, utf8, -1, &status);
 		if (U_SUCCESS(status)) {
-			int32_t dst_length = uidna_nameToASCII(idna, utf16_src, utf16_src_length, utf16_dst, sizeof(utf16_dst)/sizeof(utf16_dst[0]), &info, &status);
+			int32_t dst_length = uidna_nameToASCII((UIDNA *)idna, utf16_src, utf16_src_length, utf16_dst, sizeof(utf16_dst)/sizeof(utf16_dst[0]), &info, &status);
 			if (U_SUCCESS(status)) {
 				u_strToUTF8(lookupname, sizeof(lookupname), NULL, utf16_dst, dst_length, &status);
 				if (U_SUCCESS(status)) {
-					if (strcmp(e->label_buf, lookupname)) {
-						_psl_entry_t suffix, *suffixp;
-
-						/* fprintf(stderr, "libicu '%s' -> '%s'\n", e->label_buf, lookupname); */
-						_suffix_init(&suffix, lookupname, strlen(lookupname));
-						suffix.flags = e->flags;
-						suffixp = _vector_get(v, _vector_add(v, &suffix));
-						suffixp->label = suffixp->label_buf; /* set label to changed address */
-					} /* else ignore */
+					if (ascii)
+						*ascii = strdup(lookupname);
+					ret = 0;
 				} /* else
 					fprintf(stderr, "Failed to convert UTF-16 to UTF-8 (status %d)\n", status); */
 			} /* else
@@ -570,23 +707,16 @@ static void _add_punycode_if_needed(UIDNA *idna, _psl_vector_t *v, _psl_entry_t 
 		} /* else
 			fprintf(stderr, "Failed to convert UTF-8 to UTF-16 (status %d)\n", status); */
 	}
-}
 #elif defined(WITH_LIBIDN2)
-static void _add_punycode_if_needed(_psl_vector_t *v, _psl_entry_t *e)
-{
-	char *lookupname = NULL;
 	int rc;
 	uint8_t *lower, resbuf[256];
 	size_t len = sizeof(resbuf) - 1; /* leave space for additional \0 byte */
 
-	if (_str_is_ascii(e->label_buf))
-		return;
-
 	/* we need a conversion to lowercase */
-	lower = u8_tolower((uint8_t *)e->label_buf, u8_strlen((uint8_t *)e->label_buf), 0, UNINORM_NFKC, resbuf, &len);
+	lower = u8_tolower((uint8_t *)utf8, u8_strlen((uint8_t *)utf8), 0, UNINORM_NFKC, resbuf, &len);
 	if (!lower) {
-		/* fprintf(stderr, "u8_tolower(%s) failed (%d)\n", e->label_buf, errno); */
-		return;
+		/* fprintf(stderr, "u8_tolower(%s) failed (%d)\n", utf8, errno); */
+		return -1;
 	}
 
 	/* u8_tolower() does not terminate the result string */
@@ -598,52 +728,340 @@ static void _add_punycode_if_needed(_psl_vector_t *v, _psl_entry_t *e)
 		free(tmp);
 	}
 
-	if ((rc = idn2_lookup_u8(lower, (uint8_t **)&lookupname, 0)) == IDN2_OK) {
-		if (strcmp(e->label_buf, lookupname)) {
-			_psl_entry_t suffix, *suffixp;
-
-			/* fprintf(stderr, "libidn '%s' -> '%s'\n", e->label_buf, lookupname); */
-			_suffix_init(&suffix, lookupname, strlen(lookupname));
-			suffix.flags = e->flags;
-			suffixp = _vector_get(v, _vector_add(v, &suffix));
-			suffixp->label = suffixp->label_buf; /* set label to changed address */
-		} /* else ignore */
+	if ((rc = idn2_lookup_u8(lower, (uint8_t **)ascii, 0)) == IDN2_OK) {
+		ret = 0;
 	} /* else
 		fprintf(stderr, "toASCII(%s) failed (%d): %s\n", lower, rc, idn2_strerror(rc)); */
 
 	if (lower != resbuf)
 		free(lower);
-}
 #elif defined(WITH_LIBIDN)
-static void _add_punycode_if_needed(_psl_vector_t *v, _psl_entry_t *e)
-{
-	char *lookupname = NULL;
 	int rc;
 
-	if (_str_is_ascii(e->label_buf))
-		return;
-
-	if (!_utf8_is_valid(e->label_buf)) {
-		/* fprintf(_(stderr, "Invalid UTF-8 sequence not converted: '%s'\n"), e->label_buf); */
-		return;
+	if (!_utf8_is_valid(utf8)) {
+		/* fprintf(_(stderr, "Invalid UTF-8 sequence not converted: '%s'\n"), utf8); */
+		return -1;
 	}
 
 	/* idna_to_ascii_8z() automatically converts UTF-8 to lowercase */
 
-	if ((rc = idna_to_ascii_8z(e->label_buf, &lookupname, IDNA_USE_STD3_ASCII_RULES)) == IDNA_SUCCESS) {
+	if ((rc = idna_to_ascii_8z(utf8, ascii, IDNA_USE_STD3_ASCII_RULES)) == IDNA_SUCCESS) {
+		ret = 0;
+	} /* else
+		fprintf(_(stderr, "toASCII failed (%d): %s\n"), rc, idna_strerror(rc)); */
+#else
+	char lookupname[128];
+
+	if (_domain_to_punycode(utf8, lookupname, sizeof(lookupname)) == 0) {
+		if (ascii)
+			*ascii = strdup(lookupname);
+		ret = 0;
+	}
+#endif
+
+	return ret;
+}
+
+static void _add_punycode_if_needed(_psl_idna_t *idna, _psl_vector_t *v, _psl_entry_t *e)
+{
+	char *lookupname;
+
+	if (_str_is_ascii(e->label_buf))
+		return;
+
+	if (_psl_idna_toASCII(idna, e->label_buf, &lookupname) == 0) {
 		if (strcmp(e->label_buf, lookupname)) {
 			_psl_entry_t suffix, *suffixp;
 
-			/* fprintf(stderr, "libidn '%s' -> '%s'\n", e->label_buf, lookupname); */
+			/* fprintf(stderr, "toASCII '%s' -> '%s'\n", e->label_buf, lookupname); */
 			_suffix_init(&suffix, lookupname, strlen(lookupname));
 			suffix.flags = e->flags;
 			suffixp = _vector_get(v, _vector_add(v, &suffix));
 			suffixp->label = suffixp->label_buf; /* set label to changed address */
 		} /* else ignore */
-	} /* else
-		fprintf(_(stderr, "toASCII failed (%d): %s\n"), rc, idna_strerror(rc)); */
+
+		free(lookupname);
+	}
 }
-#endif
+
+/* prototype */
+int LookupStringInFixedSet(const unsigned char* graph, size_t length, const char* key, size_t key_length);
+
+static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int type)
+{
+	_psl_entry_t suffix;
+	const char *p;
+	char *punycode = NULL;
+	int need_conversion = 0;
+
+	/* this function should be called without leading dots, just make sure */
+	if (*domain == '.')
+		domain++;
+
+	suffix.nlabels = 1;
+
+	for (p = domain; *p; p++) {
+		if (*p == '.')
+			suffix.nlabels++;
+		else if (*((unsigned char *)p) >= 128)
+			need_conversion = 1; /* in case domain is non-ascii we need a toASCII conversion */
+	}
+
+	if (suffix.nlabels == 1) {
+		/* TLD, this is the prevailing '*' match.
+		 * We don't currently support exception TLDs (TLDs that are not a public suffix)
+		 */
+		return 1;
+	}
+
+	if (need_conversion) {
+		_psl_idna_t *idna = _psl_idna_open();
+
+		if (_psl_idna_toASCII(idna, domain, &punycode) == 0) {
+			suffix.label = punycode;
+			suffix.length = strlen(punycode);
+		} else {
+			/* fallback */
+
+			suffix.label = domain;
+			suffix.length = p - suffix.label;
+		}
+
+		_psl_idna_close(idna);
+	} else {
+		suffix.label = domain;
+		suffix.length = p - suffix.label;
+	}
+
+	if (psl == &_builtin_psl || psl->dafsa) {
+		size_t dafsa_size = psl == &_builtin_psl ? sizeof(kDafsa) : psl->dafsa_size;
+		const unsigned char *dafsa = psl == &_builtin_psl ? kDafsa : psl->dafsa;
+		int rc = LookupStringInFixedSet(dafsa, dafsa_size, suffix.label, suffix.length);
+		if (rc != -1) {
+			/* check for correct rule type */
+			if (type == PSL_TYPE_ICANN && !(rc & _PSL_FLAG_ICANN))
+				goto suffix_no;
+			else if (type == PSL_TYPE_PRIVATE && !(rc & _PSL_FLAG_PRIVATE))
+				goto suffix_no;
+
+			if (rc & _PSL_FLAG_EXCEPTION)
+				goto suffix_no;
+
+			/* wildcard *.foo.bar implicitly make foo.bar a public suffix */
+			/* definitely a match, no matter if the found rule is a wildcard or not */
+			goto suffix_yes;
+		}
+		if ((suffix.label = strchr(suffix.label, '.'))) {
+			suffix.label++;
+			suffix.length = strlen(suffix.label);
+			suffix.nlabels--;
+
+			rc = LookupStringInFixedSet(dafsa, dafsa_size, suffix.label, suffix.length);
+			if (rc != -1) {
+				/* check for correct rule type */
+				if (type == PSL_TYPE_ICANN && !(rc & _PSL_FLAG_ICANN))
+					goto suffix_no;
+				else if (type == PSL_TYPE_PRIVATE && !(rc & _PSL_FLAG_PRIVATE))
+					goto suffix_no;
+
+				if (rc & _PSL_FLAG_WILDCARD)
+					goto suffix_yes;
+			}
+		}
+	} else {
+		_psl_entry_t *rule = _vector_get(psl->suffixes, 0);
+
+		if (!rule || rule->nlabels < suffix.nlabels - 1)
+			return 0;
+
+		rule = _vector_get(psl->suffixes, _vector_find(psl->suffixes, &suffix));
+
+		if (rule) {
+			/* check for correct rule type */
+			if (type == PSL_TYPE_ICANN && !(rule->flags & _PSL_FLAG_ICANN))
+				goto suffix_no;
+			else if (type == PSL_TYPE_PRIVATE && !(rule->flags & _PSL_FLAG_PRIVATE))
+				goto suffix_no;
+
+			if (rule->flags & _PSL_FLAG_EXCEPTION)
+				goto suffix_no;
+
+			/* wildcard *.foo.bar implicitly make foo.bar a public suffix */
+			/* definitely a match, no matter if the found rule is a wildcard or not */
+			goto suffix_yes;
+		}
+
+		if ((suffix.label = strchr(suffix.label, '.'))) {
+			int pos;
+
+			suffix.label++;
+			suffix.length = strlen(suffix.label);
+			suffix.nlabels--;
+
+			rule = _vector_get(psl->suffixes, (pos = _vector_find(psl->suffixes, &suffix)));
+
+			if (rule) {
+				/* check for correct rule type */
+				if (type == PSL_TYPE_ICANN && !(rule->flags & _PSL_FLAG_ICANN))
+					goto suffix_no;
+				else if (type == PSL_TYPE_PRIVATE && !(rule->flags & _PSL_FLAG_PRIVATE))
+					goto suffix_no;
+
+				if (rule->flags & _PSL_FLAG_WILDCARD)
+					goto suffix_yes;
+			}
+		}
+	}
+
+suffix_no:
+	if (punycode)
+		free(punycode);
+	return 0;
+
+suffix_yes:
+	if (punycode)
+		free(punycode);
+	return 1;
+}
+
+/**
+ * psl_is_public_suffix:
+ * @psl: PSL context
+ * @domain: Domain string
+ *
+ * This function checks if @domain is a public suffix by the means of the
+ * [Mozilla Public Suffix List](http://publicsuffix.org).
+ *
+ * For cookie domain checking see psl_is_cookie_domain_acceptable().
+ *
+ * International @domain names have to be either in lowercase UTF-8 or in ASCII form (punycode).
+ * Other encodings result in unexpected behavior.
+ *
+ * @psl is a context returned by either psl_load_file(), psl_load_fp() or
+ * psl_builtin().
+ *
+ * Returns: 1 if domain is a public suffix, 0 if not.
+ *
+ * Since: 0.1
+ */
+int psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
+{
+	if (!psl || !domain)
+		return 1;
+
+	return _psl_is_public_suffix(psl, domain, PSL_TYPE_ANY);
+}
+
+/**
+ * psl_is_public_suffix2:
+ * @psl: PSL context
+ * @domain: Domain string
+ * @type: Domain type
+ *
+ * This function checks if @domain is a public suffix by the means of the
+ * [Mozilla Public Suffix List](http://publicsuffix.org).
+ *
+ * @type specifies the PSL section where to perform the lookup. Valid values are
+ * %PSL_TYPE_PRIVATE, %PSL_TYPE_ICANN and %PSL_TYPE_ANY.
+ *
+ * International @domain names have to be either in lowercase UTF-8 or in ASCII form (punycode).
+ * Other encodings result in unexpected behavior.
+ *
+ * @psl is a context returned by either psl_load_file(), psl_load_fp() or
+ * psl_builtin().
+ *
+ * Returns: 1 if domain is a public suffix, 0 if not.
+ *
+ * Since: 0.1
+ */
+int psl_is_public_suffix2(const psl_ctx_t *psl, const char *domain, int type)
+{
+	if (!psl || !domain)
+		return 1;
+
+	return _psl_is_public_suffix(psl, domain, type);
+}
+
+/**
+ * psl_unregistrable_domain:
+ * @psl: PSL context
+ * @domain: Domain string
+ *
+ * This function finds the longest publix suffix part of @domain by the means
+ * of the [Mozilla Public Suffix List](http://publicsuffix.org).
+ *
+ * International @domain names have to be either in lowercase UTF-8 or in ASCII form (punycode).
+ * Other encodings result in unexpected behavior.
+ *
+ * @psl is a context returned by either psl_load_file(), psl_load_fp() or
+ * psl_builtin().
+ *
+ * Returns: Pointer to longest public suffix part of @domain or %NULL if @domain
+ * does not contain a public suffix (or if @psl is %NULL).
+ *
+ * Since: 0.1
+ */
+const char *psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain)
+{
+	if (!psl || !domain)
+		return NULL;
+
+	/*
+	 *  We check from left to right to catch special PSL entries like 'forgot.his.name':
+	 *   'forgot.his.name' and 'name' are in the PSL while 'his.name' is not.
+	 */
+
+	while (!_psl_is_public_suffix(psl, domain, 0)) {
+		if ((domain = strchr(domain, '.')))
+			domain++;
+		else
+			break; /* prevent endless loop if psl_is_public_suffix() is broken. */
+	}
+
+	return domain;
+}
+
+/**
+ * psl_registrable_domain:
+ * @psl: PSL context
+ * @domain: Domain string
+ *
+ * This function finds the shortest private suffix part of @domain by the means
+ * of the [Mozilla Public Suffix List](http://publicsuffix.org).
+ *
+ * International @domain names have to be either in lowercase UTF-8 or in ASCII form (punycode).
+ * Other encodings result in unexpected behavior.
+ *
+ * @psl is a context returned by either psl_load_file(), psl_load_fp() or
+ * psl_builtin().
+ *
+ * Returns: Pointer to shortest private suffix part of @domain or %NULL if @domain
+ * does not contain a private suffix (or if @psl is %NULL).
+ *
+ * Since: 0.1
+ */
+const char *psl_registrable_domain(const psl_ctx_t *psl, const char *domain)
+{
+	const char *p, *regdom = NULL;
+
+	if (!psl || !domain || *domain == '.')
+		return NULL;
+
+	/*
+	 *  We check from left to right to catch special PSL entries like 'forgot.his.name':
+	 *   'forgot.his.name' and 'name' are in the PSL while 'his.name' is not.
+	 */
+
+	while (!_psl_is_public_suffix(psl, domain, 0)) {
+		if ((p = strchr(domain, '.'))) {
+			regdom = domain;
+			domain = p + 1;
+		} else
+			break; /* prevent endless loop if psl_is_public_suffix() is broken. */
+	}
+
+	return regdom;
+}
 
 /**
  * psl_load_file:
@@ -692,10 +1110,9 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 	psl_ctx_t *psl;
 	_psl_entry_t suffix, *suffixp;
 	char buf[256], *linep, *p;
-#ifdef WITH_LIBICU
-	UIDNA *idna;
-	UErrorCode status = 0;
-#endif
+	size_t n;
+	int type = 0;
+	_psl_idna_t *idna;
 
 	if (!fp)
 		return NULL;
@@ -703,9 +1120,40 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 	if (!(psl = calloc(1, sizeof(psl_ctx_t))))
 		return NULL;
 
-#ifdef WITH_LIBICU
-	idna = uidna_openUTS46(UIDNA_USE_STD3_RULES, &status);
-#endif
+	/* read first line to allow ASCII / DAFSA detection */
+	if ((n = fread(buf, 1, sizeof(buf) - 1, fp)) < 1)
+		goto fail;
+
+	buf[n] = 0;
+
+	if (!strstr(buf, "This Source Code Form is subject to")) {
+		void *m;
+		size_t size = 65536, len = n;
+
+		if (!(psl->dafsa = malloc(size)))
+			goto fail;
+
+		memcpy(psl->dafsa, buf, len);
+
+		while ((n = fread(psl->dafsa + len, 1, size - len, fp)) > 0) {
+			len += n;
+			if (len >= size) {
+				if (!(m = realloc(psl->dafsa, size *= 2)))
+					goto fail;
+				psl->dafsa = m;
+			}
+		}
+
+		/* release unused memory */
+		if ((m = realloc(psl->dafsa, len)))
+			psl->dafsa = m;
+
+		return psl;
+	}
+
+	rewind(fp);
+
+	idna = _psl_idna_open();
 
 	/*
 	 *  as of 02.11.2012, the list at http://publicsuffix.org/list/ contains ~6000 rules and 40 exceptions.
@@ -717,8 +1165,20 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 		while (_isspace_ascii(*linep)) linep++; /* ignore leading whitespace */
 		if (!*linep) continue; /* skip empty lines */
 
-		if (*linep == '/' && linep[1] == '/')
+		if (*linep == '/' && linep[1] == '/') {
+			if (!type) {
+				if (strstr(linep + 2, "===BEGIN ICANN DOMAINS==="))
+					type = _PSL_FLAG_ICANN;
+				else if (!type && strstr(linep + 2, "===BEGIN PRIVATE DOMAINS==="))
+					type = _PSL_FLAG_PRIVATE;
+			}
+			else if (type == _PSL_FLAG_ICANN && strstr(linep + 2, "===END ICANN DOMAINS==="))
+				type = 0;
+			else if (type == _PSL_FLAG_PRIVATE && strstr(linep + 2, "===END PRIVATE DOMAINS==="))
+				type = 0;
+
 			continue; /* skip comments */
+		}
 
 		/* parse suffix rule */
 		for (p = linep; *linep && !_isspace_ascii(*linep);) linep++;
@@ -726,7 +1186,7 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 
 		if (*p == '!') {
 			p++;
-			suffix.flags = _PSL_FLAG_EXCEPTION;
+			suffix.flags = _PSL_FLAG_EXCEPTION | type;
 			psl->nexceptions++;
 		} else if (*p == '*') {
 			if (*++p != '.') {
@@ -734,14 +1194,14 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 				continue;
 			}
 			p++;
-			/* wildcard *.foo.bar implicitely make foo.bar a public suffix */
-			suffix.flags = _PSL_FLAG_WILDCARD | _PSL_FLAG_PLAIN;
+			/* wildcard *.foo.bar implicitly make foo.bar a public suffix */
+			suffix.flags = _PSL_FLAG_WILDCARD | _PSL_FLAG_PLAIN | type;
 			psl->nwildcards++;
 			psl->nsuffixes++;
 		} else {
 			if (!strchr(p, '.'))
 				continue; /* we do not need an explicit plain TLD rule, already covered by implicit '*' rule */
-			suffix.flags = _PSL_FLAG_PLAIN;
+			suffix.flags = _PSL_FLAG_PLAIN | type;
 			psl->nsuffixes++;
 		}
 
@@ -750,7 +1210,7 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 
 			if ((index = _vector_find(psl->suffixes, &suffix)) >= 0) {
 				/* Found existing entry:
-				 * Combination of exception and plain rule is ambigous
+				 * Combination of exception and plain rule is ambiguous
 				 * !foo.bar
 				 * foo.bar
 				 *
@@ -769,22 +1229,20 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 			}
 
 			suffixp->label = suffixp->label_buf; /* set label to changed address */
-#ifdef WITH_LIBICU
+
 			_add_punycode_if_needed(idna, psl->suffixes, suffixp);
-#elif defined(WITH_LIBIDN2) || defined(WITH_LIBIDN)
-			_add_punycode_if_needed(psl->suffixes, suffixp);
-#endif
 		}
 	}
 
 	_vector_sort(psl->suffixes);
 
-#ifdef WITH_LIBICU
-	if (idna)
-		uidna_close(idna);
-#endif
+	_psl_idna_close(idna);
 
 	return psl;
+
+fail:
+	psl_free(psl);
+	return NULL;
 }
 
 /**
@@ -800,6 +1258,7 @@ void psl_free(psl_ctx_t *psl)
 {
 	if (psl && psl != &_builtin_psl) {
 		_vector_free(&psl->suffixes);
+		free(psl->dafsa);
 		free(psl);
 	}
 }
@@ -813,7 +1272,7 @@ void psl_free(psl_ctx_t *psl)
  * The builtin data also contains punycode entries, one for each international domain name.
  *
  * If the generation of built-in data has been disabled during compilation, %NULL will be returned.
- * So if using the builtin psl context, you can provide UTF-8 or punycode representations of domains to
+ * When using the builtin psl context, you can provide UTF-8 or punycode representations of domains to
  * functions like psl_is_public_suffix().
  *
  * Returns: Pointer to the built in PSL data or NULL if this data is not available.
@@ -891,22 +1350,6 @@ int psl_suffix_wildcard_count(const psl_ctx_t *psl)
 }
 
 /**
- * psl_builtin_compile_time:
- *
- * This function returns the time when the Publix Suffix List has been compiled into C code (by psl2c).
- *
- * If the generation of built-in data has been disabled during compilation, 0 will be returned.
- *
- * Returns: time_t value or 0.
- *
- * Since: 0.1
- */
-time_t psl_builtin_compile_time(void)
-{
-	return _psl_compile_time;
-}
-
-/**
  * psl_builtin_file_time:
  *
  * This function returns the mtime of the Publix Suffix List file that has been built in.
@@ -973,9 +1416,9 @@ int psl_builtin_outdated(void)
 	struct stat st;
 
 	if (stat(_psl_filename, &st) == 0 && st.st_mtime > _psl_file_time)
-		return 0;
+		return 1;
 
-	return 1;
+	return 0;
 }
 
 /**
@@ -1124,7 +1567,7 @@ int psl_is_cookie_domain_acceptable(const psl_ctx_t *psl, const char *hostname, 
  *
  * Since: 0.4
  */
-psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding, const char *locale, char **lower)
+psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding _UNUSED, const char *locale _UNUSED, char **lower)
 {
 	int ret = PSL_ERR_INVALID_ARG;
 

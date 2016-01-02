@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2014-2015 Tim Ruehsen
+ * Copyright(c) 2014-2016 Tim Ruehsen
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -117,7 +117,7 @@ int main(int argc, const char *const *argv)
 				usage(0, stdout);
 			}
 			else if (!strcmp(*arg, "--version")) {
-				printf("psl %s\n", PACKAGE_VERSION);
+				printf("psl %s (0x%06x)\n", PACKAGE_VERSION, psl_check_version_number(0));
 				printf("libpsl %s\n", psl_get_version());
 				printf("\n");
 				printf("Copyright (C) 2014-2015 Tim Ruehsen\n");
@@ -211,9 +211,9 @@ int main(int argc, const char *const *argv)
 			printf("builtin exceptions: %d\n", psl_suffix_exception_count(psl));
 			printf("builtin wildcards: %d\n", psl_suffix_wildcard_count(psl));
 			printf("builtin filename: %s\n", psl_builtin_filename());
-			printf("builtin compile time: %ld (%s)\n", psl_builtin_compile_time(), time2str(psl_builtin_compile_time()));
 			printf("builtin file time: %ld (%s)\n", psl_builtin_file_time(), time2str(psl_builtin_file_time()));
 			printf("builtin SHA1 file hash: %s\n", psl_builtin_sha1sum());
+			printf("builtin outdated: %d\n", psl_builtin_outdated());
 		} else
 			printf("No builtin PSL data available\n");
 	}
