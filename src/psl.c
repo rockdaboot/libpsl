@@ -1127,6 +1127,7 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 	buf[n] = 0;
 
 	if (!strstr(buf, "This Source Code Form is subject to")) {
+		void *m;
 		size_t size = 65536, len = n;
 
 		if (!(psl->dafsa = malloc(size)))
@@ -1137,12 +1138,15 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 		while ((n = fread(psl->dafsa + len, 1, size - len, fp)) > 0) {
 			len += n;
 			if (len >= size) {
-				void *m = realloc(psl->dafsa, size *= 2);
-				if (!m)
+				if (!(m = realloc(psl->dafsa, size *= 2)))
 					goto fail;
 				psl->dafsa = m;
 			}
 		}
+
+		/* release unused memory */
+		if ((m = realloc(psl->dafsa, len)))
+			psl->dafsa = m;
 
 		return psl;
 	}
