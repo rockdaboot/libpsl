@@ -82,6 +82,8 @@ src/LICENSE.chromium.
 Building from git
 -----------------
 
+You should have python2.7+ installed.
+
 Download project and prepare sources with
 
 		git clone http://github.com/rockdaboot/libpsl

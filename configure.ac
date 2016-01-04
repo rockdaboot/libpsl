@@ -72,6 +72,9 @@ AS_IF([ test "$enable_man" != no ], [
   AC_MSG_RESULT([no])
 ])
 
+# src/make_dafsa.py needs python 2.7+
+AM_PATH_PYTHON([2.7])
+
 PKG_PROG_PKG_CONFIG
 
 # Define these substitions here to keep all version information in one place.
