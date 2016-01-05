@@ -458,14 +458,13 @@ def parse_psl2c(infile):
     # Technically the DAFSA format could support return values in range [0-31],
     # but the values below are the only with a defined meaning.
     if line[-1] not in '0123456789ABCDEF':
-      raise InputError('Expected value to be one of {0,1,2,4,5}, found "%s"' %
-                       line[-1])
+      raise InputError('Expected value to be one of {0,1,2,4,5}, found "%s"' % line[-1])
 
 #  with open("gperf.out", 'w') as outfile:
-#    for line in lines:
+#    for line in sorted(lines):
 #      outfile.write(line[:-3] + line[-1] + "\n")
 
-  return [line[:-3] + line[-1] for line in lines]
+  return [line[:-3] + line[-1] for line in sorted(lines)]
 
 
 def parse_psl(infile):
@@ -528,10 +527,10 @@ def parse_psl(infile):
     psl[line] = flags
 
 #  with open("psl.out", 'w') as outfile:
-#    for (domain, flags) in psl.iteritems():
+#    for (domain, flags) in sorted(psl.iteritems()):
 #      outfile.write(domain + "%X" % (flags & 0x0F) + "\n")
 
-  return [domain + "%X" % (flags & 0x0F) for (domain, flags) in psl.iteritems()]
+  return [domain + "%X" % (flags & 0x0F) for (domain, flags) in sorted(psl.iteritems())]
 
 
 def usage():
