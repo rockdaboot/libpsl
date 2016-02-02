@@ -50,7 +50,8 @@ def lint_psl(infile):
 	PSL_FLAG_PRIVATE = (1<<3) # entry of PRIVATE section
 	PSL_FLAG_PLAIN = (1<<4) #just used for PSL syntax checking
 
-	psl = {}
+	line2number = {}
+	line2flag = {}
 	section = 0
 
 	lines = [line.strip('\r\n') for line in infile]
@@ -109,15 +110,17 @@ def lint_psl(infile):
 			error('Rule must be lowercase')
 
 		# strip leading wildcards
-		flags = 0
+		flags = section
 		# while line[0:2] == '*.':
 		if line[0:2] == '*.':
-			flags = PSL_FLAG_WILDCARD | PSL_FLAG_PLAIN | section
+			flags |= PSL_FLAG_WILDCARD
 			line = line[2:]
 
 		if line[0] == '!':
-			flags = PSL_FLAG_EXCEPTION | section
+			flags |= PSL_FLAG_EXCEPTION
 			line = line[1:]
+		else:
+			flags |= PSL_FLAG_PLAIN
 
 		# wildcard and exception must not combine
 		if flags & PSL_FLAG_WILDCARD and flags & PSL_FLAG_EXCEPTION:
@@ -144,20 +147,21 @@ def lint_psl(infile):
 					error('Illegal character')
 					break
 
-		if line in psl:
+		if line in line2number:
 			"""Found existing entry:
-				 Combination of exception and plain rule is ambiguous
-					 !foo.bar
-						foo.bar
+			   Combination of exception and plain rule is ambiguous
+			     !foo.bar
+			      foo.bar
 
-				 Allowed:
-					 !foo.bar + *.foo.bar
-						foo.bar + *.foo.bar
+			   Allowed:
+			     !foo.bar + *.foo.bar
+			      foo.bar + *.foo.bar
 			"""
-			error('Found doublette/ambiguity (previous line was %d)' % psl[line])
+			error('Found doublette/ambiguity (previous line was %d)' % line2number[line])
 			continue
 
-		psl[line] = nline
+		line2number[line] = nline
+		line2flag[line] = flags
 
 
 def usage():
