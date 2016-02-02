@@ -147,15 +147,14 @@ def lint_psl(infile):
 					error('Illegal character')
 					break
 
-		if line in line2number:
+		if line in line2flag:
 			"""Found existing entry:
-			   Combination of exception and plain rule is ambiguous
-			     !foo.bar
-			      foo.bar
-
+			   Combination of exception and plain rule is contradictionary
+			     !foo.bar + foo.bar
+			   Doublette, since *.foo.bar implies foo.bar:
+			      foo.bar + *.foo.bar
 			   Allowed:
 			     !foo.bar + *.foo.bar
-			      foo.bar + *.foo.bar
 			"""
 			error('Found doublette/ambiguity (previous line was %d)' % line2number[line])
 			continue
