@@ -3,7 +3,7 @@
 #
 # PSL linter written in python
 #
-# Copyright 2016 Tim Rühsen (tim dot ruehsen at gmx dot de). All rights reserved.
+# Copyright 2016 Tim RÃ¼hsen (tim dot ruehsen at gmx dot de). All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
