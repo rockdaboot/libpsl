@@ -29,16 +29,57 @@ nline = 0
 line = ""
 warnings = 0
 errors = 0
+skip_order_check = False
 
 def warning(msg):
 	global warnings, line, nline
-	print('%d: warning: %s: \'%s\'' % (nline, msg, line))
+	print('%d: warning: %s%s' % (nline, msg, ": \'" + line + "\'" if line else ""))
 	warnings += 1
 
 def error(msg):
 	global errors, line, nline
-	print('%d: error: %s: \'%s\'' % (nline, msg, line))
+	print('%d: error: %s%s' % (nline, msg, ": \'" + line + "\'" if line else ""))
 	errors += 1
+#	skip_order_check = True
+
+def print_list(list):
+	print("  [" + ", ".join( str(x) for x in list) + "]")
+
+def psl_key(s):
+	if s[0] == '*':
+		return 0
+	if s[0] == '!':
+		return 1
+	return 0
+
+def psl_sort(group):
+	# we have to extend the inner lists for sorting/comparing
+#	needed = max(len(lables) for lables in group)
+#	return sorted(group, key = lambda labels: (len(labels), labels.extend([None] * (needed - len(labels)))))
+	return sorted(group, key = lambda labels: (len(labels), labels))
+
+def check_order(group):
+	global skip_order_check
+
+	try:
+		if skip_order_check or len(group) < 2:
+			skip_order_check = False
+			return
+
+		# check if the TLD is the identical within the group
+		if any(group[0][0] != labels[0] for labels in group):
+			error('Domain group TLD is not consistent')
+			return
+
+		sorted_group = psl_sort(group)
+		if group != sorted_group:
+			warning('Incorrectly sorted group of domains')
+			print_list(group)
+			print_list(sorted_group)
+
+	finally:
+		del group[:]
+
 
 def lint_psl(infile):
 	"""Parses PSL file and extract strings and return code"""
@@ -53,6 +94,7 @@ def lint_psl(infile):
 	line2number = {}
 	line2flag = {}
 	section = 0
+	group = []
 
 	lines = [line.strip('\r\n') for line in infile]
 
@@ -65,34 +107,37 @@ def lint_psl(infile):
 			warning('Leading/Trailing whitespace')
 		line = stripped
 
-		# empty line
+		# empty line (end of sorted domain group)
 		if not line:
+			# check_order(group)
 			continue
 
 		# check for section begin/end
 		if line[0:2] == "//":
+			# check_order(group)
+
 			if section == 0:
 				if line == "// ===BEGIN ICANN DOMAINS===":
 					section = PSL_FLAG_ICANN
 				elif line == "// ===BEGIN PRIVATE DOMAINS===":
 					section = PSL_FLAG_PRIVATE
-				elif line[3:8] == "===BEGIN":
+				elif line[3:11] == "===BEGIN":
 					error('Unexpected begin of unknown section')
-				elif line[3:6] == "===END":
+				elif line[3:9] == "===END":
 					error('End of section without previous begin')
 			elif section == PSL_FLAG_ICANN:
 				if line == "// ===END ICANN DOMAINS===":
 					section = 0
-				elif line[3:8] == "===BEGIN":
+				elif line[3:11] == "===BEGIN":
 					error('Unexpected begin of section: ')
-				elif line[3:6] == "===END":
+				elif line[3:9] == "===END":
 					error('Unexpected end of section')
 			elif section == PSL_FLAG_PRIVATE:
 				if line == "// ===END ICANN DOMAINS===":
 					section = 0
-				elif line[3:8] == "===BEGIN":
+				elif line[3:11] == "===BEGIN":
 					error('Unexpected begin of section')
-				elif line[3:6] == "===END":
+				elif line[3:9] == "===END":
 					error('Unexpected end of section')
 
 			continue # processing of comments ends here
@@ -105,7 +150,7 @@ def lint_psl(infile):
 		if sys.version_info[0] < 3:
 			line = line.decode('utf-8')
 
-	 # each rule must be lowercase (or more exactly: not uppercase and not titlecase)
+		# each rule must be lowercase (or more exactly: not uppercase and not titlecase)
 		if line != line.lower():
 			error('Rule must be lowercase')
 
@@ -128,6 +173,9 @@ def lint_psl(infile):
 
 		labels = line.split('.')
 
+		# collect reversed list of labels
+		group.append(list(reversed(line.encode('utf-8').split('.'))))
+
 		for label in labels:
 			if not label:
 				 error('Leading/trailing or multiple dot')
@@ -148,14 +196,14 @@ def lint_psl(infile):
 					break
 
 		if line in line2flag:
-			"""Found existing entry:
+			'''Found existing entry:
 			   Combination of exception and plain rule is contradictionary
 			     !foo.bar + foo.bar
 			   Doublette, since *.foo.bar implies foo.bar:
 			      foo.bar + *.foo.bar
 			   Allowed:
 			     !foo.bar + *.foo.bar
-			"""
+			'''
 			error('Found doublette/ambiguity (previous line was %d)' % line2number[line])
 			continue
 
@@ -175,11 +223,8 @@ def main():
 	if len(sys.argv) < 2:
 		usage()
 
-	if sys.argv[-1] == '-':
-		lint_psl(sys.stdin)
-	else:
-		with open(sys.argv[-1], 'r') as infile:
-			lint_psl(infile)
+	with sys.stdin if sys.argv[-1] == '-' else open(sys.argv[-1], 'r') as infile:
+		lint_psl(infile)
 
 	return errors != 0
 
