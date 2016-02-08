@@ -42,23 +42,19 @@ def error(msg):
 	errors += 1
 #	skip_order_check = True
 
-def print_list(list):
-	print("  [" + ", ".join( str(x) for x in list) + "]")
+def print_psl(list):
+	for domain in list:
+		print(".".join(str(label) for label in reversed(domain)))
 
 def psl_key(s):
 	if s[0] == '*':
 		return 0
 	if s[0] == '!':
 		return 1
-	return 0
-
-def psl_sort(group):
-	# we have to extend the inner lists for sorting/comparing
-#	needed = max(len(lables) for lables in group)
-#	return sorted(group, key = lambda labels: (len(labels), labels.extend([None] * (needed - len(labels)))))
-	return sorted(group, key = lambda labels: (len(labels), labels))
+	return 2
 
 def check_order(group):
+	"""Check the correct order of a domain group"""
 	global skip_order_check
 
 	try:
@@ -68,21 +64,23 @@ def check_order(group):
 
 		# check if the TLD is the identical within the group
 		if any(group[0][0] != labels[0] for labels in group):
-			error('Domain group TLD is not consistent')
-			return
+			warning('Domain group TLD is not consistent')
 
-		sorted_group = psl_sort(group)
+		# sort by # of labels, label-by-label (labels are in reversed order)
+		sorted_group = sorted(group, key = lambda labels: (len(labels), psl_key(labels[-1][0]), labels))
+
 		if group != sorted_group:
 			warning('Incorrectly sorted group of domains')
-			print_list(group)
-			print_list(sorted_group)
+			print("  " + str(group))
+			print("  " + str(sorted_group))
+			print_psl(sorted_group)
 
 	finally:
 		del group[:]
 
 
 def lint_psl(infile):
-	"""Parses PSL file and extract strings and return code"""
+	"""Parses PSL file and performs syntax checking"""
 	global line, nline
 
 	PSL_FLAG_EXCEPTION = (1<<0)
@@ -109,12 +107,12 @@ def lint_psl(infile):
 
 		# empty line (end of sorted domain group)
 		if not line:
-			# check_order(group)
+			check_order(group)
 			continue
 
 		# check for section begin/end
 		if line[0:2] == "//":
-			# check_order(group)
+			check_order(group)
 
 			if section == 0:
 				if line == "// ===BEGIN ICANN DOMAINS===":
@@ -146,6 +144,8 @@ def lint_psl(infile):
 		if section == 0:
 			error('Rule outside of section')
 
+		group.append(list(reversed(line.split('.'))))
+
 		# decode UTF-8 input into unicode, needed only for python 2.x
 		if sys.version_info[0] < 3:
 			line = line.decode('utf-8')
@@ -174,10 +174,10 @@ def lint_psl(infile):
 		labels = line.split('.')
 
 		# collect reversed list of labels
-		if sys.version_info[0] < 3:
-			group.append(list(reversed(line.encode('utf-8').split('.'))))
-		else:
-			group.append(list(reversed(line.split('.'))))
+#		if sys.version_info[0] < 3:
+#			group.append(list(reversed(line.encode('utf-8').split('.'))))
+#		else:
+#			group.append(list(reversed(line.split('.'))))
 
 		for label in labels:
 			if not label:
