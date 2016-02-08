@@ -133,7 +133,7 @@ def lint_psl(infile):
 				elif line[3:9] == "===END":
 					error('Unexpected end of section')
 			elif section == PSL_FLAG_PRIVATE:
-				if line == "// ===END ICANN DOMAINS===":
+				if line == "// ===END PRIVATE DOMAINS===":
 					section = 0
 				elif line[3:11] == "===BEGIN":
 					error('Unexpected begin of section')
@@ -174,7 +174,10 @@ def lint_psl(infile):
 		labels = line.split('.')
 
 		# collect reversed list of labels
-		group.append(list(reversed(line.encode('utf-8').split('.'))))
+		if sys.version_info[0] < 3:
+			group.append(list(reversed(line.encode('utf-8').split('.'))))
+		else:
+			group.append(list(reversed(line.split('.'))))
 
 		for label in labels:
 			if not label:
