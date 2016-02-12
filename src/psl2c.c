@@ -256,6 +256,11 @@ int main(int argc, const char **argv)
 	if (!(psl = psl_load_file(argv[argpos])))
 		return 2;
 
+	if (!psl->suffixes || !psl->nsuffixes) {
+		fprintf(stderr, "Failed to load PSL. Please check content of '%s'.\n", argv[argpos]);
+		return 5;
+	}
+
 	/* look for ambiguous or double entries */
 /*	if (_check_psl(psl)) {
 		psl_free(psl);
