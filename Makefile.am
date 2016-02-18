@@ -14,6 +14,9 @@ ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libpsl.pc
 
+clean-local:
+	rm -rf $(srcdir)/linter/log
+
 EXTRA_DIST = config.rpath LICENSE
 dist-hook:
 	mkdir -p $(distdir)/list/tests

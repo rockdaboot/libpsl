@@ -27,18 +27,19 @@ import sys
 
 nline = 0
 line = ""
+orig_line = ""
 warnings = 0
 errors = 0
 skip_order_check = False
 
 def warning(msg):
-	global warnings, line, nline
-	print('%d: warning: %s%s' % (nline, msg, ": \'" + line + "\'" if line else ""))
+	global warnings, orig_line, nline
+	print('%d: warning: %s%s' % (nline, msg, ": \'" + orig_line + "\'" if orig_line else ""))
 	warnings += 1
 
 def error(msg):
-	global errors, line, nline
-	print('%d: error: %s%s' % (nline, msg, ": \'" + line + "\'" if line else ""))
+	global errors, orig_line, nline
+	print('%d: error: %s%s' % (nline, msg, ": \'" + orig_line + "\'" if orig_line else ""))
 	errors += 1
 #	skip_order_check = True
 
@@ -73,6 +74,7 @@ def check_order(group):
 			warning('Incorrectly sorted group of domains')
 			print("  " + str(group))
 			print("  " + str(sorted_group))
+                        print("Correct sorting would be:")
 			print_psl(sorted_group)
 
 	finally:
@@ -81,7 +83,7 @@ def check_order(group):
 
 def lint_psl(infile):
 	"""Parses PSL file and performs syntax checking"""
-	global line, nline
+	global orig_line, nline
 
 	PSL_FLAG_EXCEPTION = (1<<0)
 	PSL_FLAG_WILDCARD = (1<<1)
@@ -91,10 +93,12 @@ def lint_psl(infile):
 
 	line2number = {}
 	line2flag = {}
-	section = 0
 	group = []
+	section = 0
+	icann_sections = 0
+	private_sections = 0
 
-	lines = [line.strip('\r\n') for line in infile]
+	lines = [line.strip('\n') for line in infile]
 
 	for line in lines:
 		nline += 1
@@ -102,23 +106,28 @@ def lint_psl(infile):
 		# check for leadind/trailing whitespace
 		stripped = line.strip()
 		if stripped != line:
+			line = line.replace('\t','\\t')
+			line = line.replace('\r','^M')
 			warning('Leading/Trailing whitespace')
+		orig_line = line
 		line = stripped
 
 		# empty line (end of sorted domain group)
 		if not line:
-			check_order(group)
+			# check_order(group)
 			continue
 
 		# check for section begin/end
 		if line[0:2] == "//":
-			check_order(group)
+			# check_order(group)
 
 			if section == 0:
 				if line == "// ===BEGIN ICANN DOMAINS===":
 					section = PSL_FLAG_ICANN
+					icann_sections += 1
 				elif line == "// ===BEGIN PRIVATE DOMAINS===":
 					section = PSL_FLAG_PRIVATE
+					private_sections += 1
 				elif line[3:11] == "===BEGIN":
 					error('Unexpected begin of unknown section')
 				elif line[3:9] == "===END":
@@ -148,7 +157,11 @@ def lint_psl(infile):
 
 		# decode UTF-8 input into unicode, needed only for python 2.x
 		if sys.version_info[0] < 3:
-			line = line.decode('utf-8')
+			try:
+				line = line.decode('utf-8')
+			except UnicodeDecodeError:
+				error('Invalid UTF-8 character')
+				continue
 
 		# each rule must be lowercase (or more exactly: not uppercase and not titlecase)
 		if line != line.lower():
@@ -170,6 +183,7 @@ def lint_psl(infile):
 		# wildcard and exception must not combine
 		if flags & PSL_FLAG_WILDCARD and flags & PSL_FLAG_EXCEPTION:
 			error('Combination of wildcard and exception')
+			continue
 
 		labels = line.split('.')
 
@@ -179,18 +193,25 @@ def lint_psl(infile):
 #		else:
 #			group.append(list(reversed(line.split('.'))))
 
+		if flags & PSL_FLAG_EXCEPTION and len(labels) > 1:
+			domain = ".".join(str(label) for label in labels[1:])
+			if not domain in line2flag:
+				error('Exception without previous wildcard')
+			elif not line2flag[domain] & PSL_FLAG_WILDCARD:
+				error('Exception without previous wildcard')
+
 		for label in labels:
 			if not label:
-				 error('Leading/trailing or multiple dot')
-				 continue
+				error('Leading/trailing or multiple dot')
+				continue
 
 			if label[0:4] == 'xn--':
-				 error('Punycode found')
-				 continue
+				error('Punycode found')
+				continue
 
 			if '--' in label:
-				 error('Double minus found')
-				 continue
+				error('Double minus found')
+				continue
 
 			# allowed are a-z,0-9,- and unicode >= 128 (maybe that can be finetuned a bit !?)
 			for c in label:
@@ -208,11 +229,26 @@ def lint_psl(infile):
 			     !foo.bar + *.foo.bar
 			'''
 			error('Found doublette/ambiguity (previous line was %d)' % line2number[line])
-			continue
 
 		line2number[line] = nline
 		line2flag[line] = flags
 
+	orig_line = None
+
+	if section == PSL_FLAG_ICANN:
+		error('ICANN section not closed')
+	elif section == PSL_FLAG_PRIVATE:
+		error('PRIVATE section not closed')
+
+	if icann_sections < 1:
+		warning('No ICANN section found')
+	elif icann_sections > 1:
+		warning('%d ICANN sections found' % icann_sections)
+
+	if private_sections < 1:
+		warning('No PRIVATE section found')
+	elif private_sections > 1:
+		warning('%d PRIVATE sections found' % private_sections)
 
 def usage():
 	"""Prints the usage"""

@@ -1,8 +1,9 @@
-*.gz
-*.o
-*.lo
-*.la
 *.exe
+*.gz
+*.la
+*.lo
+*.log
+*.o
 *~
 */.deps
 */.libs
