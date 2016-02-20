@@ -255,7 +255,7 @@ AC_SUBST(PSL_FILE)
 AC_ARG_WITH(psl-testfile,
   AC_HELP_STRING([--with-psl-testfile=[PATH]], [path to PSL test file]),
   PSL_TESTFILE=$withval,
-  PSL_TESTFILE="\$(top_srcdir)/list/tests/test_psl.txt")
+  PSL_TESTFILE="\$(top_srcdir)/list/tests/tests.txt")
 AC_SUBST(PSL_TESTFILE)
 
 # check for alloca / alloca.h
