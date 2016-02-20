@@ -130,6 +130,11 @@ static void test_psl(void)
 				} else if (sscanf(p, "checkPublicSuffix ( null , null ) %1[;]", semicolon) == 1) {
 					d_is_null = 1;
 					er_is_null = 1;
+				} else if (sscanf(p, "%127s %127s", domain, expected_regdom) == 2) {
+					if (!strcmp(domain, "null"))
+						d_is_null = 1;
+					if (!strcmp(expected_regdom, "null"))
+						er_is_null = 1;
 				} else {
 					failed++;
 					printf("Malformed line from '" PSL_TESTFILE "': %s", buf);
