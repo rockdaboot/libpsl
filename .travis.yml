@@ -6,6 +6,11 @@ compiler:
   - gcc
   - clang
 
+branches:
+    only:
+        - master
+        - develop
+
 env:
     - RUNTIME=libicu
     - RUNTIME=libidn2
