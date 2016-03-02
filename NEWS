@@ -1,5 +1,11 @@
 Copyright (C) 2014-2016 Tim Rühsen
 
+02.03.2016 Release V0.13.0
+  * Use tests.txt as PSL test file by default
+  * Slightly shorter DAFSA array when sorting input
+  * Check for python 2.7+ in configure.ac
+  * Fix python3 incompatibilities in make_dafsa.py
+
 02.01.2016 Release V0.12.0
   * Load DAFSA binaries via psl_load_file() via auto-detection
   * Add more tests
