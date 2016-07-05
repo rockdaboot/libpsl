@@ -1,5 +1,5 @@
 From: Daniel Kahn Gillmor <dkg@fifthhorseman.net>
-Date: Thu, 6 Aug 2015 15:51:16 -0400
+Date: Tue, 5 Jul 2016 11:14:58 -0400
 Subject: remove git submodules
 
 we use package dependencies instead when building in debian
@@ -19,28 +19,28 @@ index d74114d..0000000
 -	path = list
 -	url = https://github.com/publicsuffix/list
 diff --git a/autogen.sh b/autogen.sh
-index 9de26f5..2c6dc20 100755
+index aee0a7c..d58a432 100755
 --- a/autogen.sh
 +++ b/autogen.sh
 @@ -6,12 +6,6 @@ if test $? -ne 0; then
    exit 1
  fi
  
--GIT=`which git 2>/dev/null`
+-GIT=$(which git 2>/dev/null)
 -if test $? -ne 0; then
 -  echo "No 'git' found. You must install the git package."
 -  exit 1
 -fi
 -
- # create m4 before gtkdocize
- mkdir m4 2>/dev/null
+ #  create m4 before gtkdocize
+ mkdir -p m4 2>/dev/null
  
 @@ -27,8 +21,6 @@ else
-   $GTKDOCIZE || exit $?
+   $GTKDOCIZE
  fi
  
 -$GIT submodule init
 -$GIT submodule update
- $AUTORECONF --install --force --symlink || exit $?
+ $AUTORECONF --install --force --symlink
  
  echo
