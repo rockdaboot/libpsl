@@ -19,7 +19,7 @@ Vcs-Browser: https://github.com/rockdaboot/libpsl
 Package: libpsl-dev
 Section: libdevel
 Architecture: any
-Depends: libpsl0 (= ${binary:Version}), ${misc:Depends}
+Depends: libpsl5 (= ${binary:Version}), ${misc:Depends}
 Description: Library for Public Suffix List (development headers)
  Libpsl allows checking domains against the Public Suffix List.
  It can be used to avoid privacy-leaking 'super-cookies',
@@ -31,7 +31,7 @@ Description: Library for Public Suffix List (development headers)
  This package contains development header files and documentation for
  developers.
 
-Package: libpsl0
+Package: libpsl5
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}
 Recommends: publicsuffix (>= 20150507)
