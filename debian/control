@@ -10,7 +10,7 @@ Build-Depends: automake,
                libicu-dev,
                pkg-config,
                publicsuffix (>= 20140402-2)
-Standards-Version: 3.9.6
+Standards-Version: 3.9.8
 Section: libs
 Homepage: https://github.com/rockdaboot/libpsl
 Vcs-Git: https://github.com/rockdaboot/libpsl
