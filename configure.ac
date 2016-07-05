@@ -1,5 +1,5 @@
 
-AC_INIT([libpsl], [0.13.0], [tim.ruehsen@gmx.de], [libpsl], [http://github.com/rockdaboot/libpsl])
+AC_INIT([libpsl], [0.13.0], [tim.ruehsen@gmx.de], [libpsl], [https://github.com/rockdaboot/libpsl])
 AC_PREREQ([2.59])
 AM_INIT_AUTOMAKE([1.10 -Wall no-define foreign])
 
@@ -80,7 +80,7 @@ PKG_PROG_PKG_CONFIG
 # Define these substitions here to keep all version information in one place.
 # For information on how to properly maintain the library version information,
 # refer to the libtool manual, section "Updating library version information":
-# http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
+# https://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
 #
 # 1. Start with version information of ‘0:0:0’ for each libtool library.
 # 2. Update the version information only immediately before a public release of your software. More frequent updates are unnecessary, and only guarantee that the current interface number gets larger faster.
