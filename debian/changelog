@@ -1,3 +1,10 @@
+libpsl (0.13.0-1) UNRELEASED; urgency=medium
+
+  * New uptream version; moved from libpsl0 to libpsl5 because of removal
+    of psl_builtin_compile_time()
+
+ -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Tue, 05 Jul 2016 11:09:09 -0400
+
 libpsl (0.11.0-2) unstable; urgency=medium
 
   * Recommend the publicsuffix package.
