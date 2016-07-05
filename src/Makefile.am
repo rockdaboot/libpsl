@@ -1,12 +1,12 @@
 # suffixes.c must be created before psl.c is compiled
-BUILT_SOURCES = suffixes.c
+BUILT_SOURCES = suffixes_dafsa.c
 
 # suffixes.c is a built source that must be cleaned
-CLEANFILES = suffixes.c
+CLEANFILES = suffixes_dafsa.c
 
 lib_LTLIBRARIES = libpsl.la
 
-libpsl_la_SOURCES = psl.c
+libpsl_la_SOURCES = psl.c lookup_string_in_fixed_set.c
 libpsl_la_CPPFLAGS = -I$(top_srcdir)/include
 # include ABI version information
 libpsl_la_LDFLAGS = -version-info $(LIBPSL_SO_VERSION)
@@ -21,8 +21,8 @@ if WITH_LIBIDN
 endif
 
 noinst_PROGRAMS = psl2c
-psl2c_SOURCES = psl2c.c
-psl2c_CPPFLAGS = -I$(top_srcdir)/include
+psl2c_SOURCES = psl2c.c lookup_string_in_fixed_set.c
+psl2c_CPPFLAGS = -I$(top_srcdir)/include -DMAKE_DAFSA=\"$(top_srcdir)/src/make_dafsa.py\"
 if BUILTIN_GENERATOR_LIBICU
   psl2c_LDADD = -licuuc
 endif
@@ -33,7 +33,9 @@ if BUILTIN_GENERATOR_LIBIDN
   psl2c_LDADD = @LTLIBICONV@ -lidn -lunistring
 endif
 
-# Build rule for suffix.c
+# Build rule for suffix_dafsa.c
 # PSL_FILE can be set by ./configure --with-psl-file=[PATH]
-suffixes.c: $(PSL_FILE) psl2c$(EXEEXT)
-	./psl2c$(EXEEXT) "$(PSL_FILE)" suffixes.c
+suffixes_dafsa.c: $(PSL_FILE) psl2c$(EXEEXT)
+	./psl2c$(EXEEXT) "$(PSL_FILE)" suffixes_dafsa.c
+
+EXTRA_DIST = make_dafsa.py LICENSE.chromium

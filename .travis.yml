@@ -1,29 +1,46 @@
+sudo: false
+
 language: c
+
 compiler:
   - gcc
   - clang
-# Change this to your needs
+
+branches:
+    only:
+        - master
+        - develop
+
+env:
+    - RUNTIME=libicu
+    - RUNTIME=libidn2
+    - RUNTIME=libidn
+    - RUNTIME=no
+
+addons:
+    apt:
+        packages:
+            - automake
+            - autoconf
+            - autopoint
+            - libtool
+            - gtk-doc-tools
+            - gettext
+            - libidn11
+            - libidn11-dev
+            - libidn2-0
+            - libidn2-0-dev
+            - libicu48
+            - libicu-dev
+            - libunistring0
+            - libunistring-dev
+
 script:
   - ./autogen.sh
   - ./configure && make -j4 && make check -j4
-  - ./configure --enable-runtime=libicu --enable-builtin=libicu && make clean && make -j4 && make check -j4
-  - ./configure --enable-runtime=libicu --enable-builtin=libidn2 && make clean && make -j4 && make check -j4
-  - ./configure --enable-runtime=libicu --enable-builtin=libidn && make clean && make -j4 && make check -j4
-  - ./configure --enable-runtime=libicu --disable-builtin && make clean && make -j4 && make check -j4
-  - ./configure --enable-runtime=libidn2 --enable-builtin=libicu && make clean && make -j4 && make check -j4
-  - ./configure --enable-runtime=libidn2 --enable-builtin=libidn2 && make clean && make -j4 && make check -j4
-  - ./configure --enable-runtime=libidn2 --enable-builtin=libidn && make clean && make -j4 && make check -j4
-  - ./configure --enable-runtime=libidn2 --disable-builtin && make clean && make -j4 && make check -j4
-  - ./configure --enable-runtime=libidn --enable-builtin=libicu && make clean && make -j4 && make check -j4
-  - ./configure --enable-runtime=libidn --enable-builtin=libidn2 && make clean && make -j4 && make check -j4
-  - ./configure --enable-runtime=libidn --enable-builtin=libidn && make clean && make -j4 && make check -j4
-  - ./configure --enable-runtime=libidn --disable-builtin && make clean && make -j4 && make check -j4
-  - ./configure --disable-runtime --enable-builtin=libicu && make clean && make -j4 && make check -j4
-  - ./configure --disable-runtime --enable-builtin=libidn2 && make clean && make -j4 && make check -j4
-  - ./configure --disable-runtime --enable-builtin=libidn && make clean && make -j4 && make check -j4
-  - ./configure --disable-runtime --disable-builtin && make clean && make -j4 && make check -j4
+  - ./configure --enable-runtime=$RUNTIME --enable-builtin=libicu && make clean && make -j4 && make check -j4
+  - ./configure --enable-runtime=$RUNTIME --enable-builtin=libidn2 && make clean && make -j4 && make check -j4
+  - ./configure --enable-runtime=$RUNTIME --enable-builtin=libidn && make clean && make -j4 && make check -j4
+  - ./configure --enable-runtime=$RUNTIME --disable-builtin && make clean && make -j4 && make check -j4
   - ./configure --enable-gtk-doc && make -j4 && make check -j4
   - make distcheck
-before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get -q install autoconf automake autopoint libtool gtk-doc-tools gettext libidn11 libidn11-dev libidn2-0 libidn2-0-dev libicu48 libicu-dev libunistring0 libunistring-dev

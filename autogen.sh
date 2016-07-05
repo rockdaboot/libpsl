@@ -1,21 +1,21 @@
-# !/bin/sh -e
+#!/bin/sh
 
-AUTORECONF=`which autoreconf 2>/dev/null`
+AUTORECONF=$(which autoreconf 2>/dev/null)
 if test $? -ne 0; then
   echo "No 'autoreconf' found. You must install the autoconf package."
   exit 1
 fi
 
-GIT=`which git 2>/dev/null`
+GIT=$(which git 2>/dev/null)
 if test $? -ne 0; then
   echo "No 'git' found. You must install the git package."
   exit 1
 fi
 
-# create m4 before gtkdocize
-mkdir m4 2>/dev/null
+#  create m4 before gtkdocize
+mkdir -p m4 2>/dev/null
 
-GTKDOCIZE=`which gtkdocize 2>/dev/null`
+GTKDOCIZE=$(which gtkdocize 2>/dev/null)
 if test $? -ne 0; then
   echo "No gtk-doc support found. You can't build the docs."
   # rm because gtk-doc.make might be a link to a protected file
@@ -24,12 +24,12 @@ if test $? -ne 0; then
   echo "CLEANFILES =" >>gtk-doc.make
   GTKDOCIZE=""
 else
-  $GTKDOCIZE || exit $?
+  $GTKDOCIZE
 fi
 
 $GIT submodule init
 $GIT submodule update
-$AUTORECONF --install --force --symlink || exit $?
+$AUTORECONF --install --force --symlink
 
 echo
 echo "----------------------------------------------------------------"

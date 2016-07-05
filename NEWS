@@ -1,10 +1,29 @@
-Copyright (C) 2014-2015 Tim Rühsen
+Copyright (C) 2014-2016 Tim Rühsen
+
+02.03.2016 Release V0.13.0
+  * Use tests.txt as PSL test file by default
+  * Slightly shorter DAFSA array when sorting input
+  * Check for python 2.7+ in configure.ac
+  * Fix python3 incompatibilities in make_dafsa.py
+
+02.01.2016 Release V0.12.0
+  * Load DAFSA binaries via psl_load_file() via auto-detection
+  * Add more tests
+  * Remove psl_builtin_compile_time()
+  * Compile PSL into DAFSA using make_dafsa.py
+  * Avoid libicu dependency with --enable-runtime=no
+  * Test on new Travis-CI build farm
+  * Use DAFSA format for builtin PSL data
+  * Add function psl_is_public_suffix2()
+  * Fix psl_builtin_outdated()
+  * Fix several bugs
+  * Cleanup code
 
 23.09.2015 Release V0.11.0
   * Add new function psl_check_version_number()
   * Add version defines to include file
 
-19.09.2025 Release V0.10.0
+19.09.2015 Release V0.10.0
   * Code simplified
   * Less data entries, faster lookups
   * Add new function psl_suffix_wildcard_count()

@@ -14,7 +14,7 @@ Browsers and other web clients can use it to
 
 Libpsl...
 
-- has built-in PSL data for fast access
+- has built-in PSL data for fast access (DAWG/DAFSA reduces size from 180kB to ~32kB)
 - allows to load PSL data from files
 - checks if a given domain is a "public suffix"
 - provides immediate cookie domain verification
@@ -27,6 +27,8 @@ Libpsl...
 Find more information about the Publix Suffix List [here](http://publicsuffix.org/).
 
 Download the Public Suffix List [here](https://hg.mozilla.org/mozilla-central/raw-file/tip/netwerk/dns/effective_tld_names.dat).
+
+The DAFSA code has been taken from [Chromium Project](https://code.google.com/p/chromium/).
 
 
 API Documentation
@@ -74,9 +76,13 @@ License
 Libpsl is made available under the terms of the MIT license.<br>
 See the LICENSE file that accompanies this distribution for the full text of the license.
 
+src/make_dafsa.py and src/lookup_string_in_fixed_set.c are licensed under the term written in
+src/LICENSE.chromium.
 
 Building from git
 -----------------
+
+You should have python2.7+ installed.
 
 Download project and prepare sources with
 
