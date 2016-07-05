@@ -987,7 +987,7 @@ int psl_is_public_suffix2(const psl_ctx_t *psl, const char *domain, int type)
  * @psl: PSL context
  * @domain: Domain string
  *
- * This function finds the longest publix suffix part of @domain by the means
+ * This function finds the longest public suffix part of @domain by the means
  * of the [Mozilla Public Suffix List](https://publicsuffix.org).
  *
  * International @domain names have to be either in lowercase UTF-8 or in ASCII form (punycode).
