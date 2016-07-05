@@ -8,7 +8,7 @@ A "public suffix" is a domain name under which Internet users can directly regis
 Browsers and other web clients can use it to
 
 - avoid privacy-leaking "supercookies"
-- avoid privacy-leaking "super domain" certificates ([see post from Jeffry Walton](http://lists.gnu.org/archive/html/bug-wget/2014-03/msg00093.html))
+- avoid privacy-leaking "super domain" certificates ([see post from Jeffry Walton](https://lists.gnu.org/archive/html/bug-wget/2014-03/msg00093.html))
 - domain highlighting parts of the domain in a user interface
 - sorting domain lists by site
 
@@ -24,7 +24,7 @@ Libpsl...
 - is thread-safe
 - handles IDNA2008 UTS#46 (libicu is used by psl2c if installed)
 
-Find more information about the Publix Suffix List [here](http://publicsuffix.org/).
+Find more information about the Publix Suffix List [here](https://publicsuffix.org/).
 
 Download the Public Suffix List [here](https://hg.mozilla.org/mozilla-central/raw-file/tip/netwerk/dns/effective_tld_names.dat).
 
@@ -86,7 +86,7 @@ You should have python2.7+ installed.
 
 Download project and prepare sources with
 
-		git clone http://github.com/rockdaboot/libpsl
+		git clone https://github.com/rockdaboot/libpsl
 		./autogen.sh
 		./configure
 		make
