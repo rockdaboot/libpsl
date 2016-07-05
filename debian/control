@@ -9,7 +9,7 @@ Build-Depends: automake,
                help2man,
                libicu-dev,
                pkg-config,
-               publicsuffix (>= 20140402-2)
+               publicsuffix (>= 20150507)
 Standards-Version: 3.9.8
 Section: libs
 Homepage: https://github.com/rockdaboot/libpsl
@@ -34,7 +34,7 @@ Description: Library for Public Suffix List (development headers)
 Package: libpsl0
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}
-Recommends: publicsuffix
+Recommends: publicsuffix (>= 20150507)
 Multi-Arch: same
 Description: Library for Public Suffix List (shared libraries)
  Libpsl allows checking domains against the Public Suffix List.
