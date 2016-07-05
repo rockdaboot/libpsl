@@ -50,7 +50,7 @@ static void usage(int err, FILE* f)
 	fprintf(f, "  --is-public-suffix           check if domains are public suffixes [default]\n");
 	fprintf(f, "  --is-cookie-domain-acceptable <cookie-domain>\n");
 	fprintf(f, "                               check if cookie-domain is acceptable for domains\n");
-	fprintf(f, "  --print-unreg-domain         print the longest publix suffix part\n");
+	fprintf(f, "  --print-unreg-domain         print the longest public suffix part\n");
 	fprintf(f, "  --print-reg-domain           print the shortest private suffix part\n");
 	fprintf(f, "  --print-info                 print info about library builtin data\n");
 	fprintf(f, "\n");
