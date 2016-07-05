@@ -26,7 +26,7 @@ Description: Library for Public Suffix List (development headers)
  'super domain' certificates, for domain highlighting purposes
  sorting domain lists by site and more.
  .
- Please see http://publicsuffix.org for more detailed information.
+ Please see https://publicsuffix.org for more detailed information.
  .
  This package contains development header files and documentation for
  developers.
@@ -42,7 +42,7 @@ Description: Library for Public Suffix List (shared libraries)
  'super domain' certificates, for domain highlighting purposes
  sorting domain lists by site and more.
  .
- Please see http://publicsuffix.org for more detailed information.
+ Please see https://publicsuffix.org for more detailed information.
  .
  This package contains runtime libraries.
 
@@ -57,7 +57,7 @@ Description: Explore the Public Suffix List
  'super domain' certificates, for domain highlighting purposes
  sorting domain lists by site and more.
  .
- Please see http://publicsuffix.org for more detailed information.
+ Please see https://publicsuffix.org for more detailed information.
  .
  This package contains a commandline tool to explore the Public Suffix
  List.
@@ -74,6 +74,6 @@ Description: Library for the Public Suffix List (debug symbols)
  'super domain' certificates, for domain highlighting purposes
  sorting domain lists by site and more.
  .
- Please see http://publicsuffix.org for more detailed information.
+ Please see https://publicsuffix.org for more detailed information.
  .
  This package contains debug symbols for libpsl.
