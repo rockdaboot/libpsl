@@ -61,19 +61,3 @@ Description: Explore the Public Suffix List
  .
  This package contains a commandline tool to explore the Public Suffix
  List.
-
-Package: libpsl0-dbg
-Section: debug
-Priority: extra
-Architecture: any
-Depends: libpsl0 (= ${binary:Version}), ${misc:Depends}
-Multi-Arch: same
-Description: Library for the Public Suffix List (debug symbols)
- Libpsl allows checking domains against the Public Suffix List.
- It can be used to avoid privacy-leaking 'super-cookies',
- 'super domain' certificates, for domain highlighting purposes
- sorting domain lists by site and more.
- .
- Please see https://publicsuffix.org for more detailed information.
- .
- This package contains debug symbols for libpsl.
