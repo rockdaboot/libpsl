@@ -12,15 +12,20 @@ to standard output, with each line containing one domain followed by a
 colon, followed by the relevant information for that domain.
 .SH MODES
 The information printed per domain changes based on the selected mode.
+.br
 Available modes are:
 .TP
 \fB\-\-is\-public\-suffix\fR
-check if domains are public suffixes.  Returned data: 1 if the
-\fIdomain\fR is a public suffix, 0 otherwise. [default]
+check if domains are public suffixes.
+.br
+Returned data: 1 if the \fIdomain\fR is a public suffix, 0 otherwise.
+[default]
 .TP
 \fB\-\-is\-cookie\-domain\-acceptable\fR <cookie\-domain>
-check if cookie\-domain is acceptable for domains.  Returned data: 1
-if \fIcookie-domain\fR is acceptable for the \fIdomain\fR, 0 otherwise.
+check if cookie\-domain is acceptable for domains.
+.br
+Returned data: 1 if \fIcookie-domain\fR is acceptable for the
+\fIdomain\fR, 0 otherwise.
 .TP
 \fB\-\-print\-unreg\-domain\fR
 Returned data: the longest public suffix part for each \fIdomain\fR.
@@ -37,8 +42,9 @@ show library version information
 \fB\-\-print\-info\fR
 print info about library builtin data
 .SH PUBLIC SUFFIX DATA
-By default, `psl' will use built-in Public Suffix data.  You can also
-direct it to use a different file:
+By default, `psl' will use built-in Public Suffix data.
+.br
+You can also direct it to use a different file:
 .TP
 \fB\-\-use\-builtin\-data\fR
 use the builtin PSL data [default]
@@ -50,6 +56,8 @@ https://publicsuffix.org/
 https://github.com/rockdaboot/libpsl
 .SH COPYRIGHT
 libpsl and `psl' are copyright \(co 2014\-2016 Tim Ruehsen under an
-MIT-style License.  This documentation was written by Daniel Kahn
-Gillmor for the Debian project, but may be used by others under the
-same license as libpsl itself.
+MIT-style License.
+.br
+This documentation was written by Daniel Kahn Gillmor for the Debian
+project, but may be used by others under the same license as libpsl
+itself.
