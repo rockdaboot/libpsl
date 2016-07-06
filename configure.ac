@@ -158,7 +158,6 @@ if test "$enable_runtime" = "libicu" -o "$enable_builtin" = "libicu"; then
   PKG_CHECK_MODULES([LIBICU], [icu-uc], [
     HAVE_LIBICU=yes
     if test "$enable_runtime" = "libicu"; then
-      LIBS="$LIBICU_LIBS $LIBS"
       CFLAGS="$LIBICU_CFLAGS $CFLAGS"
     fi
   ], [
