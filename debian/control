@@ -1,15 +1,17 @@
 Source: libpsl
 Priority: optional
 Maintainer: Tim Rühsen <tim.ruehsen@gmx.de>
-Uploaders: Daniel Kahn Gillmor <dkg@fifthhorseman.net>
-Build-Depends: automake,
-               debhelper (>=9),
-               dh-autoreconf,
-               gtk-doc-tools,
-               help2man,
-               libicu-dev,
-               pkg-config,
-               publicsuffix (>= 20150507)
+Uploaders:
+ Daniel Kahn Gillmor <dkg@fifthhorseman.net>,
+Build-Depends:
+ automake,
+ debhelper (>=9),
+ dh-autoreconf,
+ gtk-doc-tools,
+ help2man,
+ libicu-dev,
+ pkg-config,
+ publicsuffix (>= 20150507),
 Standards-Version: 3.9.8
 Section: libs
 Homepage: https://github.com/rockdaboot/libpsl
@@ -19,7 +21,9 @@ Vcs-Browser: https://github.com/rockdaboot/libpsl
 Package: libpsl-dev
 Section: libdevel
 Architecture: any
-Depends: libpsl5 (= ${binary:Version}), ${misc:Depends}
+Depends:
+ libpsl5 (= ${binary:Version}),
+ ${misc:Depends},
 Description: Library for Public Suffix List (development headers)
  Libpsl allows checking domains against the Public Suffix List.
  It can be used to avoid privacy-leaking 'super-cookies',
@@ -33,8 +37,11 @@ Description: Library for Public Suffix List (development headers)
 
 Package: libpsl5
 Architecture: any
-Depends: ${misc:Depends}, ${shlibs:Depends}
-Recommends: publicsuffix (>= 20150507)
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Recommends:
+ publicsuffix (>= 20150507),
 Multi-Arch: same
 Description: Library for Public Suffix List (shared libraries)
  Libpsl allows checking domains against the Public Suffix List.
@@ -49,7 +56,9 @@ Description: Library for Public Suffix List (shared libraries)
 Package: psl
 Section: net
 Architecture: any
-Depends: ${misc:Depends}, ${shlibs:Depends}
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
 Multi-Arch: foreign
 Description: Explore the Public Suffix List
  Libpsl allows checking domains against the Public Suffix List.
