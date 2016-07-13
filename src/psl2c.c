@@ -206,7 +206,7 @@ static int _print_psl_entries_dafsa_binary(const char *fname, const _psl_vector_
 		return 3;
 	}
 
-	snprintf(cmd, sizeof(cmd), MAKE_DAFSA " --binary in.tmp %s", fname);
+	snprintf(cmd, sizeof(cmd), MAKE_DAFSA " --output-format=binary in.tmp %s", fname);
 	if ((rc = system(cmd))) {
 		fprintf(stderr, "Failed to execute '%s' (%d)\n", cmd, rc);
 		ret = 2;
