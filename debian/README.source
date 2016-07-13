@@ -1,0 +1,19 @@
+The packaging for libpsl splits out psl-make-dafsa in order to avoid a
+cyclic build-dependency, which would make bootstrapping a debian
+architecture harder than it needs to be.
+
+publicsuffix will build-depend on psl-make-dafsa so that publicsuffix
+can ship a compressed, rapid-access version (DAFSA) of
+public_suffix_list.dat alongside the standard text version.
+
+but libpsl itself build-depends on publicsuffix.  We avoid the
+circularity by ensuring that libpsl's arch-independent build can be
+done without publicsuffix.
+
+So the path to bootstrapping should be:
+
+ * arch-independent build of libpsl (creates psl-make-dafsa)
+ * full build of publicsuffix (creates publicsuffix)
+ * arch-dependent build of libpsl (creates normal libpsl* packages)
+
+ -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>, Thu, 14 Jul 2016 01:08:55 +0200
