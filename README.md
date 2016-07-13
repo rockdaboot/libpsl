@@ -70,6 +70,20 @@ library API via command line.
 
 prints the usage.
 
+Convert PSL into DAFSA
+----------------------
+
+The [DAFSA](https://en.wikipedia.org/wiki/Deterministic_acyclic_finite_state_automaton) format is a compressed
+representation of strings. Here we use it to reduce the whole PSL to about 32k in size.
+
+Generate `psl.dafsa` from `list/public_suffix_list.dat`
+
+	$ src/make_dafsa.py --output-format=binary --input-format=psl list/public_suffix_list.dat psl.dafsa
+
+Test the result (example)
+
+	$ tools/psl --load-psl-file psl.dafsa aeroclub.aero
+
 License
 -------
 

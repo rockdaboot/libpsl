@@ -1110,8 +1110,7 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 	psl_ctx_t *psl;
 	_psl_entry_t suffix, *suffixp;
 	char buf[256], *linep, *p;
-	size_t n;
-	int type = 0;
+	int type = 0, is_dafsa;
 	_psl_idna_t *idna;
 
 	if (!fp)
@@ -1121,14 +1120,18 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 		return NULL;
 
 	/* read first line to allow ASCII / DAFSA detection */
-	if ((n = fread(buf, 1, sizeof(buf) - 1, fp)) < 1)
+	if (!(linep = fgets(buf, sizeof(buf) - 1, fp)))
 		goto fail;
 
-	buf[n] = 0;
+	is_dafsa = strlen(buf) == 16 && !strncmp(buf, ".DAFSA@PSL_", 11);
 
-	if (!strstr(buf, "This Source Code Form is subject to")) {
+	if (is_dafsa) {
 		void *m;
-		size_t size = 65536, len = n;
+		size_t size = 65536, n, len = 0;
+		int version = atoi(buf + 11);
+
+		if (version != 0)
+			goto fail;
 
 		if (!(psl->dafsa = malloc(size)))
 			goto fail;
@@ -1148,10 +1151,10 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 		if ((m = realloc(psl->dafsa, len)))
 			psl->dafsa = m;
 
+		psl->dafsa_size = len;
+
 		return psl;
 	}
-
-	rewind(fp);
 
 	idna = _psl_idna_open();
 
@@ -1161,7 +1164,7 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 	 */
 	psl->suffixes = _vector_alloc(8*1024, _suffix_compare_array);
 
-	while ((linep = fgets(buf, sizeof(buf), fp))) {
+	do {
 		while (_isspace_ascii(*linep)) linep++; /* ignore leading whitespace */
 		if (!*linep) continue; /* skip empty lines */
 
@@ -1232,7 +1235,7 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 
 			_add_punycode_if_needed(idna, psl->suffixes, suffixp);
 		}
-	}
+	} while ((linep = fgets(buf, sizeof(buf), fp)));
 
 	_vector_sort(psl->suffixes);
 

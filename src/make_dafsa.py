@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE.chromium file.
@@ -445,7 +445,7 @@ def words_to_cxx(words):
 
 def words_to_binary(words):
   """Generates C++ code from a word list"""
-  return words_to_whatever(words, bytearray)
+  return b'.DAFSA@PSL_0   \n' + words_to_whatever(words, bytearray)
 
 
 def parse_psl2c(infile):
