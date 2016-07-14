@@ -4,13 +4,16 @@ Maintainer: Tim Rühsen <tim.ruehsen@gmx.de>
 Uploaders:
  Daniel Kahn Gillmor <dkg@fifthhorseman.net>,
 Build-Depends:
- automake,
- debhelper (>=9),
+ debhelper (>=9)
+Build-Depends-Indep:
+ dh-exec
+Build-Depends-Arch:
  dh-autoreconf,
  gtk-doc-tools,
- help2man,
  libicu-dev,
  pkg-config,
+ automake,
+ help2man,
  publicsuffix (>= 20150507),
 Standards-Version: 3.9.8
 Section: libs
@@ -70,3 +73,23 @@ Description: Explore the Public Suffix List
  .
  This package contains a commandline tool to explore the Public Suffix
  List.
+
+Package: psl-make-dafsa
+Section: net
+Architecture: all
+Depends:
+ python-minimal,
+ ${misc:Depends},
+ ${shlibs:Depends}
+Description: Create a binary DAFSA from a Public Suffix List
+ libpsl permits the use of an optimized binary representation of the
+ Public Suffix List (PSL).  This format is a deterministic acyclic
+ finite state automaton, or DAFSA.
+ .
+ It is primarily used for building a new version of the publicsuffix
+ package, but could also be used by anyone else looking to match
+ printable US ASCII strings.
+ .
+ This package contains a python script to convert a standard PSL into
+ a DAFSA, either in C source code form, or in a specialized mmap-able
+ binary format.

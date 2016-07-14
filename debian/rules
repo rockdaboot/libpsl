@@ -1,11 +1,17 @@
 #!/usr/bin/make -f
-%:
-	dh $@  --with autoreconf
 
-override_dh_autoreconf:
+# FIXME: how do we only use dh_autoreconf when building arch-specific
+# packages?  see debian/README.source for an explanation of why we
+# care about splitting binary-only builds from arch:all builds.
+DH_AUTORECONF = --with autoreconf
+
+%:
+	dh $@ $(DH_AUTORECONF)
+
+override_dh_autoreconf-arch:
 	dh_autoreconf ./autogen.sh
 
-override_dh_auto_configure:
+override_dh_auto_configure-arch:
 	dh_auto_configure -- \
 		--enable-builtin=libicu \
 		--enable-gtk-doc \
@@ -17,7 +23,7 @@ override_dh_auto_configure:
 		--with-psl-file=/usr/share/publicsuffix/public_suffix_list.dat \
 		--with-psl-testfile=/usr/share/doc/publicsuffix/examples/test_psl.txt
 
-override_dh_auto_build:
+override_dh_auto_build-arch:
 	dh_auto_build
 	help2man --no-info --no-discard-stderr --output=debian/psl.1 \
 		--name="Explore the Public Suffix List" tools/psl 
