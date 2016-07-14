@@ -418,7 +418,7 @@ def encode(dafsa):
 def to_cxx(data):
   """Generates C++ code from a list of encoded bytes."""
   text = '/* This file is generated. DO NOT EDIT!\n\n'
-  text += 'The byte array encodes effective tld names. See make_dafsa.py for'
+  text += 'The byte array encodes effective tld names. See psl-make-dafsa source for'
   text += ' documentation.'
   text += '*/\n\n'
   text += 'static const unsigned char kDafsa[%s] = {\n' % len(data)
