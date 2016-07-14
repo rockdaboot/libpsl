@@ -78,7 +78,7 @@ representation of strings. Here we use it to reduce the whole PSL to about 32k i
 
 Generate `psl.dafsa` from `list/public_suffix_list.dat`
 
-	$ src/make_dafsa.py --output-format=binary --input-format=psl list/public_suffix_list.dat psl.dafsa
+	$ src/psl-make-dafsa --output-format=binary --input-format=psl list/public_suffix_list.dat psl.dafsa
 
 Test the result (example)
 
@@ -90,7 +90,7 @@ License
 Libpsl is made available under the terms of the MIT license.<br>
 See the LICENSE file that accompanies this distribution for the full text of the license.
 
-src/make_dafsa.py and src/lookup_string_in_fixed_set.c are licensed under the term written in
+src/psl-make-dafsa and src/lookup_string_in_fixed_set.c are licensed under the term written in
 src/LICENSE.chromium.
 
 Building from git

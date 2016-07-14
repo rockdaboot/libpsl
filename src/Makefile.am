@@ -22,7 +22,7 @@ endif
 
 noinst_PROGRAMS = psl2c
 psl2c_SOURCES = psl2c.c lookup_string_in_fixed_set.c
-psl2c_CPPFLAGS = -I$(top_srcdir)/include -DMAKE_DAFSA=\"$(top_srcdir)/src/make_dafsa.py\"
+psl2c_CPPFLAGS = -I$(top_srcdir)/include -DMAKE_DAFSA=\"$(top_srcdir)/src/psl-make-dafsa\"
 if BUILTIN_GENERATOR_LIBICU
   psl2c_LDADD = -licuuc
 endif
@@ -38,4 +38,4 @@ endif
 suffixes_dafsa.c: $(PSL_FILE) psl2c$(EXEEXT)
 	./psl2c$(EXEEXT) "$(PSL_FILE)" suffixes_dafsa.c
 
-EXTRA_DIST = make_dafsa.py LICENSE.chromium
+EXTRA_DIST = psl-make-dafsa LICENSE.chromium

@@ -1,5 +1,5 @@
 * The following License is for the source code files
-  make_dafsa.py and lookup_string_in_fixed_set.c.
+  psl-make-dafsa and lookup_string_in_fixed_set.c.
 
 // Copyright 2015 The Chromium Authors. All rights reserved.
 //
