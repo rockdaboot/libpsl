@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
-<book xmlns="http://www.devhelp.net/book" title="Libpsl Reference Manual" link="index.html" author="" name="libpsl" version="2" language="c">
+<book xmlns="http://www.devhelp.net/book" title="Libpsl Reference Manual" link="index.html" author="" name="libpsl" version="2" language="c" online="https://github.com/rockdaboot/libpsl">
   <chapters>
     <sub name="Libpsl Overview" link="libpsl.html">
       <sub name="libpsl" link="libpsl-Public-Suffix-List-functions.html"/>
@@ -12,19 +12,30 @@
     <keyword type="function" name="psl_load_file ()" link="libpsl-Public-Suffix-List-functions.html#psl-load-file" since="0.1"/>
     <keyword type="function" name="psl_load_fp ()" link="libpsl-Public-Suffix-List-functions.html#psl-load-fp" since="0.1"/>
     <keyword type="function" name="psl_builtin ()" link="libpsl-Public-Suffix-List-functions.html#psl-builtin" since="0.1"/>
-    <keyword type="function" name="psl_free ()" link="libpsl-Public-Suffix-List-functions.html#psl-free"/>
+    <keyword type="function" name="psl_free ()" link="libpsl-Public-Suffix-List-functions.html#psl-free" since="0.1"/>
     <keyword type="function" name="psl_is_public_suffix ()" link="libpsl-Public-Suffix-List-functions.html#psl-is-public-suffix" since="0.1"/>
+    <keyword type="function" name="psl_is_public_suffix2 ()" link="libpsl-Public-Suffix-List-functions.html#psl-is-public-suffix2" since="0.1"/>
     <keyword type="function" name="psl_unregistrable_domain ()" link="libpsl-Public-Suffix-List-functions.html#psl-unregistrable-domain" since="0.1"/>
     <keyword type="function" name="psl_registrable_domain ()" link="libpsl-Public-Suffix-List-functions.html#psl-registrable-domain" since="0.1"/>
     <keyword type="function" name="psl_suffix_count ()" link="libpsl-Public-Suffix-List-functions.html#psl-suffix-count" since="0.1"/>
     <keyword type="function" name="psl_suffix_exception_count ()" link="libpsl-Public-Suffix-List-functions.html#psl-suffix-exception-count" since="0.1"/>
-    <keyword type="function" name="psl_builtin_compile_time ()" link="libpsl-Public-Suffix-List-functions.html#psl-builtin-compile-time" since="0.1"/>
+    <keyword type="function" name="psl_suffix_wildcard_count ()" link="libpsl-Public-Suffix-List-functions.html#psl-suffix-wildcard-count" since="0.10.0"/>
     <keyword type="function" name="psl_builtin_file_time ()" link="libpsl-Public-Suffix-List-functions.html#psl-builtin-file-time" since="0.1"/>
     <keyword type="function" name="psl_builtin_sha1sum ()" link="libpsl-Public-Suffix-List-functions.html#psl-builtin-sha1sum" since="0.1"/>
     <keyword type="function" name="psl_builtin_filename ()" link="libpsl-Public-Suffix-List-functions.html#psl-builtin-filename" since="0.1"/>
+    <keyword type="function" name="psl_builtin_outdated ()" link="libpsl-Public-Suffix-List-functions.html#psl-builtin-outdated" since="0.10.0"/>
     <keyword type="function" name="psl_is_cookie_domain_acceptable ()" link="libpsl-Public-Suffix-List-functions.html#psl-is-cookie-domain-acceptable" since="0.1"/>
     <keyword type="function" name="psl_get_version ()" link="libpsl-Public-Suffix-List-functions.html#psl-get-version" since="0.2.5"/>
+    <keyword type="function" name="psl_check_version_number ()" link="libpsl-Public-Suffix-List-functions.html#psl-check-version-number" since="0.11.0"/>
     <keyword type="function" name="psl_str_to_utf8lower ()" link="libpsl-Public-Suffix-List-functions.html#psl-str-to-utf8lower" since="0.4"/>
+    <keyword type="macro" name="PSL_VERSION" link="libpsl-Public-Suffix-List-functions.html#PSL-VERSION:CAPS"/>
+    <keyword type="macro" name="PSL_VERSION_MAJOR" link="libpsl-Public-Suffix-List-functions.html#PSL-VERSION-MAJOR:CAPS"/>
+    <keyword type="macro" name="PSL_VERSION_MINOR" link="libpsl-Public-Suffix-List-functions.html#PSL-VERSION-MINOR:CAPS"/>
+    <keyword type="macro" name="PSL_VERSION_NUMBER" link="libpsl-Public-Suffix-List-functions.html#PSL-VERSION-NUMBER:CAPS"/>
+    <keyword type="macro" name="PSL_VERSION_PATCH" link="libpsl-Public-Suffix-List-functions.html#PSL-VERSION-PATCH:CAPS"/>
+    <keyword type="macro" name="PSL_TYPE_ICANN" link="libpsl-Public-Suffix-List-functions.html#PSL-TYPE-ICANN:CAPS"/>
+    <keyword type="macro" name="PSL_TYPE_PRIVATE" link="libpsl-Public-Suffix-List-functions.html#PSL-TYPE-PRIVATE:CAPS"/>
+    <keyword type="macro" name="PSL_TYPE_ANY" link="libpsl-Public-Suffix-List-functions.html#PSL-TYPE-ANY:CAPS"/>
     <keyword type="enum" name="enum psl_error_t" link="libpsl-Public-Suffix-List-functions.html#psl-error-t"/>
     <keyword type="typedef" name="psl_ctx_t" link="libpsl-Public-Suffix-List-functions.html#psl-ctx-t"/>
     <keyword type="constant" name="PSL_SUCCESS" link="libpsl-Public-Suffix-List-functions.html#PSL-SUCCESS:CAPS"/>
