@@ -1,5 +1,7 @@
 #!/usr/bin/make -f
 
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
 # FIXME: how do we only use dh_autoreconf when building arch-specific
 # packages?  see debian/README.source for an explanation of why we
 # care about splitting binary-only builds from arch:all builds.
