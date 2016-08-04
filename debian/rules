@@ -2,13 +2,8 @@
 
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
-# FIXME: how do we only use dh_autoreconf when building arch-specific
-# packages?  see debian/README.source for an explanation of why we
-# care about splitting binary-only builds from arch:all builds.
-DH_AUTORECONF = --with autoreconf
-
 %:
-	dh $@ $(DH_AUTORECONF)
+	dh $@ --with autoreconf
 
 override_dh_autoreconf-arch:
 	dh_autoreconf ./autogen.sh
@@ -27,3 +22,9 @@ override_dh_auto_configure-arch:
 
 override_dh_installchangelogs:
 	dh_installchangelogs NEWS
+
+	# do nothing during an arch-independent build
+override_dh_autoreconf-indep:
+override_dh_auto_configure-indep:
+override_dh_auto_build-indep:
+
