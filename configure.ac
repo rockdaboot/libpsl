@@ -1,5 +1,5 @@
 
-AC_INIT([libpsl], [0.13.0], [tim.ruehsen@gmx.de], [libpsl], [http://github.com/rockdaboot/libpsl])
+AC_INIT([libpsl], [0.14.0], [tim.ruehsen@gmx.de], [libpsl], [https://github.com/rockdaboot/libpsl])
 AC_PREREQ([2.59])
 AM_INIT_AUTOMAKE([1.10 -Wall no-define foreign])
 
@@ -72,7 +72,7 @@ AS_IF([ test "$enable_man" != no ], [
   AC_MSG_RESULT([no])
 ])
 
-# src/make_dafsa.py needs python 2.7+
+# src/psl-make-dafsa needs python 2.7+
 AM_PATH_PYTHON([2.7])
 
 PKG_PROG_PKG_CONFIG
@@ -80,7 +80,7 @@ PKG_PROG_PKG_CONFIG
 # Define these substitions here to keep all version information in one place.
 # For information on how to properly maintain the library version information,
 # refer to the libtool manual, section "Updating library version information":
-# http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
+# https://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
 #
 # 1. Start with version information of ‘0:0:0’ for each libtool library.
 # 2. Update the version information only immediately before a public release of your software. More frequent updates are unnecessary, and only guarantee that the current interface number gets larger faster.
@@ -88,7 +88,7 @@ PKG_PROG_PKG_CONFIG
 # 4. If any interfaces have been added, removed, or changed since the last update, increment current, and set revision to 0.
 # 5. If any interfaces have been added since the last public release, then increment age.
 # 6. If any existing interfaces have been removed or changed since the last public release, then set age to 0. 
-AC_SUBST([LIBPSL_SO_VERSION], [5:0:0])
+AC_SUBST([LIBPSL_SO_VERSION], [5:1:0])
 AC_SUBST([LIBPSL_VERSION], $VERSION)
 
 # Check for enable/disable builtin PSL data
@@ -158,7 +158,6 @@ if test "$enable_runtime" = "libicu" -o "$enable_builtin" = "libicu"; then
   PKG_CHECK_MODULES([LIBICU], [icu-uc], [
     HAVE_LIBICU=yes
     if test "$enable_runtime" = "libicu"; then
-      LIBS="$LIBICU_LIBS $LIBS"
       CFLAGS="$LIBICU_CFLAGS $CFLAGS"
     fi
   ], [

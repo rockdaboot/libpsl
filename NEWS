@@ -1,5 +1,13 @@
 Copyright (C) 2014-2016 Tim Rühsen
 
+30.07.2016 Release V0.14.0
+  * Remove unneeded libraries from tools/psl link step
+  * Use https instead of http where possible
+  * Add man page for tools/psl
+  * Add header magic to DAFSA files
+  * Rename make_dafsa.py to psl-make-dafsa
+  * Add man page for psl-make-dafsa
+
 02.03.2016 Release V0.13.0
   * Use tests.txt as PSL test file by default
   * Slightly shorter DAFSA array when sorting input

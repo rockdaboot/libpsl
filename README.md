@@ -8,7 +8,7 @@ A "public suffix" is a domain name under which Internet users can directly regis
 Browsers and other web clients can use it to
 
 - avoid privacy-leaking "supercookies"
-- avoid privacy-leaking "super domain" certificates ([see post from Jeffry Walton](http://lists.gnu.org/archive/html/bug-wget/2014-03/msg00093.html))
+- avoid privacy-leaking "super domain" certificates ([see post from Jeffry Walton](https://lists.gnu.org/archive/html/bug-wget/2014-03/msg00093.html))
 - domain highlighting parts of the domain in a user interface
 - sorting domain lists by site
 
@@ -24,7 +24,7 @@ Libpsl...
 - is thread-safe
 - handles IDNA2008 UTS#46 (libicu is used by psl2c if installed)
 
-Find more information about the Publix Suffix List [here](http://publicsuffix.org/).
+Find more information about the Publix Suffix List [here](https://publicsuffix.org/).
 
 Download the Public Suffix List [here](https://hg.mozilla.org/mozilla-central/raw-file/tip/netwerk/dns/effective_tld_names.dat).
 
@@ -70,13 +70,27 @@ library API via command line.
 
 prints the usage.
 
+Convert PSL into DAFSA
+----------------------
+
+The [DAFSA](https://en.wikipedia.org/wiki/Deterministic_acyclic_finite_state_automaton) format is a compressed
+representation of strings. Here we use it to reduce the whole PSL to about 32k in size.
+
+Generate `psl.dafsa` from `list/public_suffix_list.dat`
+
+	$ src/psl-make-dafsa --output-format=binary --input-format=psl list/public_suffix_list.dat psl.dafsa
+
+Test the result (example)
+
+	$ tools/psl --load-psl-file psl.dafsa aeroclub.aero
+
 License
 -------
 
 Libpsl is made available under the terms of the MIT license.<br>
 See the LICENSE file that accompanies this distribution for the full text of the license.
 
-src/make_dafsa.py and src/lookup_string_in_fixed_set.c are licensed under the term written in
+src/psl-make-dafsa and src/lookup_string_in_fixed_set.c are licensed under the term written in
 src/LICENSE.chromium.
 
 Building from git
@@ -86,7 +100,7 @@ You should have python2.7+ installed.
 
 Download project and prepare sources with
 
-		git clone http://github.com/rockdaboot/libpsl
+		git clone https://github.com/rockdaboot/libpsl
 		./autogen.sh
 		./configure
 		make

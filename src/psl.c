@@ -133,7 +133,7 @@ static char *strndup(const char *s, size_t n)
  * @stability: Stable
  * @include: libpsl.h
  *
- * [Public Suffix List](http://publicsuffix.org/) library functions.
+ * [Public Suffix List](https://publicsuffix.org/) library functions.
  *
  */
 
@@ -628,9 +628,9 @@ static int _str_is_ascii(const char *s)
  * The function checks for a valid UTF-8 character sequence before
  * passing it to idna_to_ascii_8z().
  *
- * [1] http://lists.gnu.org/archive/html/help-libidn/2015-05/msg00002.html
+ * [1] https://lists.gnu.org/archive/html/help-libidn/2015-05/msg00002.html
  * [2] https://lists.gnu.org/archive/html/bug-wget/2015-06/msg00002.html
- * [3] http://curl.haxx.se/mail/lib-2015-06/0143.html
+ * [3] https://curl.haxx.se/mail/lib-2015-06/0143.html
  */
 static int _utf8_is_valid(const char *utf8)
 {
@@ -930,7 +930,7 @@ suffix_yes:
  * @domain: Domain string
  *
  * This function checks if @domain is a public suffix by the means of the
- * [Mozilla Public Suffix List](http://publicsuffix.org).
+ * [Mozilla Public Suffix List](https://publicsuffix.org).
  *
  * For cookie domain checking see psl_is_cookie_domain_acceptable().
  *
@@ -959,7 +959,7 @@ int psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
  * @type: Domain type
  *
  * This function checks if @domain is a public suffix by the means of the
- * [Mozilla Public Suffix List](http://publicsuffix.org).
+ * [Mozilla Public Suffix List](https://publicsuffix.org).
  *
  * @type specifies the PSL section where to perform the lookup. Valid values are
  * %PSL_TYPE_PRIVATE, %PSL_TYPE_ICANN and %PSL_TYPE_ANY.
@@ -987,8 +987,8 @@ int psl_is_public_suffix2(const psl_ctx_t *psl, const char *domain, int type)
  * @psl: PSL context
  * @domain: Domain string
  *
- * This function finds the longest publix suffix part of @domain by the means
- * of the [Mozilla Public Suffix List](http://publicsuffix.org).
+ * This function finds the longest public suffix part of @domain by the means
+ * of the [Mozilla Public Suffix List](https://publicsuffix.org).
  *
  * International @domain names have to be either in lowercase UTF-8 or in ASCII form (punycode).
  * Other encodings result in unexpected behavior.
@@ -1027,7 +1027,7 @@ const char *psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain)
  * @domain: Domain string
  *
  * This function finds the shortest private suffix part of @domain by the means
- * of the [Mozilla Public Suffix List](http://publicsuffix.org).
+ * of the [Mozilla Public Suffix List](https://publicsuffix.org).
  *
  * International @domain names have to be either in lowercase UTF-8 or in ASCII form (punycode).
  * Other encodings result in unexpected behavior.
@@ -1110,8 +1110,7 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 	psl_ctx_t *psl;
 	_psl_entry_t suffix, *suffixp;
 	char buf[256], *linep, *p;
-	size_t n;
-	int type = 0;
+	int type = 0, is_dafsa;
 	_psl_idna_t *idna;
 
 	if (!fp)
@@ -1121,14 +1120,18 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 		return NULL;
 
 	/* read first line to allow ASCII / DAFSA detection */
-	if ((n = fread(buf, 1, sizeof(buf) - 1, fp)) < 1)
+	if (!(linep = fgets(buf, sizeof(buf) - 1, fp)))
 		goto fail;
 
-	buf[n] = 0;
+	is_dafsa = strlen(buf) == 16 && !strncmp(buf, ".DAFSA@PSL_", 11);
 
-	if (!strstr(buf, "This Source Code Form is subject to")) {
+	if (is_dafsa) {
 		void *m;
-		size_t size = 65536, len = n;
+		size_t size = 65536, n, len = 0;
+		int version = atoi(buf + 11);
+
+		if (version != 0)
+			goto fail;
 
 		if (!(psl->dafsa = malloc(size)))
 			goto fail;
@@ -1148,20 +1151,20 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 		if ((m = realloc(psl->dafsa, len)))
 			psl->dafsa = m;
 
+		psl->dafsa_size = len;
+
 		return psl;
 	}
-
-	rewind(fp);
 
 	idna = _psl_idna_open();
 
 	/*
-	 *  as of 02.11.2012, the list at http://publicsuffix.org/list/ contains ~6000 rules and 40 exceptions.
-	 *  as of 19.02.2014, the list at http://publicsuffix.org/list/ contains ~6500 rules and 19 exceptions.
+	 *  as of 02.11.2012, the list at https://publicsuffix.org/list/ contains ~6000 rules and 40 exceptions.
+	 *  as of 19.02.2014, the list at https://publicsuffix.org/list/ contains ~6500 rules and 19 exceptions.
 	 */
 	psl->suffixes = _vector_alloc(8*1024, _suffix_compare_array);
 
-	while ((linep = fgets(buf, sizeof(buf), fp))) {
+	do {
 		while (_isspace_ascii(*linep)) linep++; /* ignore leading whitespace */
 		if (!*linep) continue; /* skip empty lines */
 
@@ -1232,7 +1235,7 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 
 			_add_punycode_if_needed(idna, psl->suffixes, suffixp);
 		}
-	}
+	} while ((linep = fgets(buf, sizeof(buf), fp)));
 
 	_vector_sort(psl->suffixes);
 
