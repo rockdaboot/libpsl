@@ -32,5 +32,4 @@ po/stamp-po
 INSTALL
 ar-lib
 gtk-doc.make
-debian/psl.1
 docs/libpsl/version.xml

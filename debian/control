@@ -13,7 +13,6 @@ Build-Depends-Arch:
  libicu-dev,
  pkg-config,
  automake,
- help2man,
  publicsuffix (>= 20150507),
 Standards-Version: 3.9.8
 Section: libs
