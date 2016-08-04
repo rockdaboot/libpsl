@@ -5,8 +5,6 @@ Uploaders:
  Daniel Kahn Gillmor <dkg@fifthhorseman.net>,
 Build-Depends:
  debhelper (>=9)
-Build-Depends-Indep:
- dh-exec
 Build-Depends-Arch:
  dh-autoreconf,
  gtk-doc-tools,

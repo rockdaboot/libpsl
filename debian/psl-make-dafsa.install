@@ -1,2 +1,1 @@
-#!/usr/bin/dh-exec
-src/make_dafsa.py => usr/share/psl_make_dafsa
+src/psl-make-dafsa usr/bin
