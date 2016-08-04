@@ -10,7 +10,7 @@ Files: debian/*
 Copyright: 2014-2016 Daniel Kahn Gillmor
 License: MIT
 
-Files: src/make_dafsa.py src/lookup_string_in_fixed_set.c
+Files: src/psl-make-dafsa src/lookup_string_in_fixed_set.c
 Copyright: 2014-2015 The Chromium Authors
 License: Chromium
 
