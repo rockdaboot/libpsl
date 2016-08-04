@@ -1,2 +1,2 @@
-version=3
-https://github.com/rockdaboot/libpsl/tags .*/libpsl-(\d\S*)\.tar\.gz
+version=4
+https://github.com/rockdaboot/libpsl/tags .*/@PACKAGE@@ANY_VERSION@@ARCHIVE_EXT@ debian uupdate
