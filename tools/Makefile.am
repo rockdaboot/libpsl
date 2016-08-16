@@ -12,3 +12,5 @@ LDADD = ../src/libpsl.la
 #if WITH_LIBIDN
 #  LDADD += -lidn
 #endif
+
+dist_man_MANS = psl.1
