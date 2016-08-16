@@ -39,3 +39,5 @@ suffixes_dafsa.c: $(PSL_FILE) psl2c$(EXEEXT)
 	./psl2c$(EXEEXT) "$(PSL_FILE)" suffixes_dafsa.c
 
 EXTRA_DIST = psl-make-dafsa LICENSE.chromium
+
+dist_man_MANS = psl-make-dafsa.1
