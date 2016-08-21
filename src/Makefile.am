@@ -11,7 +11,7 @@ libpsl_la_CPPFLAGS = -I$(top_srcdir)/include
 # include ABI version information
 libpsl_la_LDFLAGS = -version-info $(LIBPSL_SO_VERSION)
 if WITH_LIBICU
-  libpsl_la_LDFLAGS += -licuuc
+  libpsl_la_LDFLAGS += $(LIBICU_LIBS)
 endif
 if WITH_LIBIDN2
   libpsl_la_LDFLAGS += -lidn2 -lunistring
@@ -24,7 +24,7 @@ noinst_PROGRAMS = psl2c
 psl2c_SOURCES = psl2c.c lookup_string_in_fixed_set.c
 psl2c_CPPFLAGS = -I$(top_srcdir)/include -DMAKE_DAFSA=\"$(top_srcdir)/src/psl-make-dafsa\"
 if BUILTIN_GENERATOR_LIBICU
-  psl2c_LDADD = -licuuc
+  psl2c_LDADD = $(LIBICU_LIBS)
 endif
 if BUILTIN_GENERATOR_LIBIDN2
   psl2c_LDADD = @LTLIBICONV@ -lidn2 -lunistring
