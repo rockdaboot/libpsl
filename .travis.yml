@@ -42,5 +42,5 @@ script:
   - ./configure --enable-runtime=$RUNTIME --enable-builtin=libidn2 && make clean && make -j4 && make check -j4
   - ./configure --enable-runtime=$RUNTIME --enable-builtin=libidn && make clean && make -j4 && make check -j4
   - ./configure --enable-runtime=$RUNTIME --disable-builtin && make clean && make -j4 && make check -j4
-  - ./configure --enable-gtk-doc && make -j4 && make check -j4
+  - ./configure --enable-gtk-doc && make -j4 V=1 && make check -j4 V=1
   - make distcheck
