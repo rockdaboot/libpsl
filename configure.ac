@@ -191,7 +191,7 @@ fi
 if test "x$HAVE_LIBIDN2" = "xyes" -o "x$HAVE_LIBIDN" = "xyes"; then
   # Check for libunistring, we need it for psl_str_to_utf8lower()
   OLDLIBS=$LIBS
-  AC_SEARCH_LIBS(u8_tolower, unistring, HAVE_UNISTRING=yes, AC_MSG_ERROR(You requested libidn2 but libunistring is not installed.))
+  AC_SEARCH_LIBS(u8_tolower, unistring, HAVE_UNISTRING=yes, AC_MSG_ERROR(You requested libidn2|libidn but libunistring is not installed.))
   LIBS=$OLDLIBS
 fi
 
