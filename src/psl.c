@@ -958,7 +958,7 @@ suffix_yes:
  * For cookie domain checking see psl_is_cookie_domain_acceptable().
  *
  * International @domain names have to be either in lowercase UTF-8 or in ASCII form (punycode).
- * Other encodings result in unexpected behavior.
+ * Other encodings likely result in incorrect return values.
  *
  * @psl is a context returned by either psl_load_file(), psl_load_fp() or
  * psl_builtin().
@@ -988,7 +988,7 @@ int psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
  * %PSL_TYPE_PRIVATE, %PSL_TYPE_ICANN and %PSL_TYPE_ANY.
  *
  * International @domain names have to be either in lowercase UTF-8 or in ASCII form (punycode).
- * Other encodings result in unexpected behavior.
+ * Other encodings likely result in incorrect return values.
  *
  * @psl is a context returned by either psl_load_file(), psl_load_fp() or
  * psl_builtin().
@@ -1014,7 +1014,7 @@ int psl_is_public_suffix2(const psl_ctx_t *psl, const char *domain, int type)
  * of the [Mozilla Public Suffix List](https://publicsuffix.org).
  *
  * International @domain names have to be either in lowercase UTF-8 or in ASCII form (punycode).
- * Other encodings result in unexpected behavior.
+ * Other encodings likely result in incorrect return values.
  *
  * @psl is a context returned by either psl_load_file(), psl_load_fp() or
  * psl_builtin().
@@ -1053,7 +1053,7 @@ const char *psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain)
  * of the [Mozilla Public Suffix List](https://publicsuffix.org).
  *
  * International @domain names have to be either in lowercase UTF-8 or in ASCII form (punycode).
- * Other encodings result in unexpected behavior.
+ * Other encodings likely result in incorrect return values.
  *
  * @psl is a context returned by either psl_load_file(), psl_load_fp() or
  * psl_builtin().
@@ -1520,7 +1520,7 @@ static int _isip(const char *hostname)
  * @hostname.
  *
  * For international domain names both, @hostname and @cookie_domain, have to be either in lowercase UTF-8
- * or in ASCII form (punycode). Other encodings or mixing UTF-8 and punycode result in unexpected behavior.
+ * or in ASCII form (punycode). Other encodings or mixing UTF-8 and punycode likely result in incorrect return values.
  *
  * Examples:
  * 1. Cookie domain 'example.com' would be acceptable for hostname 'www.example.com',
