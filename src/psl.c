@@ -263,11 +263,21 @@ static int _vector_add(_psl_vector_t *v, const _psl_entry_t *elem)
 	if (v) {
 		void *elemp;
 
-		elemp = malloc(sizeof(_psl_entry_t));
+		if (!(elemp = malloc(sizeof(_psl_entry_t))))
+			return -1;
+
 		memcpy(elemp, elem, sizeof(_psl_entry_t));
 
-		if (v->max == v->cur)
-			v->entry = realloc(v->entry, (v->max *= 2) * sizeof(_psl_entry_t *));
+		if (v->max == v->cur) {
+			void *m = realloc(v->entry, (v->max *= 2) * sizeof(_psl_entry_t *));
+
+			if (m)
+				v->entry = m;
+			else {
+				free(elemp);
+				return -1;
+			}
+		}
 
 		v->entry[v->cur++] = elemp;
 		return v->cur - 1;
@@ -776,8 +786,8 @@ static void _add_punycode_if_needed(_psl_idna_t *idna, _psl_vector_t *v, _psl_en
 			/* fprintf(stderr, "toASCII '%s' -> '%s'\n", e->label_buf, lookupname); */
 			_suffix_init(&suffix, lookupname, strlen(lookupname));
 			suffix.flags = e->flags;
-			suffixp = _vector_get(v, _vector_add(v, &suffix));
-			suffixp->label = suffixp->label_buf; /* set label to changed address */
+			if ((suffixp = _vector_get(v, _vector_add(v, &suffix))))
+				suffixp->label = suffixp->label_buf; /* set label to changed address */
 		} /* else ignore */
 
 		free(lookupname);
@@ -1231,9 +1241,10 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 				suffixp = _vector_get(psl->suffixes, _vector_add(psl->suffixes, &suffix));
 			}
 
-			suffixp->label = suffixp->label_buf; /* set label to changed address */
-
-			_add_punycode_if_needed(idna, psl->suffixes, suffixp);
+			if (suffixp) {
+				suffixp->label = suffixp->label_buf; /* set label to changed address */
+				_add_punycode_if_needed(idna, psl->suffixes, suffixp);
+			}
 		}
 	} while ((linep = fgets(buf, sizeof(buf), fp)));
 
@@ -1567,6 +1578,7 @@ int psl_is_cookie_domain_acceptable(const psl_ctx_t *psl, const char *hostname, 
  *   PSL_ERR_TO_UTF16: Failed to convert @str to unicode
  *   PSL_ERR_TO_LOWER: Failed to convert unicode to lowercase
  *   PSL_ERR_TO_UTF8: Failed to convert unicode to UTF-8
+ *   PSL_ERR_NO_MEM: Failed to allocate memory
  *
  * Since: 0.4
  */
@@ -1659,11 +1671,17 @@ psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding _UNUSED, 
 				size_t dst_len = tmp_len * 6, dst_len_tmp = dst_len;
 				char *dst = malloc(dst_len + 1), *dst_tmp = dst;
 
-				if (iconv(cd, &tmp, &tmp_len, &dst_tmp, &dst_len_tmp) != (size_t)-1) {
+				if (!dst) {
+					ret = PSL_ERR_NO_MEM;
+				}
+				else if (iconv(cd, &tmp, &tmp_len, &dst_tmp, &dst_len_tmp) != (size_t)-1) {
 					uint8_t *resbuf = malloc(dst_len * 2 + 1);
 					size_t len = dst_len * 2; /* leave space for additional \0 byte */
 
-					if ((dst = (char *)u8_tolower((uint8_t *)dst, dst_len - dst_len_tmp, 0, UNINORM_NFKC, resbuf, &len))) {
+					if (!resbuf) {
+						ret = PSL_ERR_NO_MEM;
+					}
+					else if ((dst = (char *)u8_tolower((uint8_t *)dst, dst_len - dst_len_tmp, 0, UNINORM_NFKC, resbuf, &len))) {
 						/* u8_tolower() does not terminate the result string */
 						if (lower)
 							*lower = strndup((char *)dst, len);
