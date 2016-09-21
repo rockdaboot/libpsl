@@ -524,17 +524,26 @@ static enum punycode_status punycode_encode(
 	return punycode_success;
 }
 
-static ssize_t _utf8_to_utf32(const char *in, size_t inlen, punycode_uint *out, size_t outlen)
+static ssize_t _utf8_to_utf32(const char *in, const size_t inlen, punycode_uint *out, size_t outlen)
 {
 	size_t n = 0;
 	unsigned char *s;
+	void *m;
 
 	if (!outlen)
 		return -1;
 
 	outlen--;
 
-	s = alloca(inlen + 1);
+	if (inlen < 1024) {
+		s = alloca(inlen + 1);
+		m = NULL;
+	} else
+		s = m = malloc(inlen + 1);
+
+	if (!s)
+		return -1;
+
 	memcpy(s, in, inlen);
 	s[inlen] = 0;
 
@@ -557,9 +566,13 @@ static ssize_t _utf8_to_utf32(const char *in, size_t inlen, punycode_uint *out, 
 				return -1;
 			out[n++] = ((*s & 0x07) << 18) | ((s[1] & 0x3F) << 12) | ((s[1] & 0x3F) << 6) | (s[2] & 0x3F);
 			s += 4;
-		} else
+		} else {
+			free(m);
 			return -1;
+		}
 	}
+
+	free(m);
 
 	return n;
 }
@@ -1616,10 +1629,21 @@ psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding _UNUSED, 
 	char *utf8_lower;
 	UConverter *uconv;
 
-	/* C89 allocation */
-	utf16_dst   = alloca(sizeof(UChar) * (str_length * 2 + 1));
-	utf16_lower = alloca(sizeof(UChar) * (str_length * 2 + 1));
-	utf8_lower  = alloca(str_length * 2 + 1);
+	if (str_length < 256) {
+		/* C89 allocation */
+		utf16_dst   = alloca(sizeof(UChar) * (str_length * 2 + 1));
+		utf16_lower = alloca(sizeof(UChar) * (str_length * 2 + 1));
+		utf8_lower  = alloca(str_length * 2 + 1);
+	} else {
+		utf16_dst   = malloc(sizeof(UChar) * (str_length * 2 + 1));
+		utf16_lower = malloc(sizeof(UChar) * (str_length * 2 + 1));
+		utf8_lower  = malloc(str_length * 2 + 1);
+
+		if (!utf16_dst || !utf16_lower || !utf8_lower) {
+			ret = PSL_ERR_NO_MEM;
+			goto out;
+		}
+	}
 
 	uconv = ucnv_open(encoding, &status);
 	if (U_SUCCESS(status)) {
@@ -1631,8 +1655,14 @@ psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding _UNUSED, 
 			if (U_SUCCESS(status)) {
 				u_strToUTF8(utf8_lower, str_length * 8 + 1, NULL, utf16_lower, utf16_lower_length, &status);
 				if (U_SUCCESS(status)) {
-					if (lower)
-						*lower = strdup(utf8_lower);
+					if (lower) {
+						if (str_length < 256)
+							*lower = strdup(utf8_lower);
+						else {
+							*lower = utf8_lower;
+							utf8_lower = NULL;
+						}
+					}
 					ret = PSL_SUCCESS;
 				} else {
 					ret = PSL_ERR_TO_UTF8;
@@ -1649,6 +1679,12 @@ psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding _UNUSED, 
 	} else {
 		ret = PSL_ERR_CONVERTER;
 		/* fprintf(stderr, "Failed to open converter for '%s' (status %d)\n", encoding, status); */
+	}
+out:
+	if (str_length >= 256) {
+		free(utf16_dst);
+		free(utf16_lower);
+		free(utf8_lower);
 	}
 	} while (0);
 #elif defined(WITH_LIBIDN2) || defined(WITH_LIBIDN)
