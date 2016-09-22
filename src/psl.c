@@ -524,55 +524,43 @@ static enum punycode_status punycode_encode(
 	return punycode_success;
 }
 
-static ssize_t _utf8_to_utf32(const char *in, const size_t inlen, punycode_uint *out, size_t outlen)
+static ssize_t _utf8_to_utf32(const char *in, size_t inlen, punycode_uint *out, size_t outlen)
 {
 	size_t n = 0;
-	unsigned char *s;
-	void *m;
+	const unsigned char *s = (void *)in;
+	const unsigned char *e = (void *)(in + inlen);
 
 	if (!outlen)
 		return -1;
 
 	outlen--;
 
-	if (inlen < 1024) {
-		s = alloca(inlen + 1);
-		m = NULL;
-	} else
-		s = m = malloc(inlen + 1);
+	while (n < outlen) {
+		size_t inleft = e - s;
 
-	if (!s)
-		return -1;
-
-	memcpy(s, in, inlen);
-	s[inlen] = 0;
-
-	while (*s && n < outlen) {
-		if ((*s & 0x80) == 0) { /* 0xxxxxxx ASCII char */
+		if (inleft >= 1 && (*s & 0x80) == 0) { /* 0xxxxxxx ASCII char */
 			out[n++] = *s;
 			s++;
-		} else if ((*s & 0xE0) == 0xC0) /* 110xxxxx 10xxxxxx */ {
+		} else if (inleft >= 2 && (*s & 0xE0) == 0xC0) /* 110xxxxx 10xxxxxx */ {
 			if ((s[1] & 0xC0) != 0x80)
 				return -1;
 			out[n++] = ((*s & 0x1F) << 6) | (s[1] & 0x3F);
 			s += 2;
-		} else if ((*s & 0xF0) == 0xE0) /* 1110xxxx 10xxxxxx 10xxxxxx */ {
+		} else if (inleft >= 3 && (*s & 0xF0) == 0xE0) /* 1110xxxx 10xxxxxx 10xxxxxx */ {
 			if ((s[1] & 0xC0) != 0x80 || (s[2] & 0xC0) != 0x80)
 				return -1;
 			out[n++] = ((*s & 0x0F) << 12) | ((s[1] & 0x3F) << 6) | (s[2] & 0x3F);
 			s += 3;
-		} else if ((*s & 0xF8) == 0xF0) /* 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx */ {
+		} else if (inleft >= 4 && (*s & 0xF8) == 0xF0) /* 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx */ {
 			if ((s[1] & 0xC0) != 0x80 || (s[2] & 0xC0) != 0x80 || (s[3] & 0xC0) != 0x80)
 				return -1;
 			out[n++] = ((*s & 0x07) << 18) | ((s[1] & 0x3F) << 12) | ((s[1] & 0x3F) << 6) | (s[2] & 0x3F);
 			s += 4;
-		} else {
-			free(m);
+		} else if (!inleft) {
+			break;
+		} else
 			return -1;
-		}
 	}
-
-	free(m);
 
 	return n;
 }
