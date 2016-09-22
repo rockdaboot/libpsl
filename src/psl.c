@@ -706,8 +706,8 @@ static int _psl_idna_toASCII(_psl_idna_t *idna _UNUSED, const char *utf8, char *
 				u_strToUTF8(lookupname, sizeof(lookupname), NULL, utf16_dst, dst_length, &status);
 				if (U_SUCCESS(status)) {
 					if (ascii)
-						*ascii = strdup(lookupname);
-					ret = 0;
+						if ((*ascii = strdup(lookupname)))
+							ret = 0;
 				} /* else
 					fprintf(stderr, "Failed to convert UTF-16 to UTF-8 (status %d)\n", status); */
 			} /* else
@@ -734,6 +734,8 @@ static int _psl_idna_toASCII(_psl_idna_t *idna _UNUSED, const char *utf8, char *
 		uint8_t *tmp = lower;
 		lower = (uint8_t *)strndup((char *)lower, len);
 		free(tmp);
+		if (!lower)
+			return -1;
 	}
 
 	if ((rc = idn2_lookup_u8(lower, (uint8_t **)ascii, 0)) == IDN2_OK) {
@@ -762,8 +764,8 @@ static int _psl_idna_toASCII(_psl_idna_t *idna _UNUSED, const char *utf8, char *
 
 	if (_domain_to_punycode(utf8, lookupname, sizeof(lookupname)) == 0) {
 		if (ascii)
-			*ascii = strdup(lookupname);
-		ret = 0;
+			if ((*ascii = strdup(lookupname)))
+				ret = 0;
 	}
 #endif
 
@@ -1595,7 +1597,8 @@ psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding _UNUSED, 
 		if (lower) {
 			char *p;
 
-			*lower = strdup(str);
+			if (!(*lower = strdup(str)))
+				return PSL_ERR_NO_MEM;
 
 			/* convert ASCII string to lowercase */
 			for (p = *lower; *p; p++)
@@ -1640,15 +1643,16 @@ psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding _UNUSED, 
 			if (U_SUCCESS(status)) {
 				u_strToUTF8(utf8_lower, str_length * 8 + 1, NULL, utf16_lower, utf16_lower_length, &status);
 				if (U_SUCCESS(status)) {
+					ret = PSL_SUCCESS;
 					if (lower) {
-						if (str_length < 256)
-							*lower = strdup(utf8_lower);
-						else {
+						if (str_length < 256) {
+							if (!(*lower = strdup(utf8_lower)))
+								ret = PSL_ERR_NO_MEM;
+						} else {
 							*lower = utf8_lower;
 							utf8_lower = NULL;
 						}
 					}
-					ret = PSL_SUCCESS;
 				} else {
 					ret = PSL_ERR_TO_UTF8;
 					/* fprintf(stderr, "Failed to convert UTF-16 to UTF-8 (status %d)\n", status); */
@@ -1674,6 +1678,7 @@ out:
 	} while (0);
 #elif defined(WITH_LIBIDN2) || defined(WITH_LIBIDN)
 	do {
+		printf("### encoding=%s lower=%p\n", encoding, lower ? *lower : NULL);
 		/* find out local charset encoding */
 		if (!encoding) {
 			encoding = nl_langinfo(CODESET);
@@ -1704,16 +1709,14 @@ out:
 					}
 					else if ((dst = (char *)u8_tolower((uint8_t *)dst, dst_len - dst_len_tmp, 0, UNINORM_NFKC, resbuf, &len))) {
 						/* u8_tolower() does not terminate the result string */
+						ret = PSL_SUCCESS;
 						if (lower)
-							*lower = strndup((char *)dst, len);
+							if (!(*lower = strndup((char *)dst, len)))
+								ret = PSL_ERR_NO_MEM;
 					} else {
 						ret = PSL_ERR_TO_LOWER;
 						/* fprintf(stderr, "Failed to convert UTF-8 to lowercase (errno %d)\n", errno); */
 					}
-
-					if (lower)
-						*lower = strndup(dst, dst_len - dst_len_tmp);
-					ret = PSL_SUCCESS;
 				} else {
 					ret = PSL_ERR_TO_UTF8;
 					/* fprintf(stderr, "Failed to convert '%s' string into '%s' (%d)\n", src_encoding, dst_encoding, errno); */
@@ -1737,7 +1740,8 @@ out:
 			if ((dst = u8_tolower((uint8_t *)str, u8_strlen((uint8_t *)str), 0, UNINORM_NFKC, resbuf, &len))) {
 				/* u8_tolower() does not terminate the result string */
 				if (lower)
-					*lower = strndup((char *)dst, len);
+					if (!(*lower = strndup((char *)dst, len)))
+						ret = PSL_ERR_NO_MEM;
 			} else {
 				ret = PSL_ERR_TO_LOWER;
 				/* fprintf(stderr, "Failed to convert UTF-8 to lowercase (errno %d)\n", errno); */
