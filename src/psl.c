@@ -101,9 +101,6 @@
 
 #include <libpsl.h>
 
-/* number of elements within an array */
-#define countof(a) (sizeof(a)/sizeof(*(a)))
-
 #ifndef HAVE_STRNDUP
 /* I found no strndup on my old SUSE 7.3 test system (gcc 2.95) */
 
@@ -586,7 +583,7 @@ static int _domain_to_punycode(const char *domain, char *out, size_t outsize)
 		/* printf("s=%s inlen=%zd\n", label, labellen); */
 
 		if (_mem_is_ascii(label, labellen)) {
-			if (outlen + labellen + (e != NULL)>= outsize)
+			if (outlen + labellen + (e != NULL) >= outsize)
 				return 1;
 
 			/* printf("outlen=%zd labellen=%zd\n", outlen, labellen); */
@@ -598,7 +595,7 @@ static int _domain_to_punycode(const char *domain, char *out, size_t outsize)
 			if (outlen + labellen + (e != NULL) + 4 >= outsize)
 				return 1;
 
-			if ((inputlen = _utf8_to_utf32(label, labellen, input, sizeof (input) / sizeof (input[0]))) < 0)
+			if ((inputlen = _utf8_to_utf32(label, labellen, input, countof(input))) < 0)
 				return 1;
 
 			memcpy(out + outlen, "xn--", 4);
@@ -702,9 +699,9 @@ static int _psl_idna_toASCII(_psl_idna_t *idna _UNUSED, const char *utf8, char *
 		UChar utf16_dst[128], utf16_src[128];
 		int32_t utf16_src_length;
 
-		u_strFromUTF8(utf16_src, sizeof(utf16_src)/sizeof(utf16_src[0]), &utf16_src_length, utf8, -1, &status);
+		u_strFromUTF8(utf16_src, countof(utf16_src), &utf16_src_length, utf8, -1, &status);
 		if (U_SUCCESS(status)) {
-			int32_t dst_length = uidna_nameToASCII((UIDNA *)idna, utf16_src, utf16_src_length, utf16_dst, sizeof(utf16_dst)/sizeof(utf16_dst[0]), &info, &status);
+			int32_t dst_length = uidna_nameToASCII((UIDNA *)idna, utf16_src, utf16_src_length, utf16_dst, countof(utf16_dst), &info, &status);
 			if (U_SUCCESS(status)) {
 				u_strToUTF8(lookupname, sizeof(lookupname), NULL, utf16_dst, dst_length, &status);
 				if (U_SUCCESS(status)) {
