@@ -1,5 +1,6 @@
 [![Travis-CI Status](https://travis-ci.org/rockdaboot/libpsl.png?branch=master)](https://travis-ci.org/rockdaboot/libpsl)
 [![Coverity Scan](https://img.shields.io/coverity/scan/10227.svg)](https://scan.coverity.com/projects/rockdaboot-libpsl)
+[![Coverage Status](https://coveralls.io/repos/github/rockdaboot/libpsl/badge.svg?branch=master)](https://coveralls.io/github/rockdaboot/libpsl?branch=master)
 
 libpsl - C library to handle the Public Suffix List
 ===================================================

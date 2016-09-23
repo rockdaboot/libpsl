@@ -19,3 +19,13 @@ dist-hook:
 	mkdir -p $(distdir)/list/tests
 	cp -p $(PSL_FILE) $(distdir)/list
 	cp -p $(PSL_TESTFILE) $(distdir)/list/tests
+
+clean-local:
+	rm -rf */*.gc?? libpsl.info lcov
+
+check-coverage:
+	$(MAKE) clean
+	lcov --no-external --capture --initial --directory . --output-file libpsl.info
+	CFLAGS=$CFLAGS" --coverage" LDFLAGS=$LDFLAGS" --coverage" $(MAKE) check
+	lcov --no-external --capture --directory . --output-file libpsl.info
+	genhtml --prefix . --ignore-errors source libpsl.info --legend --title "libpsl" --output-directory=lcov
