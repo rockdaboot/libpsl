@@ -73,6 +73,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <time.h>
 #include <errno.h>
 #include <limits.h> /* for UINT_MAX */
 #include <langinfo.h>
@@ -1678,7 +1679,6 @@ out:
 	} while (0);
 #elif defined(WITH_LIBIDN2) || defined(WITH_LIBIDN)
 	do {
-		printf("### encoding=%s lower=%p\n", encoding, lower ? *lower : NULL);
 		/* find out local charset encoding */
 		if (!encoding) {
 			encoding = nl_langinfo(CODESET);
@@ -1700,19 +1700,25 @@ out:
 				if (!dst) {
 					ret = PSL_ERR_NO_MEM;
 				}
-				else if (iconv(cd, &tmp, &tmp_len, &dst_tmp, &dst_len_tmp) != (size_t)-1) {
-					uint8_t *resbuf = malloc(dst_len * 2 + 1);
-					size_t len = dst_len * 2; /* leave space for additional \0 byte */
+				else if (iconv(cd, &tmp, &tmp_len, &dst_tmp, &dst_len_tmp) != (size_t)-1
+					&& iconv(cd, NULL, NULL, &dst_tmp, &dst_len_tmp) != (size_t)-1)
+				{
+					uint8_t resbuf[256];
+					size_t len = sizeof(resbuf);
 
-					if (!resbuf) {
-						ret = PSL_ERR_NO_MEM;
-					}
-					else if ((dst = (char *)u8_tolower((uint8_t *)dst, dst_len - dst_len_tmp, 0, UNINORM_NFKC, resbuf, &len))) {
+					if ((tmp = (char *)u8_tolower((uint8_t *)dst, dst_len - dst_len_tmp, 0, UNINORM_NFKC, resbuf, &len))) {
 						/* u8_tolower() does not terminate the result string */
 						ret = PSL_SUCCESS;
-						if (lower)
-							if (!(*lower = strndup((char *)dst, len)))
+						if (lower) {
+							if ((*lower = malloc(len + 1))) {
+								/* tmp is not 0 terminated */
+								memcpy(*lower, tmp, len);
+								(*lower)[len] = 0;
+							} else
 								ret = PSL_ERR_NO_MEM;
+						}
+						if (tmp != (char *)resbuf)
+							free(tmp);
 					} else {
 						ret = PSL_ERR_TO_LOWER;
 						/* fprintf(stderr, "Failed to convert UTF-8 to lowercase (errno %d)\n", errno); */
@@ -1728,20 +1734,26 @@ out:
 				ret = PSL_ERR_TO_UTF8;
 				/* fprintf(stderr, "Failed to prepare encoding '%s' into '%s' (%d)\n", src_encoding, dst_encoding, errno); */
 			}
-		} else
+		} else {
+			/* convert to lowercase */
+			uint8_t resbuf[256], *tmp;
+			size_t len = sizeof(resbuf);
+
 			ret = PSL_SUCCESS;
 
-		/* convert to lowercase */
-		if (ret == PSL_SUCCESS) {
-			uint8_t *dst, resbuf[256];
-			size_t len = sizeof(resbuf) - 1; /* leave space for additional \0 byte */
-
 			/* we need a conversion to lowercase */
-			if ((dst = u8_tolower((uint8_t *)str, u8_strlen((uint8_t *)str), 0, UNINORM_NFKC, resbuf, &len))) {
+			if ((tmp = u8_tolower((uint8_t *)str, u8_strlen((uint8_t *)str), 0, UNINORM_NFKC, resbuf, &len))) {
 				/* u8_tolower() does not terminate the result string */
-				if (lower)
-					if (!(*lower = strndup((char *)dst, len)))
+				if (lower) {
+					if ((*lower = malloc(len + 1))) {
+						/* tmp is not 0 terminated */
+						memcpy(*lower, tmp, len);
+						(*lower)[len] = 0;
+					} else
 						ret = PSL_ERR_NO_MEM;
+				}
+				if (tmp != resbuf)
+					free(tmp);
 			} else {
 				ret = PSL_ERR_TO_LOWER;
 				/* fprintf(stderr, "Failed to convert UTF-8 to lowercase (errno %d)\n", errno); */
