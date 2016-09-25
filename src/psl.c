@@ -1693,7 +1693,7 @@ out:
 
 			if (cd != (iconv_t)-1) {
 				char *tmp = (char *)str; /* iconv won't change where str points to, but changes tmp itself */
-				size_t tmp_len = strlen(str);
+				size_t tmp_len = strlen(str) + 1;
 				size_t dst_len = tmp_len * 6, dst_len_tmp = dst_len;
 				char *dst = malloc(dst_len + 1), *dst_tmp = dst;
 
@@ -1710,10 +1710,11 @@ out:
 						/* u8_tolower() does not terminate the result string */
 						ret = PSL_SUCCESS;
 						if (lower) {
-							if ((*lower = malloc(len + 1))) {
-								/* tmp is not 0 terminated */
+							if (tmp != (char *)resbuf) {
+								*lower = tmp;
+								tmp = NULL;
+							} else if ((*lower = malloc(len))) {
 								memcpy(*lower, tmp, len);
-								(*lower)[len] = 0;
 							} else
 								ret = PSL_ERR_NO_MEM;
 						}
@@ -1742,13 +1743,14 @@ out:
 			ret = PSL_SUCCESS;
 
 			/* we need a conversion to lowercase */
-			if ((tmp = u8_tolower((uint8_t *)str, u8_strlen((uint8_t *)str), 0, UNINORM_NFKC, resbuf, &len))) {
+			if ((tmp = u8_tolower((uint8_t *)str, u8_strlen((uint8_t *)str) + 1, 0, UNINORM_NFKC, resbuf, &len))) {
 				/* u8_tolower() does not terminate the result string */
 				if (lower) {
-					if ((*lower = malloc(len + 1))) {
-						/* tmp is not 0 terminated */
+					if (tmp != resbuf) {
+						*lower = tmp;
+						tmp = NULL;
+					} else if ((*lower = malloc(len))) {
 						memcpy(*lower, tmp, len);
-						(*lower)[len] = 0;
 					} else
 						ret = PSL_ERR_NO_MEM;
 				}
