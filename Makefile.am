@@ -26,6 +26,7 @@ clean-local:
 check-coverage:
 	$(MAKE) clean
 	lcov --no-external --capture --initial --directory . --output-file libpsl.info
-	CFLAGS=$CFLAGS" --coverage" LDFLAGS=$LDFLAGS" --coverage" $(MAKE) check
+	CFLAGS=$$CFLAGS" --coverage" LDFLAGS=$$LDFLAGS" --coverage" ./configure && $(MAKE) check
 	lcov --no-external --capture --directory . --output-file libpsl.info
+# lcov --remove libpsl.info 'tests/*.c' 'src/lookup_*' 'src/psl2c.c' -o libpsl.info
 	genhtml --prefix . --ignore-errors source libpsl.info --legend --title "libpsl" --output-directory=lcov
