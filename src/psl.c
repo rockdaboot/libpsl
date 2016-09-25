@@ -1703,22 +1703,17 @@ out:
 				else if (iconv(cd, &tmp, &tmp_len, &dst_tmp, &dst_len_tmp) != (size_t)-1
 					&& iconv(cd, NULL, NULL, &dst_tmp, &dst_len_tmp) != (size_t)-1)
 				{
-					uint8_t resbuf[256];
-					size_t len = sizeof(resbuf);
+					/* start size for u8_tolower internal memory allocation.
+					 * u8_tolower() does not terminate the result string. we have 0 byte included in above tmp_len
+					 * and thus in len. */
+					size_t len = dst_len - dst_len_tmp;
 
-					if ((tmp = (char *)u8_tolower((uint8_t *)dst, dst_len - dst_len_tmp, 0, UNINORM_NFKC, resbuf, &len))) {
-						/* u8_tolower() does not terminate the result string */
+					if ((tmp = (char *)u8_tolower((uint8_t *)dst, len, 0, UNINORM_NFKC, NULL, &len))) {
 						ret = PSL_SUCCESS;
 						if (lower) {
-							if (tmp != (char *)resbuf) {
-								*lower = tmp;
-								tmp = NULL;
-							} else if ((*lower = malloc(len))) {
-								memcpy(*lower, tmp, len);
-							} else
-								ret = PSL_ERR_NO_MEM;
-						}
-						if (tmp != (char *)resbuf)
+							*lower = tmp;
+							tmp = NULL;
+						} else
 							free(tmp);
 					} else {
 						ret = PSL_ERR_TO_LOWER;
@@ -1736,25 +1731,20 @@ out:
 				/* fprintf(stderr, "Failed to prepare encoding '%s' into '%s' (%d)\n", src_encoding, dst_encoding, errno); */
 			}
 		} else {
-			/* convert to lowercase */
-			uint8_t resbuf[256], *tmp;
-			size_t len = sizeof(resbuf);
+			/* we need a conversion to lowercase */
+			uint8_t *tmp;
+
+			/* start size for u8_tolower internal memory allocation.
+			 * u8_tolower() does not terminate the result string, so include terminating 0 byte in len. */
+			size_t len = u8_strlen((uint8_t *)str) + 1;
 
 			ret = PSL_SUCCESS;
 
-			/* we need a conversion to lowercase */
-			if ((tmp = u8_tolower((uint8_t *)str, u8_strlen((uint8_t *)str) + 1, 0, UNINORM_NFKC, resbuf, &len))) {
-				/* u8_tolower() does not terminate the result string */
+			if ((tmp = u8_tolower((uint8_t *)str, len, 0, UNINORM_NFKC, NULL, &len))) {
 				if (lower) {
-					if (tmp != resbuf) {
-						*lower = tmp;
-						tmp = NULL;
-					} else if ((*lower = malloc(len))) {
-						memcpy(*lower, tmp, len);
-					} else
-						ret = PSL_ERR_NO_MEM;
-				}
-				if (tmp != resbuf)
+					*lower = tmp;
+					tmp = NULL;
+				} else
 					free(tmp);
 			} else {
 				ret = PSL_ERR_TO_LOWER;
