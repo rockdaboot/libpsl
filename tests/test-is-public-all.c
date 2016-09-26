@@ -131,7 +131,7 @@ static void test_psl_entry(const psl_ctx_t *psl, const char *domain, int type)
 static void test_psl(void)
 {
 	FILE *fp;
-	psl_ctx_t *psl;
+	psl_ctx_t *psl, *psl3;
 	const psl_ctx_t *psl2;
 	int type = 0;
 	char buf[256], *linep, *p;
@@ -141,6 +141,11 @@ static void test_psl(void)
 
 	psl2 = psl_builtin();
 	printf("builtin PSL has %d suffixes and %d exceptions\n", psl_suffix_count(psl2), psl_suffix_exception_count(psl2));
+
+	if (!(psl3 = psl_load_file("psl.dafsa"))) {
+		fprintf(stderr, "Failed to load 'psl.dafsa'\n");
+		failed++;
+	}
 
 	if ((fp = fopen(PSL_FILE, "r"))) {
 #ifdef HAVE_CLOCK_GETTIME
@@ -174,6 +179,9 @@ static void test_psl(void)
 
 			if (psl2)
 				test_psl_entry(psl2, p, type);
+
+			if (psl3)
+				test_psl_entry(psl3, p, type);
 		}
 
 #ifdef HAVE_CLOCK_GETTIME
@@ -187,6 +195,7 @@ static void test_psl(void)
 
 	psl_free(psl);
 	psl_free((psl_ctx_t *)psl2);
+	psl_free(psl3);
 }
 
 int main(int argc, const char * const *argv)

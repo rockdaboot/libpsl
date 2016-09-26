@@ -21,12 +21,26 @@ dist-hook:
 	cp -p $(PSL_TESTFILE) $(distdir)/list/tests
 
 clean-local:
-	rm -rf */*.gc?? libpsl.info lcov
+	rm -rf */*.gc?? */*/*.gc?? libpsl.info lcov
 
 check-coverage:
-	$(MAKE) clean
-	lcov --no-external --capture --initial --directory . --output-file libpsl.info
-	CFLAGS=$$CFLAGS" --coverage" LDFLAGS=$$LDFLAGS" --coverage" ./configure && $(MAKE) check
-	lcov --no-external --capture --directory . --output-file libpsl.info
-# lcov --remove libpsl.info 'tests/*.c' 'src/lookup_*' 'src/psl2c.c' -o libpsl.info
+	if test -z "$(XLIB)"; then \
+		CFLAGS=$$CFLAGS" --coverage -O0" LDFLAGS=$$LDFLAGS" --coverage" ./configure --disable-runtime --disable-builtin; \
+	else \
+		CFLAGS=$$CFLAGS" --coverage -O0" LDFLAGS=$$LDFLAGS" --coverage" ./configure --enable-runtime=$(XLIB) --enable-builtin=$(XLIB); \
+	fi
+	$(MAKE) clean && $(MAKE)
+	lcov --no-external --capture --initial --directory src --output-file libpsl.info
+	$(MAKE) check
+	lcov --no-external --capture --directory src --output-file libpsl.info
+	lcov --remove libpsl.info 'src/psl2c.c' -o libpsl.info
 	genhtml --prefix . --ignore-errors source libpsl.info --legend --title "libpsl" --output-directory=lcov
+
+check-coverage-libidn:
+	XLIB=libidn $(MAKE) check-coverage
+
+check-coverage-libidn2:
+	XLIB=libidn2 $(MAKE) check-coverage
+
+check-coverage-libicu:
+	XLIB=libicu $(MAKE) check-coverage

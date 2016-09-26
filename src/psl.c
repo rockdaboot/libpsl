@@ -1728,7 +1728,7 @@ out:
 			if ((tmp = u8_tolower((uint8_t *)str, len, 0, UNINORM_NFKC, NULL, &len))) {
 				ret = PSL_SUCCESS;
 				if (lower) {
-					*lower = tmp;
+					*lower = (char*)tmp;
 					tmp = NULL;
 				} else
 					free(tmp);

@@ -65,6 +65,7 @@ static void test_psl(void)
 		{ "www.his.name", "his.name", 1 },
 		{ "www.his.name", "name", 0 },
 		{ "www.example.com", "www.example.com", 1 },
+		{ "www.example.com", "wwww.example.com", 0 },
 		{ "www.example.com", "example.com", 1 },
 		{ "www.example.com", "com", 0 }, /* not accepted by normalization (PSL rule 'com') */
 		{ "www.example.com", "example.org", 0 },
@@ -77,6 +78,8 @@ static void test_psl(void)
 		{ "2a00:1450:4013:c01::8b", ":1450:4013:c01::8b", 0 }, /* IPv6 address, partial match */
 		{ "::ffff:192.1.123.2", "::ffff:192.1.123.2", 1 }, /* IPv6 address dotted-quad, full match */
 		{ "::ffff:192.1.123.2", ".1.123.2", 0 }, /* IPv6 address dotted-quad, partial match */
+		{ NULL, ".1.123.2", 0 },
+		{ "hiho", NULL, 0 },
 	};
 	unsigned it;
 	psl_ctx_t *psl;
@@ -97,6 +100,9 @@ static void test_psl(void)
 				t->request_domain, t->cookie_domain, result, t->result);
 		}
 	}
+
+	/* do checks to cover more code paths in libpsl */
+	psl_is_cookie_domain_acceptable(NULL, "example.com", "example.com");
 
 	psl_free(psl);
 }
