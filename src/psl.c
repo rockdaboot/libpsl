@@ -718,25 +718,13 @@ static int _psl_idna_toASCII(_psl_idna_t *idna _UNUSED, const char *utf8, char *
 	}
 #elif defined(WITH_LIBIDN2)
 	int rc;
-	uint8_t *lower, resbuf[256];
-	size_t len = sizeof(resbuf) - 1; /* leave space for additional \0 byte */
+	uint8_t *lower;
+	size_t len = u8_strlen((uint8_t *)utf8) + 1;
 
 	/* we need a conversion to lowercase */
-	lower = u8_tolower((uint8_t *)utf8, u8_strlen((uint8_t *)utf8), 0, UNINORM_NFKC, resbuf, &len);
-	if (!lower) {
+	if (!(lower = u8_tolower((uint8_t *)utf8, len, 0, UNINORM_NFKC, NULL, &len))) {
 		/* fprintf(stderr, "u8_tolower(%s) failed (%d)\n", utf8, errno); */
 		return -1;
-	}
-
-	/* u8_tolower() does not terminate the result string */
-	if (lower == resbuf) {
-		lower[len]=0;
-	} else {
-		uint8_t *tmp = lower;
-		lower = (uint8_t *)strndup((char *)lower, len);
-		free(tmp);
-		if (!lower)
-			return -1;
 	}
 
 	if ((rc = idn2_lookup_u8(lower, (uint8_t **)ascii, 0)) == IDN2_OK) {
@@ -744,8 +732,7 @@ static int _psl_idna_toASCII(_psl_idna_t *idna _UNUSED, const char *utf8, char *
 	} /* else
 		fprintf(stderr, "toASCII(%s) failed (%d): %s\n", lower, rc, idn2_strerror(rc)); */
 
-	if (lower != resbuf)
-		free(lower);
+	free(lower);
 #elif defined(WITH_LIBIDN)
 	int rc;
 
@@ -1738,9 +1725,8 @@ out:
 			 * u8_tolower() does not terminate the result string, so include terminating 0 byte in len. */
 			size_t len = u8_strlen((uint8_t *)str) + 1;
 
-			ret = PSL_SUCCESS;
-
 			if ((tmp = u8_tolower((uint8_t *)str, len, 0, UNINORM_NFKC, NULL, &len))) {
+				ret = PSL_SUCCESS;
 				if (lower) {
 					*lower = tmp;
 					tmp = NULL;
