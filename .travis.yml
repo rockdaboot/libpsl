@@ -10,6 +10,7 @@ branches:
     only:
         - master
         - develop
+        - coveralls
 
 env:
     - RUNTIME=libicu
@@ -34,6 +35,7 @@ addons:
             - libicu-dev
             - libunistring0
             - libunistring-dev
+            - lcov
 
 script:
   - ./autogen.sh
@@ -44,3 +46,4 @@ script:
   - ./configure --enable-runtime=$RUNTIME --disable-builtin && make clean && make -j4 && make check -j4
   - ./configure --enable-gtk-doc && make -j4 && make check -j4
   - make distcheck
+  - if [[ $CC == "gcc" && $RUNTIME == "libicu" ]]; then ./.travis_coveralls.sh; fi

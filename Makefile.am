@@ -30,11 +30,11 @@ check-coverage:
 		CFLAGS=$$CFLAGS" --coverage -O0" LDFLAGS=$$LDFLAGS" --coverage" ./configure --enable-runtime=$(XLIB) --enable-builtin=$(XLIB); \
 	fi
 	$(MAKE) clean && $(MAKE)
-	lcov --no-external --capture --initial --directory src --output-file libpsl.info
+	lcov --capture --initial --directory src --output-file libpsl.info
 	$(MAKE) check
-	lcov --no-external --capture --directory src --output-file libpsl.info
+	lcov --capture --directory src --output-file libpsl.info
 	lcov --remove libpsl.info 'src/psl2c.c' -o libpsl.info
-	genhtml --prefix . --ignore-errors source libpsl.info --legend --title "libpsl" --output-directory=lcov
+	genhtml --prefix . libpsl.info --legend --title "libpsl" --output-directory=lcov
 
 check-coverage-libidn:
 	XLIB=libidn $(MAKE) check-coverage
