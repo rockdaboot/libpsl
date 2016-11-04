@@ -126,14 +126,12 @@ Transcoding is performed by insertion of a start byte with the special value
 0x1F, followed by 2-4 bytes shifted into the range [0x40-0x7F], thus inside
 the range of printable ASCII.
 
-2-byte: (0x110nnnnn, 0x10nnnnnn) ->
-    (0x00011111, 0x010nnnnn, 0x01nnnnnn)
+2-byte: 110nnnnn, 10nnnnnn -> 00011111, 010nnnnn, 01nnnnnn
 
-3-byte: (0x1110nnnn, 0x10nnnnnn, 0x10nnnnnn) ->
-    (0x00011111, 0x0110nnnn, 0x01nnnnnn, 0x01nnnnnn)
+3-byte: 1110nnnn, 10nnnnnn, 10nnnnnn -> 00011111, 0110nnnn, 01nnnnnn, 01nnnnnn
 
-4-byte: (0x11110nnn, 0x10nnnnnn, 0x10nnnnnn, 0x10nnnnnn) ->
-    (0x00011111, 0x01110nnn, 0x01nnnnnn, 0x01nnnnnn, 0x01nnnnnn)
+4-byte: 11110nnn, 10nnnnnn, 10nnnnnn, 10nnnnnn ->
+                00011111, 01110nnn, 01nnnnnn, 01nnnnnn, 01nnnnnn
 
 Example 1:
 
