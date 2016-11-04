@@ -10,7 +10,6 @@ branches:
     only:
         - master
         - develop
-        - coveralls
 
 env:
     - RUNTIME=libicu

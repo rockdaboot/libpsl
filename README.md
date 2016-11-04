@@ -2,6 +2,12 @@
 [![Coverity Scan](https://img.shields.io/coverity/scan/10227.svg)](https://scan.coverity.com/projects/rockdaboot-libpsl)
 [![Coverage Status](https://coveralls.io/repos/github/rockdaboot/libpsl/badge.svg?branch=master)](https://coveralls.io/github/rockdaboot/libpsl?branch=master)
 
+Solaris OpenCSW [![Build Status Solaris amd64](https://buildfarm.opencsw.org/buildbot/png?builder=libpsl-solaris10-amd64)](https://buildfarm.opencsw.org/buildbot/builders/libpsl-solaris10-amd64)
+[![Build Status Solaris i386](https://buildfarm.opencsw.org/buildbot/png?builder=libpsl-solaris10-i386)](https://buildfarm.opencsw.org/buildbot/builders/libpsl-solaris10-i386)
+[![Build Status Solaris Sparc](https://buildfarm.opencsw.org/buildbot/png?builder=libpsl-solaris10-sparc)](https://buildfarm.opencsw.org/buildbot/builders/libpsl-solaris10-sparc)
+[![Build Status Solaris SparcV9](https://buildfarm.opencsw.org/buildbot/png?builder=libpsl-solaris10-sparcv9)](https://buildfarm.opencsw.org/buildbot/builders/libpsl-solaris10-sparcv9)
+
+
 libpsl - C library to handle the Public Suffix List
 ===================================================
 
