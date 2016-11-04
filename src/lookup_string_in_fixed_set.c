@@ -275,3 +275,11 @@ int _HIDDEN LookupStringInFixedSet(const unsigned char* graph,
 
 	return -1; /* No match */
 }
+
+/* prototype to skip warning with -Wmissing-prototypes */
+int _HIDDEN GetUtfMode(const unsigned char *graph, size_t length);
+
+int _HIDDEN GetUtfMode(const unsigned char *graph, size_t length)
+{
+	return length > 0 && graph[length - 1] < 0x80;
+}
