@@ -131,7 +131,7 @@ static void test_psl_entry(const psl_ctx_t *psl, const char *domain, int type)
 static void test_psl(void)
 {
 	FILE *fp;
-	psl_ctx_t *psl, *psl3;
+	psl_ctx_t *psl, *psl3, *psl4;
 	const psl_ctx_t *psl2;
 	int type = 0;
 	char buf[256], *linep, *p;
@@ -144,6 +144,11 @@ static void test_psl(void)
 
 	if (!(psl3 = psl_load_file("psl.dafsa"))) {
 		fprintf(stderr, "Failed to load 'psl.dafsa'\n");
+		failed++;
+	}
+
+	if (!(psl4 = psl_load_file("psl_ascii.dafsa"))) {
+		fprintf(stderr, "Failed to load 'psl_ascii.dafsa'\n");
 		failed++;
 	}
 
@@ -182,6 +187,9 @@ static void test_psl(void)
 
 			if (psl3)
 				test_psl_entry(psl3, p, type);
+
+			if (psl4)
+				test_psl_entry(psl4, p, type);
 		}
 
 #ifdef HAVE_CLOCK_GETTIME
@@ -193,9 +201,10 @@ static void test_psl(void)
 		failed++;
 	}
 
-	psl_free(psl);
-	psl_free((psl_ctx_t *)psl2);
+	psl_free(psl4);
 	psl_free(psl3);
+	psl_free((psl_ctx_t *)psl2);
+	psl_free(psl);
 }
 
 int main(int argc, const char * const *argv)
