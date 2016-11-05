@@ -78,6 +78,8 @@ stamp-h1
 test-driver
 tests/*.log
 tests/*.trs
+tests/psl.dafsa
+tests/psl_ascii.dafsa
 tests/test-is-cookie-domain-acceptable
 tests/test-is-public
 tests/test-is-public-all
