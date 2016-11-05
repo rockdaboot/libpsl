@@ -174,10 +174,11 @@ struct _psl_ctx_st {
 	size_t
 		dafsa_size;
 	int
-		mode,
 		nsuffixes,
 		nexceptions,
 		nwildcards;
+	unsigned char
+		utf8 : 1; /* 1: data contains UTF-8 + punycode encoded rules */
 };
 
 /* include the PSL data compiled by 'psl2c' */
@@ -782,8 +783,9 @@ static void _add_punycode_if_needed(_psl_idna_t *idna, _psl_vector_t *v, _psl_en
 	}
 }
 
-/* prototype */
+/* prototypes */
 int LookupStringInFixedSet(const unsigned char* graph, size_t length, const char* key, size_t key_length);
+int GetUtfMode(const unsigned char *graph, size_t length);
 
 static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int type)
 {
@@ -801,7 +803,7 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int t
 	for (p = domain; *p; p++) {
 		if (*p == '.')
 			suffix.nlabels++;
-		else if (*((unsigned char *)p) >= 128)
+		else if (!psl->utf8 && *((unsigned char *)p) >= 128)
 			need_conversion = 1; /* in case domain is non-ascii we need a toASCII conversion */
 	}
 
@@ -1150,6 +1152,7 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 			psl->dafsa = m;
 
 		psl->dafsa_size = len;
+		psl->utf8 = !!GetUtfMode(psl->dafsa, len);
 
 		return psl;
 	}
@@ -1161,6 +1164,7 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 	 *  as of 19.02.2014, the list at https://publicsuffix.org/list/ contains ~6500 rules and 19 exceptions.
 	 */
 	psl->suffixes = _vector_alloc(8*1024, _suffix_compare_array);
+	psl->utf8 = 1; /* we put UTF-8 and punycode rules in the lookup vector */
 
 	do {
 		while (_isspace_ascii(*linep)) linep++; /* ignore leading whitespace */
