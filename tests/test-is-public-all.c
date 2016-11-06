@@ -49,7 +49,7 @@ static int
 	struct timespec ts1, ts2;
 #endif
 
-static inline int _isspace_ascii(const char c)
+static int _isspace_ascii(const char c)
 {
 	return c == ' ' || c == '\t' || c == '\r' || c == '\n';
 }

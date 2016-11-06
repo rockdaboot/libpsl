@@ -177,7 +177,7 @@ struct _psl_ctx_st {
 		nsuffixes,
 		nexceptions,
 		nwildcards;
-	unsigned char
+	unsigned
 		utf8 : 1; /* 1: data contains UTF-8 + punycode encoded rules */
 };
 
@@ -619,7 +619,7 @@ static int _domain_to_punycode(const char *domain, char *out, size_t outsize)
 }
 #endif
 
-static inline int _isspace_ascii(const char c)
+static int _isspace_ascii(const char c)
 {
 	return c == ' ' || c == '\t' || c == '\r' || c == '\n';
 }
@@ -803,7 +803,7 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int t
 	for (p = domain; *p; p++) {
 		if (*p == '.')
 			suffix.nlabels++;
-		else if (!psl->utf8 && *((unsigned char *)p) >= 128)
+		else if (*((unsigned char *)p) >= 128)
 			need_conversion = 1; /* in case domain is non-ascii we need a toASCII conversion */
 	}
 
@@ -813,6 +813,14 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int t
 		 */
 		return 1;
 	}
+
+	if (psl->utf8 || psl == &_builtin_psl)
+		need_conversion = 0;
+
+#if defined(WITH_LIBIDN) || defined(WITH_LIBIDN2) || defined(WITH_LIBICU)
+	if (psl == &_builtin_psl)
+		need_conversion = 0;
+#endif
 
 	if (need_conversion) {
 		_psl_idna_t *idna = _psl_idna_open();
