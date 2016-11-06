@@ -784,6 +784,7 @@ static void _add_punycode_if_needed(_psl_idna_t *idna, _psl_vector_t *v, _psl_en
 
 /* prototype */
 int LookupStringInFixedSet(const unsigned char* graph, size_t length, const char* key, size_t key_length);
+int GetUtfMode(const unsigned char*, size_t);
 
 static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int type)
 {
@@ -791,6 +792,15 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int t
 	const char *p;
 	char *punycode = NULL;
 	int need_conversion = 0;
+	size_t dafsa_size = 0;
+	const unsigned char *dafsa = NULL;
+	int utf_mode = 0;
+
+	if (psl == &_builtin_psl || psl->dafsa) {
+		dafsa_size = psl == &_builtin_psl ? sizeof(kDafsa) : psl->dafsa_size;
+		dafsa = psl == &_builtin_psl ? kDafsa : psl->dafsa;
+		utf_mode = GetUtfMode(dafsa, dafsa_size);
+	}
 
 	/* this function should be called without leading dots, just make sure */
 	if (*domain == '.')
@@ -801,7 +811,7 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int t
 	for (p = domain; *p; p++) {
 		if (*p == '.')
 			suffix.nlabels++;
-		else if (*((unsigned char *)p) >= 128)
+		else if (!utf_mode && *((unsigned char *)p) >= 128)
 			need_conversion = 1; /* in case domain is non-ascii we need a toASCII conversion */
 	}
 
@@ -831,9 +841,7 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int t
 		suffix.length = p - suffix.label;
 	}
 
-	if (psl == &_builtin_psl || psl->dafsa) {
-		size_t dafsa_size = psl == &_builtin_psl ? sizeof(kDafsa) : psl->dafsa_size;
-		const unsigned char *dafsa = psl == &_builtin_psl ? kDafsa : psl->dafsa;
+	if (dafsa) {
 		int rc = LookupStringInFixedSet(dafsa, dafsa_size, suffix.label, suffix.length);
 		if (rc != -1) {
 			/* check for correct rule type */
