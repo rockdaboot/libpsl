@@ -124,7 +124,7 @@ Mailing List
 
 To join the mailing list send an email to
 
-<libpsl-bugs+subscribe@googlegroups.com>
+libpsl-bugs+subscribe@googlegroups.com
 
 and follow the instructions provided by the answer mail.
 
