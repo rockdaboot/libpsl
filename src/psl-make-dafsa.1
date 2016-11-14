@@ -28,9 +28,14 @@ depends on options passed to it.
 \fBcxx\fR: (default) output is C/C++ code
 .br
 \fBbinary\fR: output is an architecture-independent binary format
+.TP
+\fB\-\-encoding=\fR[\fIutf-8\fR|\fIascii\fR]
+\fButf-8\fR: (default) UTF-8 mode (output contains UTF-8 + punycode)
+.br
+\fBascii\fR: (deprecated) 7-bit ASCII mode (output contains punycode only)
 .SH SEE ALSO
 .IR https://publicsuffix.org/ ", " https://github.com/rockdaboot/libpsl
 .SH COPYRIGHT
-\fBpsl-make-dafsa\fR was originally part of the Chromium project, and
+\fBpsl-make-dafsa\fR was was written by Olle Liljenzin as part of the Chromium project and
 has been modified by Tim Ruehsen and Daniel Kahn Gillmor.  The code
 and its documentation is governed by a BSD-style license.

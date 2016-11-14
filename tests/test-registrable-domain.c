@@ -50,14 +50,28 @@ static int
 	ok,
 	failed;
 
-static void test(const psl_ctx_t *psl, const char *domain, const char *expected_result)
+static void testx(const psl_ctx_t *psl, const char *domain, const char *encoding, const char *lang, const char *expected_result)
 {
 	const char *result;
 	char *lower;
+	int rc;
 
-	/* our test data is fixed to UTF-8 (english), so provide it here */
-	if (psl_str_to_utf8lower(domain, "utf-8", "en", &lower) == PSL_SUCCESS)
+	/* just to cover special code paths for valgrind checking */
+	psl_str_to_utf8lower(domain, encoding, lang, NULL);
+
+	if ((rc = psl_str_to_utf8lower(domain, encoding, lang, &lower)) == PSL_SUCCESS)
 		domain = lower;
+	/* non-ASCII domains fail here if no runtime IDN library is configured, so skip it */
+#if defined(WITH_LIBIDN) || defined(WITH_LIBIDN2) || defined(WITH_LIBICU)
+	else if (domain) {
+		/* if we do not runtime support, test failure have to be skipped */
+		failed++;
+		printf("psl_str_to_utf8lower(%s)=%d\n", domain ? domain : "NULL", rc);
+
+		free(lower);
+		return;
+	}
+#endif
 
 	result = psl_registrable_domain(psl, domain);
 
@@ -72,13 +86,28 @@ static void test(const psl_ctx_t *psl, const char *domain, const char *expected_
 	free(lower);
 }
 
+static void test(const psl_ctx_t *psl, const char *domain, const char *expected_result)
+{
+	testx(psl, domain, "utf-8", "en", expected_result);
+}
+
+static void test_iso(const psl_ctx_t *psl, const char *domain, const char *expected_result)
+{
+	/* makes only sense with a runtime IDN library configured */
+#if defined(WITH_LIBIDN) || defined(WITH_LIBIDN2) || defined(WITH_LIBICU)
+	testx(psl, domain, "iso-8859-15", "de", expected_result);
+#endif
+}
+
 static void test_psl(void)
 {
 	FILE *fp;
 	const psl_ctx_t *psl;
 	const char *p;
 	char buf[256], domain[128], expected_regdom[128], semicolon[2];
+	char lbuf[258];
 	int er_is_null, d_is_null;
+	unsigned it;
 
 	psl = psl_builtin();
 
@@ -100,6 +129,22 @@ static void test_psl(void)
 
 	/* Norwegian with lowercase oe */
 	test(psl, "www.\303\270yer.no", "www.\303\270yer.no");
+
+	/* Norwegian with lowercase oe, encoded as ISO-8859-15 */
+	test_iso(psl, "www.\370yer.no", "www.\303\270yer.no");
+
+	/* Testing special code paths of psl_str_to_utf8lower() */
+	for (it = 254; it <= 257; it++) {
+		memset(lbuf, 'a', it);
+		lbuf[it] = 0;
+
+		lbuf[0] = '\370';
+		test_iso(psl, lbuf, NULL);
+
+		lbuf[0] = '\303';
+		lbuf[1] = '\270';
+		test(psl, lbuf, NULL);
+	}
 
 	/* special check with NULL psl context and TLD */
 	test(psl, "whoever.forgot.his.name", "whoever.forgot.his.name");

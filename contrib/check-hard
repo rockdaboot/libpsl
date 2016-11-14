@@ -51,6 +51,7 @@ for CC in gcc clang; do
       for xLCALL in C tr_TR.utf8; do
         export TESTS_ENVIRONMENT="LC_ALL=$xLCALL VALGRIND_TESTS=$xVALGRIND"
         echo "    *** TESTS_ENVIRONMENT=\"$TESTS_ENVIRONMENT\"" make check -j$CORES
+        make clean > /dev/null
         make check -j$CORES > /dev/null
       done
     done

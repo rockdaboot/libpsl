@@ -153,11 +153,6 @@ static void _print_psl_entries_dafsa(FILE *fpout, const _psl_vector_t *v)
 	if ((fp = fopen("in.tmp", "w"))) {
 		for (it = 0; it < v->cur; it++) {
 			_psl_entry_t *e = _vector_get(v, it);
-			unsigned char *s = (unsigned char *)e->label_buf;
-
-			/* search for non-ASCII label and skip it */
-			while (*s && *s < 128) s++;
-			if (*s) continue;
 
 			fprintf(fp, "%s, %X\n", e->label_buf, (int) (e->flags & 0x0F));
 		}
@@ -191,11 +186,6 @@ static int _print_psl_entries_dafsa_binary(const char *fname, const _psl_vector_
 	if ((fp = fopen("in.tmp", "w"))) {
 		for (it = 0; it < v->cur; it++) {
 			_psl_entry_t *e = _vector_get(v, it);
-			unsigned char *s = (unsigned char *)e->label_buf;
-
-			/* search for non-ASCII label and skip it */
-			while (*s && *s < 128) s++;
-			if (*s) continue;
 
 			fprintf(fp, "%s, %X\n", e->label_buf, (int) (e->flags & 0x0F));
 		}

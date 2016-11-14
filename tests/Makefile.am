@@ -23,3 +23,14 @@ check_PROGRAMS = $(PSL_TESTS)
 
 TESTS_ENVIRONMENT = TESTS_VALGRIND="@VALGRIND_ENVIRONMENT@"
 TESTS = $(PSL_TESTS)
+
+# dafsa.psl and dafsa_ascii.psl must be created before any test is executed
+# check-local target works in parallel to the tests, so the test suite will likely fail
+BUILT_SOURCES = psl.dafsa psl_ascii.dafsa
+psl.dafsa:
+	$(top_srcdir)/src/psl-make-dafsa --input-format=psl --output-format=binary "$(PSL_FILE)" psl.dafsa
+psl_ascii.dafsa:
+	$(top_srcdir)/src/psl-make-dafsa --input-format=psl --output-format=binary --encoding=ascii "$(PSL_FILE)" psl_ascii.dafsa
+
+clean-local:
+	rm -f psl.dafsa psl_ascii.dafsa

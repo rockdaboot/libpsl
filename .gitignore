@@ -1,4 +1,7 @@
 *.exe
+*.gcda
+*.gcno
+*.gcov
 *.gz
 *.la
 *.lo
@@ -10,6 +13,7 @@
 *.cache
 *.plist
 *.stamp
+ABOUT-NLS
 aclocal.m4
 ar-lib
 autom4te.cache/
@@ -43,6 +47,8 @@ gtk-doc.m4
 gtk-doc.make
 include/libpsl.h
 install-sh
+lcov/
+libpsl.info
 libpsl.pc
 libtool
 ltmain.sh
@@ -67,10 +73,13 @@ po/remove-potcdate.sed
 po/stamp-po
 src/psl2c
 src/suffixes.c
+src/suffixes_dafsa.c
 stamp-h1
 test-driver
 tests/*.log
 tests/*.trs
+tests/psl.dafsa
+tests/psl_ascii.dafsa
 tests/test-is-cookie-domain-acceptable
 tests/test-is-public
 tests/test-is-public-all

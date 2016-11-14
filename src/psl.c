@@ -73,6 +73,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <time.h>
 #include <errno.h>
 #include <limits.h> /* for UINT_MAX */
 #include <langinfo.h>
@@ -100,9 +101,6 @@
 #endif
 
 #include <libpsl.h>
-
-/* number of elements within an array */
-#define countof(a) (sizeof(a)/sizeof(*(a)))
 
 #ifndef HAVE_STRNDUP
 /* I found no strndup on my old SUSE 7.3 test system (gcc 2.95) */
@@ -176,10 +174,11 @@ struct _psl_ctx_st {
 	size_t
 		dafsa_size;
 	int
-		mode,
 		nsuffixes,
 		nexceptions,
 		nwildcards;
+	unsigned
+		utf8 : 1; /* 1: data contains UTF-8 + punycode encoded rules */
 };
 
 /* include the PSL data compiled by 'psl2c' */
@@ -263,11 +262,21 @@ static int _vector_add(_psl_vector_t *v, const _psl_entry_t *elem)
 	if (v) {
 		void *elemp;
 
-		elemp = malloc(sizeof(_psl_entry_t));
+		if (!(elemp = malloc(sizeof(_psl_entry_t))))
+			return -1;
+
 		memcpy(elemp, elem, sizeof(_psl_entry_t));
 
-		if (v->max == v->cur)
-			v->entry = realloc(v->entry, (v->max *= 2) * sizeof(_psl_entry_t *));
+		if (v->max == v->cur) {
+			void *m = realloc(v->entry, (v->max *= 2) * sizeof(_psl_entry_t *));
+
+			if (m)
+				v->entry = m;
+			else {
+				free(elemp);
+				return -1;
+			}
+		}
 
 		v->entry[v->cur++] = elemp;
 		return v->cur - 1;
@@ -517,36 +526,37 @@ static enum punycode_status punycode_encode(
 static ssize_t _utf8_to_utf32(const char *in, size_t inlen, punycode_uint *out, size_t outlen)
 {
 	size_t n = 0;
-	unsigned char *s;
+	const unsigned char *s = (void *)in;
+	const unsigned char *e = (void *)(in + inlen);
 
 	if (!outlen)
 		return -1;
 
 	outlen--;
 
-	s = alloca(inlen + 1);
-	memcpy(s, in, inlen);
-	s[inlen] = 0;
+	while (n < outlen) {
+		size_t inleft = e - s;
 
-	while (*s && n < outlen) {
-		if ((*s & 0x80) == 0) { /* 0xxxxxxx ASCII char */
+		if (inleft >= 1 && (*s & 0x80) == 0) { /* 0xxxxxxx ASCII char */
 			out[n++] = *s;
 			s++;
-		} else if ((*s & 0xE0) == 0xC0) /* 110xxxxx 10xxxxxx */ {
+		} else if (inleft >= 2 && (*s & 0xE0) == 0xC0) /* 110xxxxx 10xxxxxx */ {
 			if ((s[1] & 0xC0) != 0x80)
 				return -1;
 			out[n++] = ((*s & 0x1F) << 6) | (s[1] & 0x3F);
 			s += 2;
-		} else if ((*s & 0xF0) == 0xE0) /* 1110xxxx 10xxxxxx 10xxxxxx */ {
+		} else if (inleft >= 3 && (*s & 0xF0) == 0xE0) /* 1110xxxx 10xxxxxx 10xxxxxx */ {
 			if ((s[1] & 0xC0) != 0x80 || (s[2] & 0xC0) != 0x80)
 				return -1;
 			out[n++] = ((*s & 0x0F) << 12) | ((s[1] & 0x3F) << 6) | (s[2] & 0x3F);
 			s += 3;
-		} else if ((*s & 0xF8) == 0xF0) /* 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx */ {
+		} else if (inleft >= 4 && (*s & 0xF8) == 0xF0) /* 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx */ {
 			if ((s[1] & 0xC0) != 0x80 || (s[2] & 0xC0) != 0x80 || (s[3] & 0xC0) != 0x80)
 				return -1;
 			out[n++] = ((*s & 0x07) << 18) | ((s[1] & 0x3F) << 12) | ((s[1] & 0x3F) << 6) | (s[2] & 0x3F);
 			s += 4;
+		} else if (!inleft) {
+			break;
 		} else
 			return -1;
 	}
@@ -575,7 +585,7 @@ static int _domain_to_punycode(const char *domain, char *out, size_t outsize)
 		/* printf("s=%s inlen=%zd\n", label, labellen); */
 
 		if (_mem_is_ascii(label, labellen)) {
-			if (outlen + labellen + (e != NULL)>= outsize)
+			if (outlen + labellen + (e != NULL) >= outsize)
 				return 1;
 
 			/* printf("outlen=%zd labellen=%zd\n", outlen, labellen); */
@@ -587,7 +597,7 @@ static int _domain_to_punycode(const char *domain, char *out, size_t outsize)
 			if (outlen + labellen + (e != NULL) + 4 >= outsize)
 				return 1;
 
-			if ((inputlen = _utf8_to_utf32(label, labellen, input, sizeof (input) / sizeof (input[0]))) < 0)
+			if ((inputlen = _utf8_to_utf32(label, labellen, input, countof(input))) < 0)
 				return 1;
 
 			memcpy(out + outlen, "xn--", 4);
@@ -609,7 +619,7 @@ static int _domain_to_punycode(const char *domain, char *out, size_t outsize)
 }
 #endif
 
-static inline int _isspace_ascii(const char c)
+static int _isspace_ascii(const char c)
 {
 	return c == ' ' || c == '\t' || c == '\r' || c == '\n';
 }
@@ -691,15 +701,15 @@ static int _psl_idna_toASCII(_psl_idna_t *idna _UNUSED, const char *utf8, char *
 		UChar utf16_dst[128], utf16_src[128];
 		int32_t utf16_src_length;
 
-		u_strFromUTF8(utf16_src, sizeof(utf16_src)/sizeof(utf16_src[0]), &utf16_src_length, utf8, -1, &status);
+		u_strFromUTF8(utf16_src, countof(utf16_src), &utf16_src_length, utf8, -1, &status);
 		if (U_SUCCESS(status)) {
-			int32_t dst_length = uidna_nameToASCII((UIDNA *)idna, utf16_src, utf16_src_length, utf16_dst, sizeof(utf16_dst)/sizeof(utf16_dst[0]), &info, &status);
+			int32_t dst_length = uidna_nameToASCII((UIDNA *)idna, utf16_src, utf16_src_length, utf16_dst, countof(utf16_dst), &info, &status);
 			if (U_SUCCESS(status)) {
 				u_strToUTF8(lookupname, sizeof(lookupname), NULL, utf16_dst, dst_length, &status);
 				if (U_SUCCESS(status)) {
 					if (ascii)
-						*ascii = strdup(lookupname);
-					ret = 0;
+						if ((*ascii = strdup(lookupname)))
+							ret = 0;
 				} /* else
 					fprintf(stderr, "Failed to convert UTF-16 to UTF-8 (status %d)\n", status); */
 			} /* else
@@ -709,23 +719,13 @@ static int _psl_idna_toASCII(_psl_idna_t *idna _UNUSED, const char *utf8, char *
 	}
 #elif defined(WITH_LIBIDN2)
 	int rc;
-	uint8_t *lower, resbuf[256];
-	size_t len = sizeof(resbuf) - 1; /* leave space for additional \0 byte */
+	uint8_t *lower;
+	size_t len = u8_strlen((uint8_t *)utf8) + 1;
 
 	/* we need a conversion to lowercase */
-	lower = u8_tolower((uint8_t *)utf8, u8_strlen((uint8_t *)utf8), 0, UNINORM_NFKC, resbuf, &len);
-	if (!lower) {
+	if (!(lower = u8_tolower((uint8_t *)utf8, len, 0, UNINORM_NFKC, NULL, &len))) {
 		/* fprintf(stderr, "u8_tolower(%s) failed (%d)\n", utf8, errno); */
 		return -1;
-	}
-
-	/* u8_tolower() does not terminate the result string */
-	if (lower == resbuf) {
-		lower[len]=0;
-	} else {
-		uint8_t *tmp = lower;
-		lower = (uint8_t *)strndup((char *)lower, len);
-		free(tmp);
 	}
 
 	if ((rc = idn2_lookup_u8(lower, (uint8_t **)ascii, 0)) == IDN2_OK) {
@@ -733,8 +733,7 @@ static int _psl_idna_toASCII(_psl_idna_t *idna _UNUSED, const char *utf8, char *
 	} /* else
 		fprintf(stderr, "toASCII(%s) failed (%d): %s\n", lower, rc, idn2_strerror(rc)); */
 
-	if (lower != resbuf)
-		free(lower);
+	free(lower);
 #elif defined(WITH_LIBIDN)
 	int rc;
 
@@ -754,8 +753,8 @@ static int _psl_idna_toASCII(_psl_idna_t *idna _UNUSED, const char *utf8, char *
 
 	if (_domain_to_punycode(utf8, lookupname, sizeof(lookupname)) == 0) {
 		if (ascii)
-			*ascii = strdup(lookupname);
-		ret = 0;
+			if ((*ascii = strdup(lookupname)))
+				ret = 0;
 	}
 #endif
 
@@ -776,16 +775,17 @@ static void _add_punycode_if_needed(_psl_idna_t *idna, _psl_vector_t *v, _psl_en
 			/* fprintf(stderr, "toASCII '%s' -> '%s'\n", e->label_buf, lookupname); */
 			_suffix_init(&suffix, lookupname, strlen(lookupname));
 			suffix.flags = e->flags;
-			suffixp = _vector_get(v, _vector_add(v, &suffix));
-			suffixp->label = suffixp->label_buf; /* set label to changed address */
+			if ((suffixp = _vector_get(v, _vector_add(v, &suffix))))
+				suffixp->label = suffixp->label_buf; /* set label to changed address */
 		} /* else ignore */
 
 		free(lookupname);
 	}
 }
 
-/* prototype */
+/* prototypes */
 int LookupStringInFixedSet(const unsigned char* graph, size_t length, const char* key, size_t key_length);
+int GetUtfMode(const unsigned char *graph, size_t length);
 
 static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int type)
 {
@@ -813,6 +813,14 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int t
 		 */
 		return 1;
 	}
+
+	if (psl->utf8 || psl == &_builtin_psl)
+		need_conversion = 0;
+
+#if defined(WITH_LIBIDN) || defined(WITH_LIBIDN2) || defined(WITH_LIBICU)
+	if (psl == &_builtin_psl)
+		need_conversion = 0;
+#endif
 
 	if (need_conversion) {
 		_psl_idna_t *idna = _psl_idna_open();
@@ -934,8 +942,9 @@ suffix_yes:
  *
  * For cookie domain checking see psl_is_cookie_domain_acceptable().
  *
- * International @domain names have to be either in lowercase UTF-8 or in ASCII form (punycode).
- * Other encodings result in unexpected behavior.
+ * International @domain names have to be either in UTF-8 (lowercase + NFCK) or in ASCII/ACE format (punycode).
+ * Other encodings likely result in incorrect return values.
+ * Use helper function psl_str_to_utf8lower() for normalization @domain.
  *
  * @psl is a context returned by either psl_load_file(), psl_load_fp() or
  * psl_builtin().
@@ -964,8 +973,9 @@ int psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
  * @type specifies the PSL section where to perform the lookup. Valid values are
  * %PSL_TYPE_PRIVATE, %PSL_TYPE_ICANN and %PSL_TYPE_ANY.
  *
- * International @domain names have to be either in lowercase UTF-8 or in ASCII form (punycode).
- * Other encodings result in unexpected behavior.
+ * International @domain names have to be either in UTF-8 (lowercase + NFCK) or in ASCII/ACE format (punycode).
+ * Other encodings likely result in incorrect return values.
+ * Use helper function psl_str_to_utf8lower() for normalization @domain.
  *
  * @psl is a context returned by either psl_load_file(), psl_load_fp() or
  * psl_builtin().
@@ -990,8 +1000,9 @@ int psl_is_public_suffix2(const psl_ctx_t *psl, const char *domain, int type)
  * This function finds the longest public suffix part of @domain by the means
  * of the [Mozilla Public Suffix List](https://publicsuffix.org).
  *
- * International @domain names have to be either in lowercase UTF-8 or in ASCII form (punycode).
- * Other encodings result in unexpected behavior.
+ * International @domain names have to be either in UTF-8 (lowercase + NFCK) or in ASCII/ACE format (punycode).
+ * Other encodings likely result in incorrect return values.
+ * Use helper function psl_str_to_utf8lower() for normalization @domain.
  *
  * @psl is a context returned by either psl_load_file(), psl_load_fp() or
  * psl_builtin().
@@ -1029,8 +1040,9 @@ const char *psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain)
  * This function finds the shortest private suffix part of @domain by the means
  * of the [Mozilla Public Suffix List](https://publicsuffix.org).
  *
- * International @domain names have to be either in lowercase UTF-8 or in ASCII form (punycode).
- * Other encodings result in unexpected behavior.
+ * International @domain names have to be either in UTF-8 (lowercase + NFCK) or in ASCII/ACE format (punycode).
+ * Other encodings likely result in incorrect return values.
+ * Use helper function psl_str_to_utf8lower() for normalization @domain.
  *
  * @psl is a context returned by either psl_load_file(), psl_load_fp() or
  * psl_builtin().
@@ -1070,7 +1082,7 @@ const char *psl_registrable_domain(const psl_ctx_t *psl, const char *domain)
  * This function loads the public suffixes file named @fname.
  * To free the allocated resources, call psl_free().
  *
- * The suffixes are expected to be lowercase UTF-8 encoded if they are international.
+ * The suffixes are expected to be UTF-8 encoded (lowercase + NFCK) if they are international.
  *
  * Returns: Pointer to a PSL context or %NULL on failure.
  *
@@ -1099,7 +1111,7 @@ psl_ctx_t *psl_load_file(const char *fname)
  * This function loads the public suffixes from a FILE pointer.
  * To free the allocated resources, call psl_free().
  *
- * The suffixes are expected to be lowercase UTF-8 encoded if they are international.
+ * The suffixes are expected to be UTF-8 encoded (lowercase + NFCK) if they are international.
  *
  * Returns: Pointer to a PSL context or %NULL on failure.
  *
@@ -1152,6 +1164,7 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 			psl->dafsa = m;
 
 		psl->dafsa_size = len;
+		psl->utf8 = !!GetUtfMode(psl->dafsa, len);
 
 		return psl;
 	}
@@ -1163,6 +1176,7 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 	 *  as of 19.02.2014, the list at https://publicsuffix.org/list/ contains ~6500 rules and 19 exceptions.
 	 */
 	psl->suffixes = _vector_alloc(8*1024, _suffix_compare_array);
+	psl->utf8 = 1; /* we put UTF-8 and punycode rules in the lookup vector */
 
 	do {
 		while (_isspace_ascii(*linep)) linep++; /* ignore leading whitespace */
@@ -1231,9 +1245,10 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 				suffixp = _vector_get(psl->suffixes, _vector_add(psl->suffixes, &suffix));
 			}
 
-			suffixp->label = suffixp->label_buf; /* set label to changed address */
-
-			_add_punycode_if_needed(idna, psl->suffixes, suffixp);
+			if (suffixp) {
+				suffixp->label = suffixp->label_buf; /* set label to changed address */
+				_add_punycode_if_needed(idna, psl->suffixes, suffixp);
+			}
 		}
 	} while ((linep = fgets(buf, sizeof(buf), fp)));
 
@@ -1275,8 +1290,8 @@ void psl_free(psl_ctx_t *psl)
  * The builtin data also contains punycode entries, one for each international domain name.
  *
  * If the generation of built-in data has been disabled during compilation, %NULL will be returned.
- * When using the builtin psl context, you can provide UTF-8 or punycode representations of domains to
- * functions like psl_is_public_suffix().
+ * When using the builtin psl context, you can provide UTF-8 (lowercase + NFCK) or ASCII/ACE (punycode)
+ * representations of domains to functions like psl_is_public_suffix().
  *
  * Returns: Pointer to the built in PSL data or NULL if this data is not available.
  *
@@ -1495,8 +1510,10 @@ static int _isip(const char *hostname)
  * This helper function checks whether @cookie_domain is an acceptable cookie domain value for the request
  * @hostname.
  *
- * For international domain names both, @hostname and @cookie_domain, have to be either in lowercase UTF-8
- * or in ASCII form (punycode). Other encodings or mixing UTF-8 and punycode result in unexpected behavior.
+ * For international domain names both, @hostname and @cookie_domain, have to be either in UTF-8 (lowercase + NFCK)
+ * or in ASCII/ACE (punycode) format. Other encodings or mixing UTF-8 and punycode likely result in incorrect return values.
+ *
+ * Use helper function psl_str_to_utf8lower() for normalization of @hostname and @cookie_domain.
  *
  * Examples:
  * 1. Cookie domain 'example.com' would be acceptable for hostname 'www.example.com',
@@ -1553,8 +1570,8 @@ int psl_is_cookie_domain_acceptable(const psl_ctx_t *psl, const char *hostname, 
  * @locale: locale of @str for to lowercase conversion, e.g. 'de' or %NULL
  * @lower: return value containing the converted string
  *
- * This helper function converts a string to lowercase UTF-8 representation.
- * Lowercase UTF-8 is needed as input to the domain checking functions.
+ * This helper function converts a string to UTF-8 lowercase + NFCK representation.
+ * Lowercase + NFCK UTF-8 is needed as input to the domain checking functions.
  *
  * @lower is set to %NULL on error.
  *
@@ -1567,6 +1584,7 @@ int psl_is_cookie_domain_acceptable(const psl_ctx_t *psl, const char *hostname, 
  *   PSL_ERR_TO_UTF16: Failed to convert @str to unicode
  *   PSL_ERR_TO_LOWER: Failed to convert unicode to lowercase
  *   PSL_ERR_TO_UTF8: Failed to convert unicode to UTF-8
+ *   PSL_ERR_NO_MEM: Failed to allocate memory
  *
  * Since: 0.4
  */
@@ -1585,7 +1603,8 @@ psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding _UNUSED, 
 		if (lower) {
 			char *p;
 
-			*lower = strdup(str);
+			if (!(*lower = strdup(str)))
+				return PSL_ERR_NO_MEM;
 
 			/* convert ASCII string to lowercase */
 			for (p = *lower; *p; p++)
@@ -1604,10 +1623,21 @@ psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding _UNUSED, 
 	char *utf8_lower;
 	UConverter *uconv;
 
-	/* C89 allocation */
-	utf16_dst   = alloca(sizeof(UChar) * (str_length * 2 + 1));
-	utf16_lower = alloca(sizeof(UChar) * (str_length * 2 + 1));
-	utf8_lower  = alloca(str_length * 2 + 1);
+	if (str_length < 256) {
+		/* C89 allocation */
+		utf16_dst   = alloca(sizeof(UChar) * (str_length * 2 + 1));
+		utf16_lower = alloca(sizeof(UChar) * (str_length * 2 + 1));
+		utf8_lower  = alloca(str_length * 2 + 1);
+	} else {
+		utf16_dst   = malloc(sizeof(UChar) * (str_length * 2 + 1));
+		utf16_lower = malloc(sizeof(UChar) * (str_length * 2 + 1));
+		utf8_lower  = malloc(str_length * 2 + 1);
+
+		if (!utf16_dst || !utf16_lower || !utf8_lower) {
+			ret = PSL_ERR_NO_MEM;
+			goto out;
+		}
+	}
 
 	uconv = ucnv_open(encoding, &status);
 	if (U_SUCCESS(status)) {
@@ -1619,9 +1649,16 @@ psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding _UNUSED, 
 			if (U_SUCCESS(status)) {
 				u_strToUTF8(utf8_lower, str_length * 8 + 1, NULL, utf16_lower, utf16_lower_length, &status);
 				if (U_SUCCESS(status)) {
-					if (lower)
-						*lower = strdup(utf8_lower);
 					ret = PSL_SUCCESS;
+					if (lower) {
+						if (str_length < 256) {
+							if (!(*lower = strdup(utf8_lower)))
+								ret = PSL_ERR_NO_MEM;
+						} else {
+							*lower = utf8_lower;
+							utf8_lower = NULL;
+						}
+					}
 				} else {
 					ret = PSL_ERR_TO_UTF8;
 					/* fprintf(stderr, "Failed to convert UTF-16 to UTF-8 (status %d)\n", status); */
@@ -1637,6 +1674,12 @@ psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding _UNUSED, 
 	} else {
 		ret = PSL_ERR_CONVERTER;
 		/* fprintf(stderr, "Failed to open converter for '%s' (status %d)\n", encoding, status); */
+	}
+out:
+	if (str_length >= 256) {
+		free(utf16_dst);
+		free(utf16_lower);
+		free(utf8_lower);
 	}
 	} while (0);
 #elif defined(WITH_LIBIDN2) || defined(WITH_LIBIDN)
@@ -1655,26 +1698,32 @@ psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding _UNUSED, 
 
 			if (cd != (iconv_t)-1) {
 				char *tmp = (char *)str; /* iconv won't change where str points to, but changes tmp itself */
-				size_t tmp_len = strlen(str);
+				size_t tmp_len = strlen(str) + 1;
 				size_t dst_len = tmp_len * 6, dst_len_tmp = dst_len;
 				char *dst = malloc(dst_len + 1), *dst_tmp = dst;
 
-				if (iconv(cd, &tmp, &tmp_len, &dst_tmp, &dst_len_tmp) != (size_t)-1) {
-					uint8_t *resbuf = malloc(dst_len * 2 + 1);
-					size_t len = dst_len * 2; /* leave space for additional \0 byte */
+				if (!dst) {
+					ret = PSL_ERR_NO_MEM;
+				}
+				else if (iconv(cd, &tmp, &tmp_len, &dst_tmp, &dst_len_tmp) != (size_t)-1
+					&& iconv(cd, NULL, NULL, &dst_tmp, &dst_len_tmp) != (size_t)-1)
+				{
+					/* start size for u8_tolower internal memory allocation.
+					 * u8_tolower() does not terminate the result string. we have 0 byte included in above tmp_len
+					 * and thus in len. */
+					size_t len = dst_len - dst_len_tmp;
 
-					if ((dst = (char *)u8_tolower((uint8_t *)dst, dst_len - dst_len_tmp, 0, UNINORM_NFKC, resbuf, &len))) {
-						/* u8_tolower() does not terminate the result string */
-						if (lower)
-							*lower = strndup((char *)dst, len);
+					if ((tmp = (char *)u8_tolower((uint8_t *)dst, len, 0, UNINORM_NFKC, NULL, &len))) {
+						ret = PSL_SUCCESS;
+						if (lower) {
+							*lower = tmp;
+							tmp = NULL;
+						} else
+							free(tmp);
 					} else {
 						ret = PSL_ERR_TO_LOWER;
 						/* fprintf(stderr, "Failed to convert UTF-8 to lowercase (errno %d)\n", errno); */
 					}
-
-					if (lower)
-						*lower = strndup(dst, dst_len - dst_len_tmp);
-					ret = PSL_SUCCESS;
 				} else {
 					ret = PSL_ERR_TO_UTF8;
 					/* fprintf(stderr, "Failed to convert '%s' string into '%s' (%d)\n", src_encoding, dst_encoding, errno); */
@@ -1686,19 +1735,21 @@ psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding _UNUSED, 
 				ret = PSL_ERR_TO_UTF8;
 				/* fprintf(stderr, "Failed to prepare encoding '%s' into '%s' (%d)\n", src_encoding, dst_encoding, errno); */
 			}
-		} else
-			ret = PSL_SUCCESS;
-
-		/* convert to lowercase */
-		if (ret == PSL_SUCCESS) {
-			uint8_t *dst, resbuf[256];
-			size_t len = sizeof(resbuf) - 1; /* leave space for additional \0 byte */
-
+		} else {
 			/* we need a conversion to lowercase */
-			if ((dst = u8_tolower((uint8_t *)str, u8_strlen((uint8_t *)str), 0, UNINORM_NFKC, resbuf, &len))) {
-				/* u8_tolower() does not terminate the result string */
-				if (lower)
-					*lower = strndup((char *)dst, len);
+			uint8_t *tmp;
+
+			/* start size for u8_tolower internal memory allocation.
+			 * u8_tolower() does not terminate the result string, so include terminating 0 byte in len. */
+			size_t len = u8_strlen((uint8_t *)str) + 1;
+
+			if ((tmp = u8_tolower((uint8_t *)str, len, 0, UNINORM_NFKC, NULL, &len))) {
+				ret = PSL_SUCCESS;
+				if (lower) {
+					*lower = (char*)tmp;
+					tmp = NULL;
+				} else
+					free(tmp);
 			} else {
 				ret = PSL_ERR_TO_LOWER;
 				/* fprintf(stderr, "Failed to convert UTF-8 to lowercase (errno %d)\n", errno); */

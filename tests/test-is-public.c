@@ -84,6 +84,7 @@ static void test_psl(void)
 		{ "adfhoweirh", 1 }, /* unknown TLD */
 	};
 	unsigned it;
+	int result, ver;
 	psl_ctx_t *psl;
 
 	psl = psl_load_file(PSL_FILE);
@@ -92,7 +93,7 @@ static void test_psl(void)
 
 	for (it = 0; it < countof(test_data); it++) {
 		const struct test_data *t = &test_data[it];
-		int result = psl_is_public_suffix(psl, t->domain);
+		result = psl_is_public_suffix(psl, t->domain);
 
 		if (result == t->result) {
 			ok++;
@@ -101,6 +102,68 @@ static void test_psl(void)
 			printf("psl_is_public_suffix(%s)=%d (expected %d)\n", t->domain, result, t->result);
 		}
 	}
+
+	/* do some checks to cover more code paths in libpsl */
+	psl_is_public_suffix(NULL, "xxx");
+
+	if ((ver = psl_check_version_number(0)) == 0) {
+		printf("psl_check_version_number(0) is 0\n");
+		failed++;
+	} else {
+		if (((result = psl_check_version_number(ver)) != ver)) {
+			printf("psl_check_version_number(%06X) is %06X\n", ver, result);
+			failed++;
+		}
+
+		if (((result = psl_check_version_number(ver - 1)) != 0)) {
+			printf("psl_check_version_number(%06X) is %06X\n", ver - 1, result);
+			failed++;
+		}
+
+		if (((result = psl_check_version_number(ver + 1)) != ver)) {
+			printf("psl_check_version_number(%06X) is %06X\n", ver, result);
+			failed++;
+		}
+	}
+
+	psl_str_to_utf8lower("www.example.com", "utf-8", "en", NULL);
+	psl_str_to_utf8lower(NULL, "utf-8", "en", NULL);
+
+	{
+		char *lower = NULL;
+
+		psl_str_to_utf8lower("www.example.com", NULL, "de", &lower);
+		free(lower); lower = NULL;
+
+		psl_str_to_utf8lower("\374bel.de", NULL, "de", &lower);
+		free(lower); lower = NULL;
+
+		psl_str_to_utf8lower("\374bel.de", "iso-8859-1", NULL, &lower);
+		free(lower); lower = NULL;
+
+		psl_str_to_utf8lower(NULL, "utf-8", "en", &lower);
+		free(lower); lower = NULL;
+	}
+
+	psl_get_version();
+	psl_builtin_filename();
+	psl_builtin_outdated();
+	psl_builtin_file_time();
+	psl_builtin_sha1sum();
+	psl_suffix_wildcard_count(NULL);
+	psl_suffix_wildcard_count(psl);
+	psl_suffix_wildcard_count(psl_builtin());
+	psl_suffix_count(NULL);
+	psl_suffix_exception_count(NULL);
+	psl_load_file(NULL);
+	psl_load_fp(NULL);
+	psl_registrable_domain(NULL, "");
+	psl_registrable_domain(psl, NULL);
+	psl_registrable_domain(psl, "www.example.com");
+	psl_unregistrable_domain(NULL, "");
+	psl_unregistrable_domain(psl, NULL);
+	psl_is_public_suffix2(NULL, "", PSL_TYPE_ANY);
+	psl_is_public_suffix2(psl, NULL, PSL_TYPE_ANY);
 
 	psl_free(psl);
 }
