@@ -1,5 +1,14 @@
 Copyright (C) 2014-2016 Tim Rühsen
 
+14.11.2016 Release V0.15.0
+  * Python3 compatibility for psl-make-dafsa
+  * Support for UTF-8 in DAFSA data
+  * Skip punycode conversion if DAFSA has UTF-8
+  * Better code coverage by test suite
+  * Code cleanup and enhancements
+  * Install man pages for psl-make-dafsa and psl
+  * Enhancements to the documentation
+
 30.07.2016 Release V0.14.0
   * Remove unneeded libraries from tools/psl link step
   * Use https instead of http where possible
