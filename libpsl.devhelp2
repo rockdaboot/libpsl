@@ -44,5 +44,6 @@
     <keyword type="constant" name="PSL_ERR_TO_UTF16" link="libpsl-Public-Suffix-List-functions.html#PSL-ERR-TO-UTF16:CAPS"/>
     <keyword type="constant" name="PSL_ERR_TO_LOWER" link="libpsl-Public-Suffix-List-functions.html#PSL-ERR-TO-LOWER:CAPS"/>
     <keyword type="constant" name="PSL_ERR_TO_UTF8" link="libpsl-Public-Suffix-List-functions.html#PSL-ERR-TO-UTF8:CAPS"/>
+    <keyword type="constant" name="PSL_ERR_NO_MEM" link="libpsl-Public-Suffix-List-functions.html#PSL-ERR-NO-MEM:CAPS"/>
   </functions>
 </book>
