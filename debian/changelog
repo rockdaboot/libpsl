@@ -1,3 +1,9 @@
+libpsl (0.15.0-1) unstable; urgency=medium
+
+  * new upstream release
+
+ -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Tue, 15 Nov 2016 08:40:01 +0900
+
 libpsl (0.14.0-1) unstable; urgency=medium
 
   * New uptream version; moved from libpsl0 to libpsl5 because of removal
