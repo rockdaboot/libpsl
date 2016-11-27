@@ -287,3 +287,4 @@ AC_MSG_NOTICE([Summary of build options:
   PSL Test File:     ${PSL_TESTFILE}
   Tests:             ${TESTS_INFO}
 ])
+# Test again
