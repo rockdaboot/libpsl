@@ -942,7 +942,7 @@ suffix_yes:
  *
  * For cookie domain checking see psl_is_cookie_domain_acceptable().
  *
- * International @domain names have to be either in UTF-8 (lowercase + NFCK) or in ASCII/ACE format (punycode).
+ * International @domain names have to be either in UTF-8 (lowercase + NFKC) or in ASCII/ACE format (punycode).
  * Other encodings likely result in incorrect return values.
  * Use helper function psl_str_to_utf8lower() for normalization @domain.
  *
@@ -973,7 +973,7 @@ int psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
  * @type specifies the PSL section where to perform the lookup. Valid values are
  * %PSL_TYPE_PRIVATE, %PSL_TYPE_ICANN and %PSL_TYPE_ANY.
  *
- * International @domain names have to be either in UTF-8 (lowercase + NFCK) or in ASCII/ACE format (punycode).
+ * International @domain names have to be either in UTF-8 (lowercase + NFKC) or in ASCII/ACE format (punycode).
  * Other encodings likely result in incorrect return values.
  * Use helper function psl_str_to_utf8lower() for normalization @domain.
  *
@@ -1000,7 +1000,7 @@ int psl_is_public_suffix2(const psl_ctx_t *psl, const char *domain, int type)
  * This function finds the longest public suffix part of @domain by the means
  * of the [Mozilla Public Suffix List](https://publicsuffix.org).
  *
- * International @domain names have to be either in UTF-8 (lowercase + NFCK) or in ASCII/ACE format (punycode).
+ * International @domain names have to be either in UTF-8 (lowercase + NFKC) or in ASCII/ACE format (punycode).
  * Other encodings likely result in incorrect return values.
  * Use helper function psl_str_to_utf8lower() for normalization @domain.
  *
@@ -1040,7 +1040,7 @@ const char *psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain)
  * This function finds the shortest private suffix part of @domain by the means
  * of the [Mozilla Public Suffix List](https://publicsuffix.org).
  *
- * International @domain names have to be either in UTF-8 (lowercase + NFCK) or in ASCII/ACE format (punycode).
+ * International @domain names have to be either in UTF-8 (lowercase + NFKC) or in ASCII/ACE format (punycode).
  * Other encodings likely result in incorrect return values.
  * Use helper function psl_str_to_utf8lower() for normalization @domain.
  *
@@ -1082,7 +1082,7 @@ const char *psl_registrable_domain(const psl_ctx_t *psl, const char *domain)
  * This function loads the public suffixes file named @fname.
  * To free the allocated resources, call psl_free().
  *
- * The suffixes are expected to be UTF-8 encoded (lowercase + NFCK) if they are international.
+ * The suffixes are expected to be UTF-8 encoded (lowercase + NFKC) if they are international.
  *
  * Returns: Pointer to a PSL context or %NULL on failure.
  *
@@ -1111,7 +1111,7 @@ psl_ctx_t *psl_load_file(const char *fname)
  * This function loads the public suffixes from a FILE pointer.
  * To free the allocated resources, call psl_free().
  *
- * The suffixes are expected to be UTF-8 encoded (lowercase + NFCK) if they are international.
+ * The suffixes are expected to be UTF-8 encoded (lowercase + NFKC) if they are international.
  *
  * Returns: Pointer to a PSL context or %NULL on failure.
  *
@@ -1290,7 +1290,7 @@ void psl_free(psl_ctx_t *psl)
  * The builtin data also contains punycode entries, one for each international domain name.
  *
  * If the generation of built-in data has been disabled during compilation, %NULL will be returned.
- * When using the builtin psl context, you can provide UTF-8 (lowercase + NFCK) or ASCII/ACE (punycode)
+ * When using the builtin psl context, you can provide UTF-8 (lowercase + NFKC) or ASCII/ACE (punycode)
  * representations of domains to functions like psl_is_public_suffix().
  *
  * Returns: Pointer to the built in PSL data or NULL if this data is not available.
@@ -1510,7 +1510,7 @@ static int _isip(const char *hostname)
  * This helper function checks whether @cookie_domain is an acceptable cookie domain value for the request
  * @hostname.
  *
- * For international domain names both, @hostname and @cookie_domain, have to be either in UTF-8 (lowercase + NFCK)
+ * For international domain names both, @hostname and @cookie_domain, have to be either in UTF-8 (lowercase + NFKC)
  * or in ASCII/ACE (punycode) format. Other encodings or mixing UTF-8 and punycode likely result in incorrect return values.
  *
  * Use helper function psl_str_to_utf8lower() for normalization of @hostname and @cookie_domain.
@@ -1570,8 +1570,8 @@ int psl_is_cookie_domain_acceptable(const psl_ctx_t *psl, const char *hostname, 
  * @locale: locale of @str for to lowercase conversion, e.g. 'de' or %NULL
  * @lower: return value containing the converted string
  *
- * This helper function converts a string to UTF-8 lowercase + NFCK representation.
- * Lowercase + NFCK UTF-8 is needed as input to the domain checking functions.
+ * This helper function converts a string to UTF-8 lowercase + NFKC representation.
+ * Lowercase + NFKC UTF-8 is needed as input to the domain checking functions.
  *
  * @lower is set to %NULL on error.
  *
