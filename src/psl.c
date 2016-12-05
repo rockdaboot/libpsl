@@ -1594,19 +1594,18 @@ psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding _UNUSED, 
 {
 	int ret = PSL_ERR_INVALID_ARG;
 
-	if (lower)
-		*lower = NULL;
-
 	if (!str)
 		return PSL_ERR_INVALID_ARG;
 
 	/* shortcut to avoid costly conversion */
 	if (_str_is_ascii(str)) {
 		if (lower) {
-			char *p;
+			char *p, *tmp;
 
-			if (!(*lower = strdup(str)))
+			if (!(tmp = strdup(str)))
 				return PSL_ERR_NO_MEM;
+
+			*lower = tmp;
 
 			/* convert ASCII string to lowercase */
 			for (p = *lower; *p; p++)
@@ -1654,7 +1653,11 @@ psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding _UNUSED, 
 					ret = PSL_SUCCESS;
 					if (lower) {
 						if (str_length < 256) {
-							if (!(*lower = strdup(utf8_lower)))
+							char *tmp = strdup(utf8_lower);
+
+							if (tmp)
+								*lower = tmp;
+							else
 								ret = PSL_ERR_NO_MEM;
 						} else {
 							*lower = utf8_lower;

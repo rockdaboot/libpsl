@@ -164,15 +164,15 @@ int main(int argc, const char *const *argv)
 				else if (mode == 4) {
 					char *cookie_domain_lower;
 
-					if ((rc = psl_str_to_utf8lower(domain, NULL, NULL, &cookie_domain_lower)) != PSL_SUCCESS)
-						fprintf(stderr, "%s: Failed to convert cookie domain '%s' to lowercase UTF-8 (%d)\n", domain, cookie_domain, rc);
-					else
+					if ((rc = psl_str_to_utf8lower(domain, NULL, NULL, &cookie_domain_lower)) == PSL_SUCCESS) {
 						printf("%s: %d\n", domain, psl_is_cookie_domain_acceptable(psl, lower, cookie_domain));
-
-					free(cookie_domain_lower);
+						free(cookie_domain_lower);
+					} else
+						fprintf(stderr, "%s: Failed to convert cookie domain '%s' to lowercase UTF-8 (%d)\n", domain, cookie_domain, rc);
 				}
 
-				free(lower);
+				if (rc == PSL_SUCCESS)
+					free(lower);
 			}
 
 			psl_free(psl);

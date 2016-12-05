@@ -53,7 +53,7 @@ static int
 static void testx(const psl_ctx_t *psl, const char *domain, const char *encoding, const char *lang, const char *expected_result)
 {
 	const char *result;
-	char *lower;
+	char *lower = NULL;
 	int rc;
 
 	/* just to cover special code paths for valgrind checking */
@@ -67,8 +67,6 @@ static void testx(const psl_ctx_t *psl, const char *domain, const char *encoding
 		/* if we do not runtime support, test failure have to be skipped */
 		failed++;
 		printf("psl_str_to_utf8lower(%s)=%d\n", domain ? domain : "NULL", rc);
-
-		free(lower);
 		return;
 	}
 #endif
