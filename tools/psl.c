@@ -120,7 +120,7 @@ int main(int argc, const char *const *argv)
 				printf("psl %s (0x%06x)\n", PACKAGE_VERSION, psl_check_version_number(0));
 				printf("libpsl %s\n", psl_get_version());
 				printf("\n");
-				printf("Copyright (C) 2014-2015 Tim Ruehsen\n");
+				printf("Copyright (C) 2014-2016 Tim Ruehsen\n");
 				printf("License: MIT\n");
 				exit(0);
 			}
