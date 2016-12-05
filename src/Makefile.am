@@ -7,7 +7,7 @@ CLEANFILES = suffixes_dafsa.c
 lib_LTLIBRARIES = libpsl.la
 
 libpsl_la_SOURCES = psl.c lookup_string_in_fixed_set.c
-libpsl_la_CPPFLAGS = -I$(top_srcdir)/include
+libpsl_la_CPPFLAGS = -I$(top_srcdir)/include -DPSL_DISTFILE=\"$(PSL_DISTFILE)\"
 # include ABI version information
 libpsl_la_LDFLAGS = -version-info $(LIBPSL_SO_VERSION)
 if WITH_LIBICU

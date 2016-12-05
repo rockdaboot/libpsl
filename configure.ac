@@ -243,6 +243,11 @@ else
   TESTS_INFO="Valgrind testing not enabled"
 fi
 
+# Check for distribution-wide PSL file
+AC_ARG_WITH(psl-distfile,
+  AC_HELP_STRING([--with-psl-distfile=[PATH]], [path to distribution-wide PSL file]),
+  PSL_DISTFILE=$withval AC_SUBST(PSL_DISTFILE))
+
 # Check for custom PSL file
 AC_ARG_WITH(psl-file,
   AC_HELP_STRING([--with-psl-file=[PATH]], [path to PSL file]),
@@ -283,6 +288,7 @@ AC_MSG_NOTICE([Summary of build options:
   Libs:              ${LIBS}
   Runtime:           ${enable_runtime}
   Builtin:           ${enable_builtin}
+  PSL Dist File:     ${PSL_DISTFILE}
   PSL File:          ${PSL_FILE}
   PSL Test File:     ${PSL_TESTFILE}
   Tests:             ${TESTS_INFO}

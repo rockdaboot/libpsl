@@ -72,7 +72,7 @@ int main(int argc, const char *const *argv)
 {
 	int mode = 1;
 	const char *const *arg, *psl_file = NULL, *cookie_domain = NULL;
-	psl_ctx_t *psl = (psl_ctx_t *) psl_builtin();
+	psl_ctx_t *psl = (psl_ctx_t *) psl_latest(NULL);
 
 	/* set current locale according to the environment variables */
 	#include <locale.h>
@@ -197,6 +197,8 @@ int main(int argc, const char *const *argv)
 			printf("%s: %d\n", *arg, psl_is_cookie_domain_acceptable(psl, *arg, cookie_domain));
 	}
 	else if (mode == 99) {
+		printf("dist filename: %s\n", psl_dist_filename());
+
 		if (psl && psl != psl_builtin()) {
 			printf("suffixes: %d\n", psl_suffix_count(psl));
 			printf("exceptions: %d\n", psl_suffix_exception_count(psl));

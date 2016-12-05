@@ -176,6 +176,12 @@ struct _psl_ctx_st {
 static const psl_ctx_t
 	_builtin_psl;
 
+#ifdef PSL_DISTFILE
+static const char _psl_dist_filename[] = PSL_DISTFILE;
+#else
+static const char _psl_dist_filename[] = "";
+#endif
+
 static _psl_vector_t *_vector_alloc(int max, int (*cmp)(const _psl_entry_t **, const _psl_entry_t **))
 {
 	_psl_vector_t *v;
@@ -1417,6 +1423,23 @@ int psl_builtin_outdated(void)
 }
 
 /**
+ * psl_dist_filename:
+ *
+ * This function returns the file name of the distribution/system PSL data file.
+ * This file will be considered by psl_latest().
+ *
+ * Return the filename that is set by ./configure --with-psl-distfile, or an empty string.
+ *
+ * Returns: String containing a PSL file name or an empty string.
+ *
+ * Since: 0.16
+ */
+const char *psl_dist_filename(void)
+{
+	return _psl_dist_filename;
+}
+
+/**
  * psl_get_version:
  *
  * Get libpsl version.
@@ -1740,4 +1763,71 @@ out:
 #endif
 
 	return ret;
+}
+
+/* if file is newer than the builtin data, insert it reverse sorted by mtime */
+static int _insert_file(const char *fname, const char **psl_fname, time_t *psl_mtime, int n)
+{
+	struct stat st;
+	int it;
+
+	if (fname && *fname && stat(fname, &st) == 0 && st.st_mtime > _psl_file_time) {
+		/* add file name and mtime to end of array */
+		psl_fname[n] = fname;
+		psl_mtime[n++] = st.st_mtime;
+
+		/* move the new entry to it's correct position */
+		for (it = n - 2; it >= 0 && st.st_mtime > psl_mtime[it]; it--) {
+			psl_fname[it + 1] = psl_fname[it];
+			psl_mtime[it + 1] = psl_mtime[it];
+			psl_fname[it] = fname;
+			psl_mtime[it] = st.st_mtime;
+		}
+	}
+
+	return n;
+}
+
+/**
+ * psl_latest:
+ * @fname: Name of PSL file or %NULL
+ *
+ * This function loads the the latest available PSL data from either
+ * - @fname (application specific filename, may be %NULL)
+ * - location specified during built-time (filename from ./configure --with-psl-distfile)
+ * - built-in PSL data (generated from ./configure --with-psl-file)
+ * - location of built-in data (filename from ./configure --with-psl-file)
+ * 
+ * If none of the above is available, the function returns %NULL.
+ *
+ * To free the allocated resources, call psl_free().
+ *
+ * Returns: Pointer to a PSL context or %NULL on failure.
+ *
+ * Since: 0.16
+ */
+psl_ctx_t *psl_latest(const char *fname)
+{
+	psl_ctx_t *psl;
+	const char *psl_fname[3];
+	time_t psl_mtime[3];
+	int it, ntimes;
+
+	psl_fname[0] = NULL; /* silence gcc 6.2 false warning */
+
+	/* create array of PSL files reverse sorted by mtime (latest first) */
+	ntimes = _insert_file(fname, psl_fname, psl_mtime, 0);
+	ntimes = _insert_file(_psl_filename, psl_fname, psl_mtime, ntimes);
+	ntimes = _insert_file(_psl_dist_filename, psl_fname, psl_mtime, ntimes);
+
+	/* load PSL data from the latest file, falling back to the second recent, ... */
+	for (psl = NULL, it = 0; it < ntimes; it++) {
+		if (psl_mtime[it] > _psl_file_time)
+			if ((psl = psl_load_file(psl_fname[it])))
+				break;
+	}
+
+	/* if file loading failed or there is no file newer than the builtin data,
+	 * then return the builtin data. */
+	return psl ? psl : (psl_ctx_t *) psl_builtin();
 }
