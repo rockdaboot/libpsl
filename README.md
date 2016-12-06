@@ -30,7 +30,7 @@ Libpsl...
 - finds the shortest private part of a given domain
 - works with international domains (UTF-8 and IDNA2008 Punycode)
 - is thread-safe
-- handles IDNA2008 UTS#46 (libicu is used by psl2c if installed)
+- handles IDNA2008 UTS#46 (if libicu is available)
 
 Find more information about the Publix Suffix List [here](https://publicsuffix.org/).
 
@@ -86,7 +86,7 @@ representation of strings. Here we use it to reduce the whole PSL to about 32k i
 
 Generate `psl.dafsa` from `list/public_suffix_list.dat`
 
-	$ src/psl-make-dafsa --output-format=binary --input-format=psl list/public_suffix_list.dat psl.dafsa
+	$ src/psl-make-dafsa --output-format=binary list/public_suffix_list.dat psl.dafsa
 
 Test the result (example)
 

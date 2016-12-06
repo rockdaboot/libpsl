@@ -33,7 +33,6 @@ check-coverage:
 	lcov --capture --initial --directory src --output-file libpsl.info
 	$(MAKE) check
 	lcov --capture --directory src --output-file libpsl.info
-	lcov --remove libpsl.info 'src/psl2c.c' -o libpsl.info
 	genhtml --prefix . libpsl.info --legend --title "libpsl" --output-directory=lcov
 
 check-coverage-libidn:

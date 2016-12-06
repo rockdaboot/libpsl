@@ -28,9 +28,9 @@ TESTS = $(PSL_TESTS)
 # check-local target works in parallel to the tests, so the test suite will likely fail
 BUILT_SOURCES = psl.dafsa psl_ascii.dafsa
 psl.dafsa:
-	$(top_srcdir)/src/psl-make-dafsa --input-format=psl --output-format=binary "$(PSL_FILE)" psl.dafsa
+	$(top_srcdir)/src/psl-make-dafsa --output-format=binary "$(PSL_FILE)" psl.dafsa
 psl_ascii.dafsa:
-	$(top_srcdir)/src/psl-make-dafsa --input-format=psl --output-format=binary --encoding=ascii "$(PSL_FILE)" psl_ascii.dafsa
+	$(top_srcdir)/src/psl-make-dafsa --output-format=binary --encoding=ascii "$(PSL_FILE)" psl_ascii.dafsa
 
 clean-local:
 	rm -f psl.dafsa psl_ascii.dafsa

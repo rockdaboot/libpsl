@@ -20,23 +20,10 @@ if WITH_LIBIDN
   libpsl_la_LDFLAGS += -lidn -lunistring
 endif
 
-noinst_PROGRAMS = psl2c
-psl2c_SOURCES = psl2c.c lookup_string_in_fixed_set.c
-psl2c_CPPFLAGS = -I$(top_srcdir)/include -DMAKE_DAFSA=\"$(top_srcdir)/src/psl-make-dafsa\"
-if BUILTIN_GENERATOR_LIBICU
-  psl2c_LDADD = $(LIBICU_LIBS)
-endif
-if BUILTIN_GENERATOR_LIBIDN2
-  psl2c_LDADD = @LTLIBICONV@ -lidn2 -lunistring
-endif
-if BUILTIN_GENERATOR_LIBIDN
-  psl2c_LDADD = @LTLIBICONV@ -lidn -lunistring
-endif
-
 # Build rule for suffix_dafsa.c
 # PSL_FILE can be set by ./configure --with-psl-file=[PATH]
-suffixes_dafsa.c: $(PSL_FILE) psl2c$(EXEEXT)
-	./psl2c$(EXEEXT) "$(PSL_FILE)" suffixes_dafsa.c
+suffixes_dafsa.c: $(PSL_FILE) $(srcdir)/psl-make-dafsa
+	$(srcdir)/psl-make-dafsa --output-format=cxx+ "$(PSL_FILE)" suffixes_dafsa.c
 
 EXTRA_DIST = psl-make-dafsa LICENSE.chromium
 
