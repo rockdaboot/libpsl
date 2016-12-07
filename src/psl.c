@@ -1355,7 +1355,7 @@ int psl_suffix_wildcard_count(const psl_ctx_t *psl)
 /**
  * psl_builtin_file_time:
  *
- * This function returns the mtime of the Publix Suffix List file that has been built in.
+ * This function returns the mtime of the Public Suffix List file that has been built in.
  *
  * If the generation of built-in data has been disabled during compilation, 0 will be returned.
  *
@@ -1371,7 +1371,7 @@ time_t psl_builtin_file_time(void)
 /**
  * psl_builtin_sha1sum:
  *
- * This function returns the SHA1 checksum of the Publix Suffix List file that has been built in.
+ * This function returns the SHA1 checksum of the Public Suffix List file that has been built in.
  * The returned string is in lowercase hex encoding, e.g. "2af1e9e3044eda0678bb05949d7cca2f769901d8".
  *
  * If the generation of built-in data has been disabled during compilation, an empty string will be returned.
@@ -1388,7 +1388,7 @@ const char *psl_builtin_sha1sum(void)
 /**
  * psl_builtin_filename:
  *
- * This function returns the file name of the Publix Suffix List file that has been built in.
+ * This function returns the file name of the Public Suffix List file that has been built in.
  *
  * If the generation of built-in data has been disabled during compilation, an empty string will be returned.
  *
