@@ -94,7 +94,7 @@ static void test_psl_entry(const psl_ctx_t *psl, const char *domain, int type)
 		} else ok++;
 
 		if (!(strchr(domain, '.'))) {
-			/* TLDs are always expected to be Publix Suffixes */
+			/* TLDs are always expected to be Public Suffixes */
 			if (!(result = psl_is_public_suffix2(psl, domain, PSL_TYPE_PRIVATE))) {
 				failed++;
 				printf("psl_is_public_suffix2(%s, PSL_TYPE_PRIVATE)=%d (expected 1)\n", domain, result);

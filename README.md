@@ -32,7 +32,7 @@ Libpsl...
 - is thread-safe
 - handles IDNA2008 UTS#46 (if libicu is available)
 
-Find more information about the Publix Suffix List [here](https://publicsuffix.org/).
+Find more information about the Public Suffix List [here](https://publicsuffix.org/).
 
 Download the Public Suffix List [here](https://hg.mozilla.org/mozilla-central/raw-file/tip/netwerk/dns/effective_tld_names.dat).
 
