@@ -72,7 +72,7 @@ int main(int argc, const char *const *argv)
 {
 	int mode = 1;
 	const char *const *arg, *psl_file = NULL, *cookie_domain = NULL;
-	psl_ctx_t *psl = (psl_ctx_t *) psl_builtin();
+	psl_ctx_t *psl = (psl_ctx_t *) psl_latest(NULL);
 
 	/* set current locale according to the environment variables */
 	#include <locale.h>
@@ -120,7 +120,7 @@ int main(int argc, const char *const *argv)
 				printf("psl %s (0x%06x)\n", PACKAGE_VERSION, psl_check_version_number(0));
 				printf("libpsl %s\n", psl_get_version());
 				printf("\n");
-				printf("Copyright (C) 2014-2015 Tim Ruehsen\n");
+				printf("Copyright (C) 2014-2016 Tim Ruehsen\n");
 				printf("License: MIT\n");
 				exit(0);
 			}
@@ -164,15 +164,15 @@ int main(int argc, const char *const *argv)
 				else if (mode == 4) {
 					char *cookie_domain_lower;
 
-					if ((rc = psl_str_to_utf8lower(domain, NULL, NULL, &cookie_domain_lower)) != PSL_SUCCESS)
-						fprintf(stderr, "%s: Failed to convert cookie domain '%s' to lowercase UTF-8 (%d)\n", domain, cookie_domain, rc);
-					else
+					if ((rc = psl_str_to_utf8lower(domain, NULL, NULL, &cookie_domain_lower)) == PSL_SUCCESS) {
 						printf("%s: %d\n", domain, psl_is_cookie_domain_acceptable(psl, lower, cookie_domain));
-
-					free(cookie_domain_lower);
+						free(cookie_domain_lower);
+					} else
+						fprintf(stderr, "%s: Failed to convert cookie domain '%s' to lowercase UTF-8 (%d)\n", domain, cookie_domain, rc);
 				}
 
-				free(lower);
+				if (rc == PSL_SUCCESS)
+					free(lower);
 			}
 
 			psl_free(psl);
@@ -197,6 +197,8 @@ int main(int argc, const char *const *argv)
 			printf("%s: %d\n", *arg, psl_is_cookie_domain_acceptable(psl, *arg, cookie_domain));
 	}
 	else if (mode == 99) {
+		printf("dist filename: %s\n", psl_dist_filename());
+
 		if (psl && psl != psl_builtin()) {
 			printf("suffixes: %d\n", psl_suffix_count(psl));
 			printf("exceptions: %d\n", psl_suffix_exception_count(psl));
