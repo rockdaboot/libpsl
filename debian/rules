@@ -12,6 +12,7 @@ override_dh_auto_configure-arch:
 	dh_auto_configure -- \
 		--enable-builtin=libicu \
 		--enable-gtk-doc \
+		--enable-man \
 		--enable-ld-version-script \
 		--enable-runtime=libicu \
 		--with-packager=Debian \
