@@ -4,7 +4,7 @@ Maintainer: Tim Rühsen <tim.ruehsen@gmx.de>
 Uploaders:
  Daniel Kahn Gillmor <dkg@fifthhorseman.net>,
 Build-Depends:
- debhelper (>=9),
+ debhelper (>=10~),
 Build-Depends-Arch:
  automake,
  dh-autoreconf,
