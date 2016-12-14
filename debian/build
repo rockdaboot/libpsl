@@ -1,0 +1,9 @@
+#!/bin/bash
+
+branch=$(git branch|grep '^*'|cut -d' ' -f2)
+[ "$branch" = "debian" ] || exit 1
+
+rm -rf list
+git reset --hard
+git clean -d -x -f
+gbp buildpackage
