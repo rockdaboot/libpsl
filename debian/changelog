@@ -1,8 +1,8 @@
-libpsl (0.16.0-1) unstable; urgency=medium
+libpsl (0.16.1-1) unstable; urgency=medium
 
   * new upstream release
 
- -- Tim Rühsen <tim.ruehsen@gmx.de>  Sat, 10 Dec 2016 19:29:26 +0100
+ -- Tim Rühsen <tim.ruehsen@gmx.de>  Thu, 15 Dec 2016 15:45:07 +0100
 
 libpsl (0.15.0-1) unstable; urgency=medium
 
