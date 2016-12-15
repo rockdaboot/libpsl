@@ -1,5 +1,9 @@
 Copyright (C) 2014-2016 Tim Rühsen
 
+15.12.2016 Release V0.16.1
+  * Fix SO_VERSION to 6:0:1
+  * Add --use-latest-psl to tools/psl as default
+
 16.12.2016 Release V0.16.0
   * Add functions psl_latest() and psl_dist_filename()
   * Do not taint out variable on error in psl_str_to_utf8lower()
