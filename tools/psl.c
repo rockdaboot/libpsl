@@ -45,7 +45,8 @@ static void usage(int err, FILE* f)
 	fprintf(f, "\n");
 	fprintf(f, "Options:\n");
 	fprintf(f, "  --version                    show library version information\n");
-	fprintf(f, "  --use-builtin-data           use the builtin PSL data [default]\n");
+	fprintf(f, "  --use-latest-data            use the latest PSL data available [default]\n");
+	fprintf(f, "  --use-builtin-data           use the builtin PSL data\n");
 	fprintf(f, "  --load-psl-file <filename>   load PSL data from file\n");
 	fprintf(f, "  --is-public-suffix           check if domains are public suffixes [default]\n");
 	fprintf(f, "  --is-cookie-domain-acceptable <cookie-domain>\n");
@@ -91,6 +92,15 @@ int main(int argc, const char *const *argv)
 			else if (!strcmp(*arg, "--is-cookie-domain-acceptable") && arg < argv + argc - 1) {
 				mode = 4;
 				cookie_domain = *(++arg);
+			}
+			else if (!strcmp(*arg, "--use-latest-data")) {
+				psl_free(psl);
+				if (psl_file) {
+					fprintf(stderr, "Dropped data from %s\n", psl_file);
+					psl_file = NULL;
+				}
+				if (!(psl = (psl_ctx_t *) psl_latest(NULL)))
+					printf("No PSL data available\n");
 			}
 			else if (!strcmp(*arg, "--use-builtin-data")) {
 				psl_free(psl);

@@ -42,12 +42,15 @@ show library version information
 \fB\-\-print\-info\fR
 print info about library builtin data
 .SH PUBLIC SUFFIX DATA
-By default, `psl' will use built-in Public Suffix data.
+By default, `psl' will use the latest available Public Suffix data.
 .br
 You can also direct it to use a different file:
 .TP
+\fB\-\-use\-latest\-data\fR
+use the latest available PSL data [default]
+.TP
 \fB\-\-use\-builtin\-data\fR
-use the builtin PSL data [default]
+use the builtin PSL data
 .TP
 \fB\-\-load\-psl\-file\fR <filename>
 load PSL data from file
