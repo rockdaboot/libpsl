@@ -30,3 +30,6 @@ override_dh_autoreconf-indep:
 override_dh_auto_configure-indep:
 override_dh_auto_build-indep:
 
+override_dh_clean:
+	[ -e missing ] || ln -sf /usr/share/libtool/build-aux/missing missing
+	dh_clean
