@@ -146,6 +146,7 @@ static void test_psl(void)
 	}
 
 	psl_get_version();
+	psl_dist_filename();
 	psl_builtin_filename();
 	psl_builtin_outdated();
 	psl_builtin_file_time();
