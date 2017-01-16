@@ -706,7 +706,7 @@ static int _psl_idna_toASCII(_psl_idna_t *idna _UNUSED, const char *utf8, char *
 
 	/* IDN2_TRANSITIONAL automatically converts to lowercase
 	 * IDN2_NFC_INPUT converts to NFC before toASCII conversion
-	 * Since IDN2_TRANSITIONAL implicitely does NFC conversion, we don't need
+	 * Since IDN2_TRANSITIONAL implicitly does NFC conversion, we don't need
 	 * the additional IDN2_NFC_INPUT. But just for the unlikely case that the linked
 	 * library is not matching the headers when building and it doesn't support TR46,
 	 * we provide IDN2_NFC_INPUT. */
