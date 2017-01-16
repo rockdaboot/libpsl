@@ -1,4 +1,9 @@
-Copyright (C) 2014-2016 Tim Rühsen
+Copyright (C) 2014-2017 Tim Rühsen
+
+16.01.2017 Release V0.17.0
+  * Use TR46 non-transitional for IDNA (libicu, libidn2 >= 0.14)
+  * Fix coverage upload from TravisCI to Coveralls
+  * New tests to cover psl_latest() and psl_dist_filename()
 
 15.12.2016 Release V0.16.1
   * Fix SO_VERSION to 6:0:1
