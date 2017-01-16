@@ -658,7 +658,7 @@ static _psl_idna_t *_psl_idna_open(void)
 {
 #if defined(WITH_LIBICU)
 	UErrorCode status = 0;
-	return (void *)uidna_openUTS46(UIDNA_USE_STD3_RULES, &status);
+	return (void *)uidna_openUTS46(UIDNA_USE_STD3_RULES | UIDNA_NONTRANSITIONAL_TO_ASCII, &status);
 #endif
 	return NULL;
 }
