@@ -1833,8 +1833,8 @@ psl_ctx_t *psl_latest(const char *fname)
 
 	/* create array of PSL files reverse sorted by mtime (latest first) */
 	ntimes = _insert_file(fname, psl_fname, psl_mtime, 0);
-	ntimes = _insert_file(_psl_filename, psl_fname, psl_mtime, ntimes);
 	ntimes = _insert_file(_psl_dist_filename, psl_fname, psl_mtime, ntimes);
+	ntimes = _insert_file(_psl_filename, psl_fname, psl_mtime, ntimes);
 
 	/* load PSL data from the latest file, falling back to the second recent, ... */
 	for (psl = NULL, it = 0; it < ntimes; it++) {
