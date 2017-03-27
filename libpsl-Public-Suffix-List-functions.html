@@ -60,6 +60,14 @@
 </td>
 </tr>
 <tr>
+<td class="function_type">
+<a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-ctx-t" title="psl_ctx_t"><span class="returnvalue">psl_ctx_t</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-latest" title="psl_latest ()">psl_latest</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
 <td class="function_type">const <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-ctx-t" title="psl_ctx_t"><span class="returnvalue">psl_ctx_t</span></a> *
 </td>
 <td class="function_name">
@@ -170,6 +178,13 @@
 <td class="function_type">const <span class="returnvalue">char</span> *
 </td>
 <td class="function_name">
+<a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-dist-filename" title="psl_dist_filename ()">psl_dist_filename</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
 <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-get-version" title="psl_get_version ()">psl_get_version</a> <span class="c_punctuation">()</span>
 </td>
 </tr>
@@ -261,7 +276,7 @@ psl_load_file (<em class="parameter"><code>const <span class="type">char</span> 
 <p>This function loads the public suffixes file named <em class="parameter"><code>fname</code></em>
 .
 To free the allocated resources, call <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-free" title="psl_free ()"><code class="function">psl_free()</code></a>.</p>
-<p>The suffixes are expected to be UTF-8 encoded (lowercase + NFCK) if they are international.</p>
+<p>The suffixes are expected to be UTF-8 encoded (lowercase + NFKC) if they are international.</p>
 <div class="refsect3">
 <a name="psl-load-file.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table class="informaltable" width="100%" border="0">
@@ -290,7 +305,7 @@ To free the allocated resources, call <a class="link" href="libpsl-Public-Suffix
 psl_load_fp (<em class="parameter"><code><span class="type">FILE</span> *fp</code></em>);</pre>
 <p>This function loads the public suffixes from a FILE pointer.
 To free the allocated resources, call <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-free" title="psl_free ()"><code class="function">psl_free()</code></a>.</p>
-<p>The suffixes are expected to be UTF-8 encoded (lowercase + NFCK) if they are international.</p>
+<p>The suffixes are expected to be UTF-8 encoded (lowercase + NFKC) if they are international.</p>
 <div class="refsect3">
 <a name="psl-load-fp.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table class="informaltable" width="100%" border="0">
@@ -314,6 +329,42 @@ To free the allocated resources, call <a class="link" href="libpsl-Public-Suffix
 </div>
 <hr>
 <div class="refsect2">
+<a name="psl-latest"></a><h3>psl_latest ()</h3>
+<pre class="programlisting"><a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-ctx-t" title="psl_ctx_t"><span class="returnvalue">psl_ctx_t</span></a> *
+psl_latest (<em class="parameter"><code>const <span class="type">char</span> *fname</code></em>);</pre>
+<p>This function loads the the latest available PSL data from either</p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p><em class="parameter"><code>fname</code></em>
+ (application specific filename, may be <a href="/usr/share/gtk-doc/html/glibglib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>)</p></li>
+<li class="listitem"><p>location specified during built-time (filename from ./configure --with-psl-distfile)</p></li>
+<li class="listitem"><p>built-in PSL data (generated from ./configure --with-psl-file)</p></li>
+<li class="listitem"><p>location of built-in data (filename from ./configure --with-psl-file)</p></li>
+</ul></div>
+<p>If none of the above is available, the function returns <a href="/usr/share/gtk-doc/html/glibglib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.</p>
+<p>To free the allocated resources, call <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-free" title="psl_free ()"><code class="function">psl_free()</code></a>.</p>
+<div class="refsect3">
+<a name="psl-latest.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>fname</p></td>
+<td class="parameter_description"><p>Name of PSL file or <a href="/usr/share/gtk-doc/html/glibglib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="psl-latest.returns"></a><h4>Returns</h4>
+<p> Pointer to a PSL context or <a href="/usr/share/gtk-doc/html/glibglib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on failure.</p>
+</div>
+<p class="since">Since: 0.16</p>
+</div>
+<hr>
+<div class="refsect2">
 <a name="psl-builtin"></a><h3>psl_builtin ()</h3>
 <pre class="programlisting">const <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-ctx-t" title="psl_ctx_t"><span class="returnvalue">psl_ctx_t</span></a> *
 psl_builtin (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
@@ -321,7 +372,7 @@ psl_builtin (<em class="parameter"><code><span class="type">void</span></code></
 You don't have to free the returned context explicitely.</p>
 <p>The builtin data also contains punycode entries, one for each international domain name.</p>
 <p>If the generation of built-in data has been disabled during compilation, <a href="/usr/share/gtk-doc/html/glibglib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> will be returned.
-When using the builtin psl context, you can provide UTF-8 (lowercase + NFCK) or ASCII/ACE (punycode)
+When using the builtin psl context, you can provide UTF-8 (lowercase + NFKC) or ASCII/ACE (punycode)
 representations of domains to functions like <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-is-public-suffix" title="psl_is_public_suffix ()"><code class="function">psl_is_public_suffix()</code></a>.</p>
 <div class="refsect3">
 <a name="psl-builtin.returns"></a><h4>Returns</h4>
@@ -364,7 +415,7 @@ psl_is_public_suffix (<em class="parameter"><code>const <a class="link" href="li
 <a class="ulink" href="https://publicsuffix.org" target="_top">Mozilla Public Suffix List</a>.</p>
 <p>For cookie domain checking see <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-is-cookie-domain-acceptable" title="psl_is_cookie_domain_acceptable ()"><code class="function">psl_is_cookie_domain_acceptable()</code></a>.</p>
 <p>International <em class="parameter"><code>domain</code></em>
- names have to be either in UTF-8 (lowercase + NFCK) or in ASCII/ACE format (punycode).
+ names have to be either in UTF-8 (lowercase + NFKC) or in ASCII/ACE format (punycode).
 Other encodings likely result in incorrect return values.
 Use helper function <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-str-to-utf8lower" title="psl_str_to_utf8lower ()"><code class="function">psl_str_to_utf8lower()</code></a> for normalization <em class="parameter"><code>domain</code></em>
 .</p>
@@ -413,7 +464,7 @@ psl_is_public_suffix2 (<em class="parameter"><code>const <a class="link" href="l
  specifies the PSL section where to perform the lookup. Valid values are
 <a class="link" href="libpsl-Public-Suffix-List-functions.html#PSL-TYPE-PRIVATE:CAPS" title="PSL_TYPE_PRIVATE"><code class="literal">PSL_TYPE_PRIVATE</code></a>, <a class="link" href="libpsl-Public-Suffix-List-functions.html#PSL-TYPE-ICANN:CAPS" title="PSL_TYPE_ICANN"><code class="literal">PSL_TYPE_ICANN</code></a> and <a class="link" href="libpsl-Public-Suffix-List-functions.html#PSL-TYPE-ANY:CAPS" title="PSL_TYPE_ANY"><code class="literal">PSL_TYPE_ANY</code></a>.</p>
 <p>International <em class="parameter"><code>domain</code></em>
- names have to be either in UTF-8 (lowercase + NFCK) or in ASCII/ACE format (punycode).
+ names have to be either in UTF-8 (lowercase + NFKC) or in ASCII/ACE format (punycode).
 Other encodings likely result in incorrect return values.
 Use helper function <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-str-to-utf8lower" title="psl_str_to_utf8lower ()"><code class="function">psl_str_to_utf8lower()</code></a> for normalization <em class="parameter"><code>domain</code></em>
 .</p>
@@ -463,7 +514,7 @@ psl_unregistrable_domain (<em class="parameter"><code>const <a class="link" href
  by the means
 of the <a class="ulink" href="https://publicsuffix.org" target="_top">Mozilla Public Suffix List</a>.</p>
 <p>International <em class="parameter"><code>domain</code></em>
- names have to be either in UTF-8 (lowercase + NFCK) or in ASCII/ACE format (punycode).
+ names have to be either in UTF-8 (lowercase + NFKC) or in ASCII/ACE format (punycode).
 Other encodings likely result in incorrect return values.
 Use helper function <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-str-to-utf8lower" title="psl_str_to_utf8lower ()"><code class="function">psl_str_to_utf8lower()</code></a> for normalization <em class="parameter"><code>domain</code></em>
 .</p>
@@ -511,7 +562,7 @@ psl_registrable_domain (<em class="parameter"><code>const <a class="link" href="
  by the means
 of the <a class="ulink" href="https://publicsuffix.org" target="_top">Mozilla Public Suffix List</a>.</p>
 <p>International <em class="parameter"><code>domain</code></em>
- names have to be either in UTF-8 (lowercase + NFCK) or in ASCII/ACE format (punycode).
+ names have to be either in UTF-8 (lowercase + NFKC) or in ASCII/ACE format (punycode).
 Other encodings likely result in incorrect return values.
 Use helper function <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-str-to-utf8lower" title="psl_str_to_utf8lower ()"><code class="function">psl_str_to_utf8lower()</code></a> for normalization <em class="parameter"><code>domain</code></em>
 .</p>
@@ -639,7 +690,7 @@ psl_suffix_wildcard_count (<em class="parameter"><code>const <a class="link" hre
 <a name="psl-builtin-file-time"></a><h3>psl_builtin_file_time ()</h3>
 <pre class="programlisting"><span class="returnvalue">time_t</span>
 psl_builtin_file_time (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
-<p>This function returns the mtime of the Publix Suffix List file that has been built in.</p>
+<p>This function returns the mtime of the Public Suffix List file that has been built in.</p>
 <p>If the generation of built-in data has been disabled during compilation, 0 will be returned.</p>
 <div class="refsect3">
 <a name="psl-builtin-file-time.returns"></a><h4>Returns</h4>
@@ -652,7 +703,7 @@ psl_builtin_file_time (<em class="parameter"><code><span class="type">void</span
 <a name="psl-builtin-sha1sum"></a><h3>psl_builtin_sha1sum ()</h3>
 <pre class="programlisting">const <span class="returnvalue">char</span> *
 psl_builtin_sha1sum (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
-<p>This function returns the SHA1 checksum of the Publix Suffix List file that has been built in.
+<p>This function returns the SHA1 checksum of the Public Suffix List file that has been built in.
 The returned string is in lowercase hex encoding, e.g. "2af1e9e3044eda0678bb05949d7cca2f769901d8".</p>
 <p>If the generation of built-in data has been disabled during compilation, an empty string will be returned.</p>
 <div class="refsect3">
@@ -666,7 +717,7 @@ The returned string is in lowercase hex encoding, e.g. "2af1e9e3044eda0678bb0594
 <a name="psl-builtin-filename"></a><h3>psl_builtin_filename ()</h3>
 <pre class="programlisting">const <span class="returnvalue">char</span> *
 psl_builtin_filename (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
-<p>This function returns the file name of the Publix Suffix List file that has been built in.</p>
+<p>This function returns the file name of the Public Suffix List file that has been built in.</p>
 <p>If the generation of built-in data has been disabled during compilation, an empty string will be returned.</p>
 <div class="refsect3">
 <a name="psl-builtin-filename.returns"></a><h4>Returns</h4>
@@ -702,7 +753,7 @@ psl_is_cookie_domain_acceptable (<em class="parameter"><code>const <a class="lin
 .</p>
 <p>For international domain names both, <em class="parameter"><code>hostname</code></em>
  and <em class="parameter"><code>cookie_domain</code></em>
-, have to be either in UTF-8 (lowercase + NFCK)
+, have to be either in UTF-8 (lowercase + NFKC)
 or in ASCII/ACE (punycode) format. Other encodings or mixing UTF-8 and punycode likely result in incorrect return values.</p>
 <p>Use helper function <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-str-to-utf8lower" title="psl_str_to_utf8lower ()"><code class="function">psl_str_to_utf8lower()</code></a> for normalization of <em class="parameter"><code>hostname</code></em>
  and <em class="parameter"><code>cookie_domain</code></em>
@@ -746,6 +797,20 @@ but NOT for 'forgot.his.name' since 'forgot.his.name' is a public suffix.</p></l
 <p> 1 if acceptable, 0 if not acceptable.</p>
 </div>
 <p class="since">Since: 0.1</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="psl-dist-filename"></a><h3>psl_dist_filename ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *
+psl_dist_filename (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>This function returns the file name of the distribution/system PSL data file.
+This file will be considered by <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-latest" title="psl_latest ()"><code class="function">psl_latest()</code></a>.</p>
+<p>Return the filename that is set by ./configure --with-psl-distfile, or an empty string.</p>
+<div class="refsect3">
+<a name="psl-dist-filename.returns"></a><h4>Returns</h4>
+<p> String containing a PSL file name or an empty string.</p>
+</div>
+<p class="since">Since: 0.16</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -797,8 +862,8 @@ psl_str_to_utf8lower (<em class="parameter"><code>const <span class="type">char<
                       <em class="parameter"><code>const <span class="type">char</span> *encoding</code></em>,
                       <em class="parameter"><code>const <span class="type">char</span> *locale</code></em>,
                       <em class="parameter"><code><span class="type">char</span> **lower</code></em>);</pre>
-<p>This helper function converts a string to UTF-8 lowercase + NFCK representation.
-Lowercase + NFCK UTF-8 is needed as input to the domain checking functions.</p>
+<p>This helper function converts a string to UTF-8 lowercase + NFKC representation.
+Lowercase + NFKC UTF-8 is needed as input to the domain checking functions.</p>
 <p><em class="parameter"><code>lower</code></em>
  is set to <a href="/usr/share/gtk-doc/html/glibglib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error.</p>
 <p>The return value 'lower' must be freed after usage.</p>
@@ -856,7 +921,7 @@ PSL_ERR_NO_MEM: Failed to allocate memory</p>
 <a name="libpsl-Public-Suffix-List-functions.other_details"></a><h2>Types and Values</h2>
 <div class="refsect2">
 <a name="PSL-VERSION:CAPS"></a><h3>PSL_VERSION</h3>
-<pre class="programlisting">#define PSL_VERSION "0.15.0"
+<pre class="programlisting">#define PSL_VERSION "0.17.0"
 </pre>
 </div>
 <hr>
@@ -868,13 +933,13 @@ PSL_ERR_NO_MEM: Failed to allocate memory</p>
 <hr>
 <div class="refsect2">
 <a name="PSL-VERSION-MINOR:CAPS"></a><h3>PSL_VERSION_MINOR</h3>
-<pre class="programlisting">#define PSL_VERSION_MINOR 15
+<pre class="programlisting">#define PSL_VERSION_MINOR 17
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="PSL-VERSION-NUMBER:CAPS"></a><h3>PSL_VERSION_NUMBER</h3>
-<pre class="programlisting">#define PSL_VERSION_NUMBER 0x000f00
+<pre class="programlisting">#define PSL_VERSION_NUMBER 0x001100
 </pre>
 </div>
 <hr>

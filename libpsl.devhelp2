@@ -11,6 +11,7 @@
   <functions>
     <keyword type="function" name="psl_load_file ()" link="libpsl-Public-Suffix-List-functions.html#psl-load-file" since="0.1"/>
     <keyword type="function" name="psl_load_fp ()" link="libpsl-Public-Suffix-List-functions.html#psl-load-fp" since="0.1"/>
+    <keyword type="function" name="psl_latest ()" link="libpsl-Public-Suffix-List-functions.html#psl-latest" since="0.16"/>
     <keyword type="function" name="psl_builtin ()" link="libpsl-Public-Suffix-List-functions.html#psl-builtin" since="0.1"/>
     <keyword type="function" name="psl_free ()" link="libpsl-Public-Suffix-List-functions.html#psl-free" since="0.1"/>
     <keyword type="function" name="psl_is_public_suffix ()" link="libpsl-Public-Suffix-List-functions.html#psl-is-public-suffix" since="0.1"/>
@@ -25,6 +26,7 @@
     <keyword type="function" name="psl_builtin_filename ()" link="libpsl-Public-Suffix-List-functions.html#psl-builtin-filename" since="0.1"/>
     <keyword type="function" name="psl_builtin_outdated ()" link="libpsl-Public-Suffix-List-functions.html#psl-builtin-outdated" since="0.10.0"/>
     <keyword type="function" name="psl_is_cookie_domain_acceptable ()" link="libpsl-Public-Suffix-List-functions.html#psl-is-cookie-domain-acceptable" since="0.1"/>
+    <keyword type="function" name="psl_dist_filename ()" link="libpsl-Public-Suffix-List-functions.html#psl-dist-filename" since="0.16"/>
     <keyword type="function" name="psl_get_version ()" link="libpsl-Public-Suffix-List-functions.html#psl-get-version" since="0.2.5"/>
     <keyword type="function" name="psl_check_version_number ()" link="libpsl-Public-Suffix-List-functions.html#psl-check-version-number" since="0.11.0"/>
     <keyword type="function" name="psl_str_to_utf8lower ()" link="libpsl-Public-Suffix-List-functions.html#psl-str-to-utf8lower" since="0.4"/>
