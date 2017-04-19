@@ -1284,7 +1284,7 @@ void psl_free(psl_ctx_t *psl)
  * psl_builtin:
  *
  * This function returns the PSL context that has been generated and built in at compile-time.
- * You don't have to free the returned context explicitely.
+ * You don't have to free the returned context explicitly.
  *
  * The builtin data also contains punycode entries, one for each international domain name.
  *

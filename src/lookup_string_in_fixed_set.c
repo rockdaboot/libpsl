@@ -30,7 +30,7 @@ static const char multibyte_length_table[16] = {
 
 
 /**
- * Get lenght of multibyte character sequence starting at a given byte.
+ * Get length of multibyte character sequence starting at a given byte.
  * Returns zero if the byte is not a valid leading byte in UTF-8.
  */
 static int GetMultibyteLength(char c) {

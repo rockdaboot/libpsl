@@ -155,7 +155,7 @@ const char *
 int
 	psl_check_version_number(int version);
 
-/* returns wether the built-in data is outdated or not */
+/* returns whether the built-in data is outdated or not */
 int
 	psl_builtin_outdated(void);
 
