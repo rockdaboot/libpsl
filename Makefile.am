@@ -1,6 +1,6 @@
 # got some hints from https://gitorious.org/openismus-playground/examplelib/source
 
-SUBDIRS = po include src tools $(LIBPSL_DOCS) tests
+SUBDIRS = po include src tools $(LIBPSL_DOCS) fuzz tests
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
@@ -23,17 +23,20 @@ dist-hook:
 clean-local:
 	rm -rf */*.gc?? */*/*.gc?? libpsl.info lcov
 
-check-coverage:
+LCOV_INFO=libpsl.info
+check-coverage: clean
 	if test -z "$(XLIB)"; then \
 		CFLAGS=$$CFLAGS" --coverage -O0" LDFLAGS=$$LDFLAGS" --coverage" ./configure --disable-runtime --disable-builtin; \
 	else \
 		CFLAGS=$$CFLAGS" --coverage -O0" LDFLAGS=$$LDFLAGS" --coverage" ./configure --enable-runtime=$(XLIB) --enable-builtin=$(XLIB); \
 	fi
-	$(MAKE) clean && $(MAKE)
-	lcov --capture --initial --directory src --output-file libpsl.info
+	$(MAKE)
+	lcov --capture --initial --directory src --output-file $(LCOV_INFO)
 	$(MAKE) check
-	lcov --capture --directory src --output-file libpsl.info
-	genhtml --prefix . libpsl.info --legend --title "libpsl" --output-directory=lcov
+	lcov --capture --directory src --output-file $(LCOV_INFO)
+	genhtml --prefix . $(LCOV_INFO) --legend --title "libpsl" --output-directory=lcov
+	@echo
+	@echo "You can now view the coverage report with 'xdg-open lcov/index.html'"
 
 check-coverage-libidn:
 	XLIB=libidn $(MAKE) check-coverage
@@ -43,3 +46,14 @@ check-coverage-libidn2:
 
 check-coverage-libicu:
 	XLIB=libicu $(MAKE) check-coverage
+
+fuzz-coverage: clean
+	$(MAKE) -C src CFLAGS="$(CFLAGS) --coverage" LDFLAGS="$(LDFLAGS) --coverage"
+	$(MAKE) -C fuzz fuzz-coverage CFLAGS="$(CFLAGS) --coverage" LDFLAGS="$(LDFLAGS) --coverage"
+	lcov --capture --initial --directory src --directory fuzz --output-file $(LCOV_INFO)
+	lcov --capture --directory src --directory fuzz --output-file $(LCOV_INFO)
+#	lcov --remove $(LCOV_INFO) '*/test_linking.c' '*/css_tokenizer.lex' '*/<stdout>' -o $(LCOV_INFO)
+	genhtml --prefix . --ignore-errors source $(LCOV_INFO) --legend --title "libpsl-fuzz" --output-directory=lcov
+	@echo
+	@echo "You can now view the coverage report with 'xdg-open lcov/index.html'"
+

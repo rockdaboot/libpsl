@@ -273,6 +273,7 @@ AC_CONFIG_FILES([Makefile
                  src/Makefile
                  tools/Makefile
                  po/Makefile.in
+                 fuzz/Makefile
                  tests/Makefile
                  libpsl.pc:libpsl.pc.in])
 AC_OUTPUT
