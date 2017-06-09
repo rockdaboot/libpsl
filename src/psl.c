@@ -1161,6 +1161,8 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 		/* release unused memory */
 		if ((m = realloc(psl->dafsa, len)))
 			psl->dafsa = m;
+		else if (!len)
+			psl->dafsa = NULL; // realloc() just free'd psl->dafsa
 
 		psl->dafsa_size = len;
 		psl->utf8 = !!GetUtfMode(psl->dafsa, len);
