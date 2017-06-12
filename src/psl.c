@@ -1591,9 +1591,9 @@ int psl_is_cookie_domain_acceptable(const psl_ctx_t *psl, const char *hostname, 
  * This helper function converts a string to UTF-8 lowercase + NFKC representation.
  * Lowercase + NFKC UTF-8 is needed as input to the domain checking functions.
  *
- * @lower is set to %NULL on error.
+ * @lower stays unchanged on error.
  *
- * The return value 'lower' must be freed after usage.
+ * When returning PSL_SUCCESS, the return value 'lower' must be freed after usage.
  *
  * Returns: psl_error_t value.
  *   PSL_SUCCESS: Success
