@@ -34,7 +34,8 @@
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
-	char *domain = (char *) malloc(size + 1);
+	char *domain = (char *) malloc(size + 1), *res;
+	int rc;
 
 	assert(domain != NULL);
 
@@ -44,10 +45,18 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
 	psl_ctx_t *psl;
 	psl = (psl_ctx_t *) psl_builtin();
+
 	psl_is_public_suffix(NULL, domain);
 	psl_is_public_suffix(psl, domain);
 	psl_is_public_suffix2(psl, domain, PSL_TYPE_PRIVATE);
 	psl_is_public_suffix2(psl, domain, PSL_TYPE_ICANN);
+
+	psl_is_cookie_domain_acceptable(psl, "", NULL);
+	psl_is_cookie_domain_acceptable(psl, "a.b.c.e.com", domain);
+
+	if ((rc = psl_str_to_utf8lower(domain, "utf-8", NULL, &res)) == PSL_SUCCESS)
+		free(res);
+
 	psl_free(psl);
 
 	free(domain);
