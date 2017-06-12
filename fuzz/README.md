@@ -18,7 +18,7 @@ export CC=clang-5.0
 export CXX=clang++-5.0
 export CFLAGS="-O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -fsanitize=address -fsanitize-address-use-after-scope -fsanitize-coverage=trace-pc-guard,trace-cmp"
 export CXXFLAGS="-O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -fsanitize=address -fsanitize-address-use-after-scope -fsanitize-coverage=trace-pc-guard,trace-cmp -stdlib=libc++"
-./configure --enable-static --disable-gtk-doc
+./configure --enable-static --disable-gtk-doc --enable-runtime=libidn2 --enable-builtin=libidn2
 make clean
 make -j$(nproc)
 cd fuzz
