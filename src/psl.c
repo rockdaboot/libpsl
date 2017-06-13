@@ -879,7 +879,7 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int t
 		_psl_entry_t *rule = _vector_get(psl->suffixes, 0);
 
 		if (!rule || rule->nlabels < suffix.nlabels - 1)
-			return 0;
+			goto suffix_no;
 
 		rule = _vector_get(psl->suffixes, _vector_find(psl->suffixes, &suffix));
 
