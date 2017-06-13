@@ -50,9 +50,24 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
 	psl_is_public_suffix(NULL, NULL);
 	psl_is_public_suffix(psl, ".ü.com");
+	psl_suffix_wildcard_count(psl);
+	psl_suffix_exception_count(psl);
+	psl_suffix_count(psl);
+
+	psl_free(psl);
+	fclose(fp);
+
+	// non-DAFSA load
+	fp = fmemopen(in + 16, size, "r");
+	assert(fp != NULL);
+
+	psl = psl_load_fp(fp);
+	psl_free(psl);
+	fclose(fp);
+
+	psl = psl_latest(NULL);
 	psl_free(psl);
 
-	fclose(fp);
 	free(in);
 
 	return 0;

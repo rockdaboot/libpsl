@@ -50,14 +50,28 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	psl_is_public_suffix(psl, domain);
 	psl_is_public_suffix2(psl, domain, PSL_TYPE_PRIVATE);
 	psl_is_public_suffix2(psl, domain, PSL_TYPE_ICANN);
+	psl_unregistrable_domain(psl, domain);
+	psl_registrable_domain(psl, domain);
 
 	psl_is_cookie_domain_acceptable(psl, "", NULL);
 	psl_is_cookie_domain_acceptable(psl, "a.b.c.e.com", domain);
 
 	if ((rc = psl_str_to_utf8lower(domain, "utf-8", NULL, &res)) == PSL_SUCCESS)
 		free(res);
+	if ((rc = psl_str_to_utf8lower(domain, "iso-8859-1", NULL, &res)) == PSL_SUCCESS)
+		free(res);
+	if ((rc = psl_str_to_utf8lower(domain, NULL, NULL, &res)) == PSL_SUCCESS)
+		free(res);
 
 	psl_free(psl);
+
+	psl_check_version_number(1);
+	psl_get_version();
+	psl_dist_filename();
+	psl_builtin_outdated();
+	psl_builtin_filename();
+	psl_builtin_sha1sum();
+	psl_builtin_file_time();
 
 	free(domain);
 

@@ -9,6 +9,10 @@ are taken from the $NAME.in directory.
 Crash reproducers from OSS-Fuzz are put into $NAME.repro directory for
 regression testing with top dir 'make check' or 'make check-valgrind'.
 
+The ./configure runs below are for libidn2.
+To test libicu replace 'libidn2' with 'libicu', to test with
+libidn replace 'libidn2' by 'libidn'.
+
 
 # Running a fuzzer using clang
 
@@ -33,7 +37,7 @@ cd fuzz
 Use the following commands on top dir:
 
 ```
-$ CC=afl-clang-fast ./configure --disable-gtk-doc
+$ CC=afl-clang-fast ./configure --disable-gtk-doc --enable-runtime=libidn2 --enable-builtin=libidn2
 $ make -j$(nproc) clean all
 $ cd fuzz
 $ ./run-afl.sh libpsl_fuzzer
@@ -45,7 +49,7 @@ Code coverage reports currently work best with gcc+lcov+genhtml.
 
 In the top directory:
 ```
-CC=gcc CFLAGS="-O0 -g" ./configure --disable-gtk-doc
+CC=gcc CFLAGS="-O0 -g" ./configure --disable-gtk-doc --enable-runtime=libidn2 --enable-builtin=libidn2
 make fuzz-coverage
 xdg-open lcov/index.html
 ```
