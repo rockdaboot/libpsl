@@ -29,11 +29,16 @@
 #include <stdlib.h> // malloc, free
 #include <string.h> // memcpy
 
+#if defined(WITH_LIBICU)
+#include <unicode/uclean.h>
+#endif
+
 #include "libpsl.h"
 #include "fuzzer.h"
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
+	static int first_run = 1;
 	char *domain = (char *) malloc(size + 1), *res;
 	int rc;
 
@@ -46,7 +51,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	psl_ctx_t *psl;
 	psl = (psl_ctx_t *) psl_builtin();
 
-	psl_is_public_suffix(NULL, domain);
 	psl_is_public_suffix(psl, domain);
 	psl_is_public_suffix2(psl, domain, PSL_TYPE_PRIVATE);
 	psl_is_public_suffix2(psl, domain, PSL_TYPE_ICANN);
@@ -65,15 +69,23 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
 	psl_free(psl);
 
-	psl_check_version_number(1);
-	psl_get_version();
-	psl_dist_filename();
-	psl_builtin_outdated();
-	psl_builtin_filename();
-	psl_builtin_sha1sum();
-	psl_builtin_file_time();
+	if (first_run) {
+		psl_is_public_suffix(NULL, domain);
+		psl_check_version_number(1);
+		psl_get_version();
+		psl_dist_filename();
+		psl_builtin_outdated();
+		psl_builtin_filename();
+		psl_builtin_sha1sum();
+		psl_builtin_file_time();
+		first_run = 0;
+	}
 
 	free(domain);
+
+#if defined(WITH_LIBICU)
+	u_cleanup(); // free all library internal memory to avoid memory leaks being reported
+#endif
 
 	return 0;
 }

@@ -31,12 +31,16 @@ fuzz-coverage: $(PSL_TESTS)
 
 oss-fuzz:
 	if test "$$OUT" != ""; then \
+	if $$(ldd ../src/.libs/libpsl.so|grep -q libidn2); then XLIBS="-lidn2 -lunistring"; \
+	elif $$(ldd ../src/.libs/libpsl.so|grep -q libidn); then XLIBS="-lidn -lunistring"; \
+	elif $$(ldd ../src/.libs/libpsl.so|grep -q libicu); then XLIBS="-licuuc -licudata"; \
+	else XLIBS=""; fi; \
 	for ccfile in *_fuzzer.c; do \
 	fuzzer=$$(basename $$ccfile .c); \
 	$$CXX $$CXXFLAGS -I$(top_srcdir)/include -I$(top_srcdir) \
 	"$${fuzzer}.c" -o "$${fuzzer}" \
 	../src/.libs/libpsl.a $${LIB_FUZZING_ENGINE} -Wl,-Bstatic \
-	-lidn2 -lunistring \
+	$$XLIBS \
 	-Wl,-Bdynamic; \
 	done; \
 	fi

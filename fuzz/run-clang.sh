@@ -32,11 +32,16 @@ fuzzer=$1
 workers=$(($(nproc) - 1))
 jobs=$workers
 
+if $(ldd ../src/.libs/libpsl.so|grep -q libidn2); then XLIBS="-lidn2 -lunistring"; \
+elif $(ldd ../src/.libs/libpsl.so|grep -q libidn); then XLIBS="-lidn -lunistring"; \
+elif $(ldd ../src/.libs/libpsl.so|grep -q libicu); then XLIBS="-licuuc -licudata"; \
+else XLIBS=""; fi; \
+
 clang-5.0 \
- $CFLAGS -I../include -I.. \
+ $CFLAGS -Og -g -I../include -I.. \
  ${fuzzer}.c -o ${fuzzer} \
  -Wl,-Bstatic ../src/.libs/libpsl.a -lFuzzer \
- -Wl,-Bdynamic -lidn2 -lunistring -lclang-5.0 -lstdc++
+ -Wl,-Bdynamic $XLIBS -lclang-5.0 -lstdc++
 
 # create directory for NEW test corpora (covering new areas of code)
 mkdir -p ${fuzzer}.new
