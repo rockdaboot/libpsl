@@ -59,11 +59,13 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
 	// non-DAFSA load
 	fp = fmemopen(in + 16, size, "r");
-	assert(fp != NULL);
+	if (!fp && size) // libc6 < 2.22 return NULL when size == 0
+		assert(1);
 
 	psl = psl_load_fp(fp);
 	psl_free(psl);
-	fclose(fp);
+	if (fp)
+		fclose(fp);
 
 	psl = psl_latest(NULL);
 	psl_free(psl);
