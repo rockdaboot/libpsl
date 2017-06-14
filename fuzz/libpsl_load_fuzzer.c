@@ -34,33 +34,19 @@
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
-	char *in = (char *) malloc(size + 16);
-
-	assert(in != NULL);
-
-	// create a valid DAFSA input file
-	memcpy(in, ".DAFSA@PSL_0   \n", 16);
-	memcpy(in + 16, data, size);
-
-	FILE *fp = fmemopen(in, size + 16, "r");
-	assert(fp != NULL);
-
 	psl_ctx_t *psl;
-	psl = psl_load_fp(fp);
 
+	FILE *fp = fmemopen((void *)data, size, "r");
+	if (!fp && size) // libc6 < 2.22 return NULL when size == 0
+		assert(1);
+
+	psl = psl_load_fp(fp);
 	psl_is_public_suffix(NULL, NULL);
 	psl_is_public_suffix(psl, ".ü.com");
-	psl_suffix_wildcard_count(psl);
-	psl_suffix_exception_count(psl);
-	psl_suffix_count(psl);
 
 	psl_free(psl);
-	fclose(fp);
-
-	psl = psl_latest(NULL);
-	psl_free(psl);
-
-	free(in);
+	if (fp)
+		fclose(fp);
 
 	return 0;
 }

@@ -5,11 +5,13 @@ LDADD = ../src/libpsl.la
 
 PSL_TESTS = \
  libpsl_fuzzer$(EXEEXT) \
+ libpsl_load_fuzzer$(EXEEXT) \
  libpsl_load_dafsa_fuzzer$(EXEEXT)
 
 check_PROGRAMS = $(PSL_TESTS)
 
 libpsl_fuzzer_SOURCES = libpsl_fuzzer.c main.c fuzzer.h
+libpsl_load_fuzzer_SOURCES = libpsl_load_fuzzer.c main.c fuzzer.h
 libpsl_load_dafsa_fuzzer_SOURCES = libpsl_load_dafsa_fuzzer.c main.c fuzzer.h
 
 dist-hook:
