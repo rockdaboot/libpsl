@@ -1,6 +1,7 @@
 DEFS = @DEFS@ -DSRCDIR=\"$(srcdir)\" -DPSL_FILE=\"$(PSL_FILE)\" -DPSL_TESTFILE=\"$(PSL_TESTFILE)\"
 AM_CPPFLAGS = -I$(top_srcdir)/include
 LDADD = ../src/libpsl.la
+AM_LDFLAGS = -no-install
 
 # ./configure'd with '--disable-builtin'
 # Do not call test-is-public-builtin here: it does not make sense.

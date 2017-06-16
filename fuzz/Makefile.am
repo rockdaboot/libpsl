@@ -1,7 +1,8 @@
 AM_CFLAGS = $(WERROR_CFLAGS) $(WARN_CFLAGS) -Wno-unused-parameter
 AM_CPPFLAGS = -I$(top_srcdir)/include -I$(srcdir) -DSRCDIR=\"$(abs_srcdir)\" -DTEST_RUN
-AM_LDFLAGS = -static
-LDADD = ../src/libpsl.la
+#AM_LDFLAGS = -static
+AM_LDFLAGS = -no-install
+LDADD = ../src/libpsl.la $(LIBICU_LIBS) $(LIBIDN_LIBS) $(LIBIDN2_LIBS)
 
 PSL_TESTS = \
  libpsl_fuzzer$(EXEEXT) \

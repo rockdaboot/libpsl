@@ -43,6 +43,9 @@ for CC in gcc clang; do
   "--enable-runtime=libidn --enable-builtin=libidn" \
   "--disable-runtime --enable-builtin=libicu"; do
     export DISTCHECK_CONFIGURE_FLAGS="-C --cache-file=$CACHEFILE $options"
+    if test "$CC" == "clang"; then
+      export DISTCHECK_CONFIGURE_FLAGS=$DISTCHECK_CONFIGURE_FLAGS" --enable-cfi"
+    fi
     echo
     echo "  *** ./configure $DISTCHECK_CONFIGURE_FLAGS"
     ./configure $DISTCHECK_CONFIGURE_FLAGS CFLAGS="$CFLAGS" > /dev/null

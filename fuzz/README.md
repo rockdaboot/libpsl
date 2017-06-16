@@ -65,3 +65,12 @@ To work on corpora for better coverage, `cd fuzz` and use e.g.
 
 Each reproducer file should be dropped into the appropriate *.repro/
 directory.
+
+
+# Clang CFI instrumentation
+```
+CC=clang-5.0 CFLAGS="-B/usr/bin/gold -O0 -fsanitize=cfi -flto -fvisibility=default -fno-sanitize-trap=all" ./configure
+make clean
+make
+make check
+```
