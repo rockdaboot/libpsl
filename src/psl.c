@@ -1644,11 +1644,11 @@ psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding _UNUSED, 
 		/* C89 allocation */
 		utf16_dst   = alloca(sizeof(UChar) * (str_length * 2 + 1));
 		utf16_lower = alloca(sizeof(UChar) * (str_length * 2 + 1));
-		utf8_lower  = alloca(str_length * 2 + 1);
+		utf8_lower  = alloca(str_length * 6 + 1);
 	} else {
 		utf16_dst   = malloc(sizeof(UChar) * (str_length * 2 + 1));
 		utf16_lower = malloc(sizeof(UChar) * (str_length * 2 + 1));
-		utf8_lower  = malloc(str_length * 2 + 1);
+		utf8_lower  = malloc(str_length * 6 + 1);
 
 		if (!utf16_dst || !utf16_lower || !utf8_lower) {
 			ret = PSL_ERR_NO_MEM;
@@ -1664,21 +1664,16 @@ psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding _UNUSED, 
 		if (U_SUCCESS(status)) {
 			int32_t utf16_lower_length = u_strToLower(utf16_lower, str_length * 2 + 1, utf16_dst, utf16_dst_length, locale, &status);
 			if (U_SUCCESS(status)) {
-				u_strToUTF8(utf8_lower, str_length * 8 + 1, NULL, utf16_lower, utf16_lower_length, &status);
+				u_strToUTF8(utf8_lower, str_length * 6 + 1, NULL, utf16_lower, utf16_lower_length, &status);
 				if (U_SUCCESS(status)) {
 					ret = PSL_SUCCESS;
 					if (lower) {
-						if (str_length < 256) {
-							char *tmp = strdup(utf8_lower);
+						char *tmp = strdup(utf8_lower);
 
-							if (tmp)
-								*lower = tmp;
-							else
-								ret = PSL_ERR_NO_MEM;
-						} else {
-							*lower = utf8_lower;
-							utf8_lower = NULL;
-						}
+						if (tmp)
+							*lower = tmp;
+						else
+							ret = PSL_ERR_NO_MEM;
 					}
 				} else {
 					ret = PSL_ERR_TO_UTF8;
