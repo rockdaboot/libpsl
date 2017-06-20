@@ -77,22 +77,40 @@ AM_PATH_PYTHON([2.7])
 
 PKG_PROG_PKG_CONFIG
 
+cfi=no
 AC_ARG_ENABLE([cfi],
-  [AS_HELP_STRING([--enable-cfi], [Turn on clang's Control Flow Integrity (CFI) (for developers)])],
+  [AS_HELP_STRING([--enable-cfi], [Turn on clang's Control Flow Integrity (CFI)])],
   [
-    clang_cfi=$enableval;
     if test "$enableval" = yes; then
+      cfi=yes
       CFLAGS=$CFLAGS" -B/usr/bin/gold -fsanitize=cfi -flto -fvisibility=default -fno-sanitize-trap=all"
       AC_LINK_IFELSE([
         AC_LANG_PROGRAM([], [])
       ], [], [
         AC_MSG_ERROR([clang 3.7+ and the 'gold' linker are required for --enable-cfi])
       ])
-    else
-      clang_cfi=no
     fi
-  ],
-  [clang_cfi=no])
+  ])
+
+ubsan=no
+AC_ARG_ENABLE([ubsan],
+  [AS_HELP_STRING([--enable-ubsan], [Turn on Undefined Behavior Sanitizer (UBSan)])],
+  [
+    if test "$enableval" = yes; then
+      ubsan=yes
+      CFLAGS=$CFLAGS" -fsanitize=undefined -fno-sanitize-recover=undefined"
+    fi
+  ])
+
+asan=no
+AC_ARG_ENABLE([asan],
+  [AS_HELP_STRING([--enable-asan], [Turn on Address Sanitizer (ASan)])],
+  [
+    if test "$enableval" = yes; then
+      asan=yes
+      CFLAGS=$CFLAGS" -fsanitize=address -fno-omit-frame-pointer"
+    fi
+  ])
 
 # Define these substitions here to keep all version information in one place.
 # For information on how to properly maintain the library version information,
@@ -304,11 +322,11 @@ AC_MSG_NOTICE([Summary of build options:
   CFlags:            ${CFLAGS} ${CPPFLAGS}
   LDFlags:           ${LDFLAGS}
   Libs:              ${LIBS}
-  CFI:               ${clang_cfi}
   Runtime:           ${enable_runtime}
   Builtin:           ${enable_builtin}
   PSL Dist File:     ${PSL_DISTFILE}
   PSL File:          ${PSL_FILE}
   PSL Test File:     ${PSL_TESTFILE}
+  Sanitizers:        UBSan $ubsan, ASan $asan, CFI $cfi
   Tests:             ${TESTS_INFO}
 ])
