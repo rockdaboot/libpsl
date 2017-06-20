@@ -42,20 +42,20 @@ for CC in gcc clang; do
   "--enable-runtime=libidn2 --enable-builtin=libidn2" \
   "--enable-runtime=libidn --enable-builtin=libidn" \
   "--disable-runtime --enable-builtin=libicu"; do
-    export DISTCHECK_CONFIGURE_FLAGS="-C --cache-file=$CACHEFILE $options"
-    if test "$CC" == "clang"; then
-      export DISTCHECK_CONFIGURE_FLAGS=$DISTCHECK_CONFIGURE_FLAGS" --enable-cfi"
+    export DISTCHECK_CONFIGURE_FLAGS="-C --cache-file=$CACHEFILE $options --enable-asan --enable-ubsan"
+    if test "$CC" = "clang"; then
+      export "DISTCHECK_CONFIGURE_FLAGS=$DISTCHECK_CONFIGURE_FLAGS --enable-cfi"
     fi
     echo
     echo "  *** ./configure $DISTCHECK_CONFIGURE_FLAGS"
-    ./configure $DISTCHECK_CONFIGURE_FLAGS CFLAGS="$CFLAGS" > /dev/null
+    ./configure -q $DISTCHECK_CONFIGURE_FLAGS CFLAGS="$CFLAGS"
 
     for xVALGRIND in 0 1; do
       for xLCALL in C tr_TR.utf8; do
         export TESTS_ENVIRONMENT="LC_ALL=$xLCALL VALGRIND_TESTS=$xVALGRIND"
         echo "    *** TESTS_ENVIRONMENT=\"$TESTS_ENVIRONMENT\"" make check -j$CORES
-        make clean > /dev/null
-        make check -j$CORES > /dev/null
+        make -s clean
+        make -s check -j$CORES
       done
     done
 
@@ -63,7 +63,7 @@ for CC in gcc clang; do
     export TESTS_ENVIRONMENT
     echo
     echo "  *** make distcheck CFLAGS=$CFLAGS -j$CORES"
-    make distcheck CFLAGS="$CFLAGS" -j$CORES > /dev/null
+    make -s distcheck CFLAGS="$CFLAGS" -j$CORES
   done
 done
 
