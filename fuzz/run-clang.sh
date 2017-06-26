@@ -41,7 +41,11 @@ clang-5.0 \
  $CFLAGS -Og -g -I../include -I.. \
  ${fuzzer}.c -o ${fuzzer} \
  -Wl,-Bstatic ../src/.libs/libpsl.a -lFuzzer \
- -Wl,-Bdynamic $XLIBS -lclang-5.0 -lstdc++
+ -Wl,-Bdynamic $XLIBS -lclang-5.0 -lpthread -lm -lstdc++
+
+if test -n "$BUILD_ONLY"; then
+  exit 0
+fi
 
 # create directory for NEW test corpora (covering new areas of code)
 mkdir -p ${fuzzer}.new
