@@ -48,5 +48,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	if (fp)
 		fclose(fp);
 
+	psl_load_file("/dev/null");
+
 	return 0;
 }

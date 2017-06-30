@@ -1,4 +1,4 @@
-#!/bin/sh -eu
+#!/bin/sh -e
 #
 # Copyright(c) 2017 Tim Ruehsen
 #
