@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/bash -e
 #
 # Copyright(c) 2017 Tim Ruehsen
 #
@@ -21,6 +21,15 @@
 # DEALINGS IN THE SOFTWARE.
 #
 # This file is part of libpsl.
+
+trap ctrl_c INT
+
+ctrl_c() {
+  if test -n "$sudo"; then
+    ./${fuzzer} -merge=1 ${fuzzer}.in ${fuzzer}.new
+    rm -rf ${fuzzer}.new
+  fi
+}
 
 if test -z "$1"; then
 	echo "Usage: $0 <fuzzer target>"
