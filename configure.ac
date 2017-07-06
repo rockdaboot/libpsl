@@ -212,7 +212,7 @@ fi
 if test "$enable_runtime" = "libidn2" -o "$enable_builtin" = "libidn2"; then
   # Check for libidn2
   OLDLIBS=$LIBS
-  AC_SEARCH_LIBS(idn2_lookup_u8, idn2, HAVE_LIBIDN2=yes, AC_MSG_ERROR(You requested libidn2 but it is not installed.))
+  AC_SEARCH_LIBS(idn2_lookup_u8, idn2, HAVE_LIBIDN2=yes, AC_MSG_ERROR(You requested libidn2 but it is not installed.), -lunistring)
   LIBS=$OLDLIBS
 fi
 
