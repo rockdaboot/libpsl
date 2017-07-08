@@ -25,10 +25,8 @@
 trap ctrl_c INT
 
 ctrl_c() {
-  if test -n "$sudo"; then
-    ./${fuzzer} -merge=1 ${fuzzer}.in ${fuzzer}.new
-    rm -rf ${fuzzer}.new
-  fi
+  ./${fuzzer} -merge=1 ${fuzzer}.in ${fuzzer}.new
+  rm -rf ${fuzzer}.new
 }
 
 if test -z "$1"; then

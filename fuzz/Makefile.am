@@ -32,15 +32,16 @@ fuzz-coverage: $(PSL_TESTS)
 
 oss-fuzz:
 	if test "$$OUT" != ""; then \
-	if $$(ldd ../src/.libs/libpsl.so|grep -q libidn2); then XLIBS="-lidn2 -lunistring"; \
-	elif $$(ldd ../src/.libs/libpsl.so|grep -q libidn); then XLIBS="-lidn -lunistring"; \
-	elif $$(ldd ../src/.libs/libpsl.so|grep -q libicu); then XLIBS="-licuuc -licudata"; \
+	if $$(grep -q '^#define WITH_LIBIDN2 1' $(top_srcdir)/config.h); then XLIBS="-lidn2 -lunistring"; \
+	elif $$(grep -q '^#define WITH_LIBIDN 1' $(top_srcdir)/config.h); then XLIBS="-lidn -lunistring"; \
+	elif $$(grep -q '^#define WITH_LIBICU 1' $(top_srcdir)/config.h); then XLIBS="-licuuc -licudata"; \
 	else XLIBS=""; fi; \
 	for ccfile in *_fuzzer.c; do \
 	fuzzer=$$(basename $$ccfile .c); \
 	$$CXX $$CXXFLAGS -I$(top_srcdir)/include -I$(top_srcdir) \
 	"$${fuzzer}.c" -o "$${fuzzer}" \
-	../src/.libs/libpsl.a $${LIB_FUZZING_ENGINE} -Wl,-Bstatic \
+	../src/.libs/libpsl.a $${LIB_FUZZING_ENGINE} \
+	-Wl,-Bstatic \
 	$$XLIBS \
 	-Wl,-Bdynamic; \
 	done; \
