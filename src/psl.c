@@ -772,10 +772,11 @@ static void _add_punycode_if_needed(_psl_idna_t *idna, _psl_vector_t *v, _psl_en
 			_psl_entry_t suffix, *suffixp;
 
 			/* fprintf(stderr, "toASCII '%s' -> '%s'\n", e->label_buf, lookupname); */
-			_suffix_init(&suffix, lookupname, strlen(lookupname));
-			suffix.flags = e->flags;
-			if ((suffixp = _vector_get(v, _vector_add(v, &suffix))))
-				suffixp->label = suffixp->label_buf; /* set label to changed address */
+			if (_suffix_init(&suffix, lookupname, strlen(lookupname)) == 0) {
+				suffix.flags = e->flags;
+				if ((suffixp = _vector_get(v, _vector_add(v, &suffix))))
+					suffixp->label = suffixp->label_buf; /* set label to changed address */
+			}
 		} /* else ignore */
 
 		free(lookupname);
