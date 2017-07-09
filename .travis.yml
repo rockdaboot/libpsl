@@ -34,6 +34,7 @@ addons:
       - clang-3.8
       - llvm-3.8-dev
       - llvm-dev
+      - valgrind
 
 script:
   - ./autogen.sh
@@ -41,11 +42,12 @@ script:
 #  clang-3.4 doesn't know CFI yet.
 #  The only chance with Travis-CI is to switch to docker and use Ubuntu 16.04 or whatever.
 #  - if [[ $CC == "gcc" ]]; then CFI=""; else CFI="--enable-cfi"; fi
-  - ./configure $CFI --enable-asan && make -j4 && make check -j4
-  - ./configure $CFI --enable-runtime=$RUNTIME --enable-builtin=libicu --enable-asan && make clean && make -j4 && make check -j4
-  - ./configure $CFI --enable-runtime=$RUNTIME --enable-builtin=libidn2 --enable-asan && make clean && make -j4 && make check -j4
-  - ./configure $CFI --enable-runtime=$RUNTIME --enable-builtin=libidn --enable-asan && make clean && make -j4 && make check -j4
-  - ./configure $CFI --enable-runtime=$RUNTIME --disable-builtin --enable-asan && make clean && make -j4 && make check -j4
-  - ./configure --enable-gtk-doc && make clean && make -j4
+  - if [[ $CC == "clang-3.8" ]]; then UBSAN="--enable-ubsan"; fi
+  - ./configure $CFI --enable-asan $UBSAN && make -j4 && make check -j4
+  - ./configure $CFI --enable-runtime=$RUNTIME --enable-builtin=libicu --enable-asan $UBSAN && make clean && make -j4 && make check -j4
+  - ./configure $CFI --enable-runtime=$RUNTIME --enable-builtin=libidn2 --enable-asan $UBSAN && make clean && make -j4 && make check -j4
+  - ./configure $CFI --enable-runtime=$RUNTIME --enable-builtin=libidn --enable-asan $UBSAN && make clean && make -j4 && make check -j4
+  - ./configure $CFI --enable-runtime=$RUNTIME --disable-builtin --enable-asan $UBSAN && make clean && make -j4 && make check -j4
+  - ./configure --enable-gtk-doc --enable-valgrind-tests && make clean && make -j4 && make check -j4
   - make distcheck
   - if [[ $CC == "gcc" && $RUNTIME == "libicu" ]]; then ./.travis_coveralls.sh; fi
