@@ -31,7 +31,7 @@ ctrl_c() {
 
 if test -z "$1"; then
 	echo "Usage: $0 <fuzzer target>"
-	echo "Example: $0 libpsl_fuzzer"
+	echo "Example: $0 libpsl_idn2_fuzzer"
 	exit 1
 fi
 
@@ -39,14 +39,26 @@ fuzzer=$1
 workers=$(($(nproc) - 1))
 jobs=$workers
 
-if $(ldd ../src/.libs/libpsl.so|grep -q libidn2); then XLIBS="-lidn2 -lunistring"; \
-elif $(ldd ../src/.libs/libpsl.so|grep -q libidn); then XLIBS="-lidn -lunistring"; \
-elif $(ldd ../src/.libs/libpsl.so|grep -q libicu); then XLIBS="-licuuc -licudata"; \
-else XLIBS=""; fi; \
+case $fuzzer in
+  libpsl_idn2_*)
+    echo 1
+    cfile="libpsl_"$(echo $fuzzer|cut -d'_' -f3-)".c"
+    XLIBS="-lidn2 -lunistring";;
+  libpsl_idn_*)
+    cfile="libpsl_"$(echo $fuzzer|cut -d'_' -f3-)".c"
+    XLIBS="-lidn -lunistring";;
+  libpsl_icu_*)
+    cfile="libpsl_"$(echo $fuzzer|cut -d'_' -f3-)".c"
+    XLIBS="-licuuc -licudata";;
+  libpsl_*)
+    echo x
+    cfile=${fuzzer}.c
+    XLIBS=
+esac
 
 clang-5.0 \
  $CFLAGS -Og -g -I../include -I.. \
- ${fuzzer}.c -o ${fuzzer} \
+ ${cfile} -o ${fuzzer} \
  -Wl,-Bstatic ../src/.libs/libpsl.a -lFuzzer \
  -Wl,-Bdynamic $XLIBS -lclang-5.0 -lpthread -lm -lstdc++
 

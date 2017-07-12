@@ -30,19 +30,34 @@ clean-local:
 fuzz-coverage: $(PSL_TESTS)
 	find . -name '*_fuzzer' -exec ./coverage.sh '{}' ';'
 
+if WITH_LIBICU
+  XLIBS = $(LIBICU_LIBS)
+  XTYPE = _icu
+endif
+if WITH_LIBIDN2
+  XLIBS = -lidn2 -lunistring
+  XTYPE = _idn2
+endif
+if WITH_LIBIDN
+  XLIBS = -lidn -lunistring
+  XTYPE = _idn
+endif
+XLIBS ?=
+XTYPE ?=
+
+
+CXX ?= clang-5.0
+CXXFLAGS ?= $(CFLAGS)
+
 oss-fuzz:
 	if test "$$OUT" != ""; then \
-	if $$(grep -q '^#define WITH_LIBIDN2 1' $(top_srcdir)/config.h); then XLIBS="-lidn2 -lunistring"; \
-	elif $$(grep -q '^#define WITH_LIBIDN 1' $(top_srcdir)/config.h); then XLIBS="-lidn -lunistring"; \
-	elif $$(grep -q '^#define WITH_LIBICU 1' $(top_srcdir)/config.h); then XLIBS="-licuuc -licudata"; \
-	else XLIBS=""; fi; \
-	for ccfile in *_fuzzer.c; do \
-	fuzzer=$$(basename $$ccfile .c); \
-	$$CXX $$CXXFLAGS -I$(top_srcdir)/include -I$(top_srcdir) \
-	"$${fuzzer}.c" -o "$${fuzzer}" \
+	for cfile in `ls *_fuzzer.c`; do \
+	fuzzer="libpsl$(XTYPE)_"$$(basename $$cfile .c|cut -d'_' -f2-); \
+	$$CXX $$CXXFLAGS $$CPPFLAGS -I$(top_srcdir)/include -I$(top_srcdir) \
+	"$${cfile}" -o "$${fuzzer}" \
 	../src/.libs/libpsl.a $${LIB_FUZZING_ENGINE} \
 	-Wl,-Bstatic \
-	$$XLIBS \
+	$(XLIBS) \
 	-Wl,-Bdynamic; \
 	done; \
 	fi
