@@ -678,27 +678,58 @@ static int _psl_idna_toASCII(_psl_idna_t *idna _UNUSED, const char *utf8, char *
 #if defined(WITH_LIBICU)
 	/* IDNA2008 UTS#46 punycode conversion */
 	if (idna) {
-		char lookupname[128] = "";
+		char lookupname_buf[128] = "", *lookupname = lookupname_buf;
 		UErrorCode status = 0;
 		UIDNAInfo info = UIDNA_INFO_INITIALIZER;
-		UChar utf16_dst[128], utf16_src[128];
-		int32_t utf16_src_length;
+		UChar utf16_dst[128], utf16_src_buf[128];
+		UChar *utf16_src = utf16_src_buf;
+		int32_t utf16_src_length, bytes_written;
+		int32_t utf16_dst_length;
 
-		u_strFromUTF8(utf16_src, countof(utf16_src), &utf16_src_length, utf8, -1, &status);
-		if (U_SUCCESS(status)) {
-			int32_t dst_length = uidna_nameToASCII((UIDNA *)idna, utf16_src, utf16_src_length, utf16_dst, countof(utf16_dst), &info, &status);
-			if (U_SUCCESS(status)) {
-				u_strToUTF8(lookupname, sizeof(lookupname), NULL, utf16_dst, dst_length, &status);
-				if (U_SUCCESS(status)) {
-					if (ascii)
-						if ((*ascii = strdup(lookupname)))
-							ret = 0;
-				} /* else
-					fprintf(stderr, "Failed to convert UTF-16 to UTF-8 (status %d)\n", status); */
-			} /* else
-				fprintf(stderr, "Failed to convert to ASCII (status %d)\n", status); */
-		} /* else
-			fprintf(stderr, "Failed to convert UTF-8 to UTF-16 (status %d)\n", status); */
+		u_strFromUTF8(utf16_src, countof(utf16_src_buf), &utf16_src_length, utf8, -1, &status);
+		if (!U_SUCCESS(status)) goto cleanup; /* UTF-8 to UTF-16 conversion failed */
+
+		if (utf16_src_length >= countof(utf16_src_buf)) {
+			utf16_src = malloc((utf16_src_length + 1) * sizeof(UChar));
+			if (!utf16_src) goto cleanup;
+
+			u_strFromUTF8(utf16_src, utf16_src_length, NULL, utf8, -1, &status);
+			if (!U_SUCCESS(status)) goto cleanup; /* UTF-8 to UTF-16 conversion failed */
+
+			utf16_src[utf16_src_length] = 0; /* u_strFromUTF8() doesn't 0-terminate if dest is filled up */
+		}
+
+		utf16_dst_length = uidna_nameToASCII((UIDNA *)idna, utf16_src, utf16_src_length, utf16_dst, countof(utf16_dst), &info, &status);
+		if (!U_SUCCESS(status)) goto cleanup; /* to ASCII conversion failed */
+
+		u_strToUTF8(lookupname, sizeof(lookupname_buf), &bytes_written, utf16_dst, utf16_dst_length, &status);
+		if (!U_SUCCESS(status)) goto cleanup; /* UTF-16 to UTF-8 conversion failed */
+
+		if (bytes_written >= sizeof(lookupname_buf)) {
+			lookupname = malloc(bytes_written + 1);
+			if (!lookupname) goto cleanup;
+
+			u_strToUTF8(lookupname, bytes_written, NULL, utf16_dst, utf16_dst_length, &status);
+			if (!U_SUCCESS(status)) goto cleanup; /* UTF-16 to UTF-8 conversion failed */
+
+			lookupname[bytes_written] = 0; /* u_strToUTF8() doesn't 0-terminate if dest is filled up */
+		} else {
+			if (!(lookupname = strdup(lookupname)))
+				goto cleanup;
+		}
+
+		if (ascii) {
+			*ascii = lookupname;
+			lookupname = NULL;
+		}
+
+		ret = 0;
+
+cleanup:
+		if (lookupname != lookupname_buf)
+			free(lookupname);
+		if (utf16_src != utf16_src_buf)
+			free(utf16_src);
 	}
 #elif defined(WITH_LIBIDN2)
 #if IDN2_VERSION_NUMBER >= 0x00140000
