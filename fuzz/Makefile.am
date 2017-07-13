@@ -4,16 +4,53 @@ AM_CPPFLAGS = -I$(top_srcdir)/include -I$(srcdir) -DSRCDIR=\"$(abs_srcdir)\" -DT
 AM_LDFLAGS = -no-install
 LDADD = ../src/libpsl.la $(LIBICU_LIBS) $(LIBIDN_LIBS) $(LIBIDN2_LIBS)
 
-PSL_TESTS = \
- libpsl_fuzzer$(EXEEXT) \
- libpsl_load_fuzzer$(EXEEXT) \
- libpsl_load_dafsa_fuzzer$(EXEEXT)
+if WITH_LIBICU
+  XLIBS = $(LIBICU_LIBS)
+  XTYPE = _icu
+  libpsl_icu_fuzzer_SOURCES = libpsl_fuzzer.c main.c fuzzer.h
+  libpsl_icu_load_fuzzer_SOURCES = libpsl_load_fuzzer.c main.c fuzzer.h
+  libpsl_icu_load_dafsa_fuzzer_SOURCES = libpsl_load_dafsa_fuzzer.c main.c fuzzer.h
+  PSL_TESTS = \
+   libpsl_icu_fuzzer$(EXEEXT) \
+   libpsl_icu_load_fuzzer$(EXEEXT) \
+   libpsl_icu_load_dafsa_fuzzer$(EXEEXT)
+else
+if WITH_LIBIDN2
+  XLIBS = $(LIBIDN2_LIBS)
+  XTYPE = _idn2
+  libpsl_idn2_fuzzer_SOURCES = libpsl_fuzzer.c main.c fuzzer.h
+  libpsl_idn2_load_fuzzer_SOURCES = libpsl_load_fuzzer.c main.c fuzzer.h
+  libpsl_idn2_load_dafsa_fuzzer_SOURCES = libpsl_load_dafsa_fuzzer.c main.c fuzzer.h
+  PSL_TESTS = \
+   libpsl_idn2_fuzzer$(EXEEXT) \
+   libpsl_idn2_load_fuzzer$(EXEEXT) \
+   libpsl_idn2_load_dafsa_fuzzer$(EXEEXT)
+else
+if WITH_LIBIDN
+  XLIBS = $(LIBIDN_LIBS)
+  XTYPE = _idn
+  libpsl_idn_fuzzer_SOURCES = libpsl_fuzzer.c main.c fuzzer.h
+  libpsl_idn_load_fuzzer_SOURCES = libpsl_load_fuzzer.c main.c fuzzer.h
+  libpsl_idn_load_dafsa_fuzzer_SOURCES = libpsl_load_dafsa_fuzzer.c main.c fuzzer.h
+  PSL_TESTS = \
+   libpsl_idn_fuzzer$(EXEEXT) \
+   libpsl_idn_load_fuzzer$(EXEEXT) \
+   libpsl_idn_load_dafsa_fuzzer$(EXEEXT)
+else
+  XLIBS =
+  XTYPE =
+  libpsl_fuzzer_SOURCES = libpsl_fuzzer.c main.c fuzzer.h
+  libpsl_load_fuzzer_SOURCES = libpsl_load_fuzzer.c main.c fuzzer.h
+  libpsl_load_dafsa_fuzzer_SOURCES = libpsl_load_dafsa_fuzzer.c main.c fuzzer.h
+  PSL_TESTS = \
+   libpsl_fuzzer$(EXEEXT) \
+   libpsl_load_fuzzer$(EXEEXT) \
+   libpsl_load_dafsa_fuzzer$(EXEEXT)
+endif
+endif
+endif
 
 check_PROGRAMS = $(PSL_TESTS)
-
-libpsl_fuzzer_SOURCES = libpsl_fuzzer.c main.c fuzzer.h
-libpsl_load_fuzzer_SOURCES = libpsl_load_fuzzer.c main.c fuzzer.h
-libpsl_load_dafsa_fuzzer_SOURCES = libpsl_load_dafsa_fuzzer.c main.c fuzzer.h
 
 dist-hook:
 	find . -name '*.options' -exec cp -v '{}' $(distdir) ';'
@@ -25,26 +62,10 @@ TESTS_ENVIRONMENT = TESTS_VALGRIND="@VALGRIND_ENVIRONMENT@"
 TESTS = $(PSL_TESTS)
 
 clean-local:
-	rm -rf *.gc?? *.log lcov coverage.info
+	rm -rf *.gc?? *.log lcov coverage.info *_fuzzer *.o
 
 fuzz-coverage: $(PSL_TESTS)
 	find . -name '*_fuzzer' -exec ./coverage.sh '{}' ';'
-
-if WITH_LIBICU
-  XLIBS = $(LIBICU_LIBS)
-  XTYPE = _icu
-endif
-if WITH_LIBIDN2
-  XLIBS = -lidn2 -lunistring
-  XTYPE = _idn2
-endif
-if WITH_LIBIDN
-  XLIBS = -lidn -lunistring
-  XTYPE = _idn
-endif
-XLIBS ?=
-XTYPE ?=
-
 
 CXX ?= clang-5.0
 CXXFLAGS ?= $(CFLAGS)
