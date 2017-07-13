@@ -24,10 +24,10 @@
 
 #include <config.h>
 
-#include <assert.h> // assert
-#include <stdint.h> // uint8_t
-#include <stdlib.h> // malloc, free
-#include <string.h> // memcpy
+#include <assert.h> /* assert */
+#include <stdint.h> /* uint8_t */
+#include <stdlib.h> /* malloc, free */
+#include <string.h> /* memcpy */
 
 #if defined(WITH_LIBICU)
 #include <unicode/uclean.h>
@@ -39,16 +39,16 @@
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
 	static int first_run = 1;
+	psl_ctx_t *psl;
 	char *domain = (char *) malloc(size + 1), *res;
 	int rc;
 
 	assert(domain != NULL);
 
-	// 0 terminate
+	/* 0 terminate */
 	memcpy(domain, data, size);
 	domain[size] = 0;
 
-	psl_ctx_t *psl;
 	psl = (psl_ctx_t *) psl_builtin();
 
 	psl_is_public_suffix(psl, domain);
@@ -84,7 +84,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	free(domain);
 
 #if defined(WITH_LIBICU)
-	u_cleanup(); // free all library internal memory to avoid memory leaks being reported
+	u_cleanup(); /* free all library internal memory to avoid memory leaks being reported */
 #endif
 
 	return 0;

@@ -24,20 +24,21 @@
 
 #include <config.h>
 
-#include <assert.h> // assert
-#include <stdint.h> // uint8_t
-#include <stdlib.h> // malloc, free
-#include <string.h> // memcpy
+#include <assert.h> /* assert */
+#include <stdint.h> /* uint8_t */
+#include <stdlib.h> /* malloc, free */
+#include <string.h> /* memcpy */
 
 #include "libpsl.h"
 #include "fuzzer.h"
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
+	FILE *fp;
 	psl_ctx_t *psl;
 
-	FILE *fp = fmemopen((void *)data, size, "r");
-	if (!fp && size) // libc6 < 2.22 return NULL when size == 0
+	fp = fmemopen((void *)data, size, "r");
+	if (!fp && size) /* libc6 < 2.22 return NULL when size == 0 */
 		assert(1);
 
 	psl = psl_load_fp(fp);

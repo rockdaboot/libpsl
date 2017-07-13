@@ -24,16 +24,18 @@
 
 #include <config.h>
 
-#include <assert.h> // assert
-#include <stdint.h> // uint8_t
-#include <stdlib.h> // malloc, free
-#include <string.h> // memcpy
+#include <assert.h> /* assert */
+#include <stdint.h> /* uint8_t */
+#include <stdlib.h> /* malloc, free */
+#include <string.h> /* memcpy */
 
 #include "libpsl.h"
 #include "fuzzer.h"
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
+	FILE *fp;
+	psl_ctx_t *psl;
 	char *in = (char *) malloc(size + 16);
 
 	assert(in != NULL);
@@ -42,10 +44,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	memcpy(in, ".DAFSA@PSL_0   \n", 16);
 	memcpy(in + 16, data, size);
 
-	FILE *fp = fmemopen(in, size + 16, "r");
+	fp = fmemopen(in, size + 16, "r");
 	assert(fp != NULL);
 
-	psl_ctx_t *psl;
 	psl = psl_load_fp(fp);
 
 	psl_is_public_suffix(NULL, NULL);

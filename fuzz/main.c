@@ -81,6 +81,9 @@ static void test_all_from(const char *dirname)
 
 int main(int argc, char **argv)
 {
+	const char *target;
+	char corporadir[sizeof(SRCDIR) + 1 + strlen(argv[0]) + 8];
+
 	/* if VALGRIND testing is enabled, we have to call ourselves with valgrind checking */
 	if (argc == 1) {
 		const char *valgrind = getenv("TESTS_VALGRIND");
@@ -94,10 +97,9 @@ int main(int argc, char **argv)
 		}
 	}
 
-	const char *target = strrchr(argv[0], '/');
+	target = strrchr(argv[0], '/');
 	target = target ? target + 1 : argv[0];
 
-	char corporadir[sizeof(SRCDIR) + 1 + strlen(target) + 8];
 	snprintf(corporadir, sizeof(corporadir), SRCDIR "/%s.in", target);
 
 	test_all_from(corporadir);
@@ -130,7 +132,7 @@ int main(int argc, char **argv)
 	int ret;
 	unsigned char buf[64 * 1024];
 
-	while (__AFL_LOOP(10000)) { // only works with afl-clang-fast
+	while (__AFL_LOOP(10000)) { /* only works with afl-clang-fast */
 		ret = fread(buf, 1, sizeof(buf), stdin);
 		if (ret < 0)
 			return 0;
