@@ -211,7 +211,7 @@ fi
 
 if test "$enable_runtime" = "libidn2" -o "$enable_builtin" = "libidn2"; then
   # Check for libidn2
-  PKG_CHECK_MODULES([LIBIDN2], [idn2], [
+  PKG_CHECK_MODULES([LIBIDN2], [libidn2], [
     HAVE_LIBIDN2=yes
     if test "$enable_runtime" = "libidn2"; then
       CFLAGS="$LIBIDN2_CFLAGS $CFLAGS"
@@ -225,9 +225,16 @@ fi
 
 if test "$enable_runtime" = "libidn" -o "$enable_builtin" = "libidn"; then
   # Check for libidn
-  OLDLIBS=$LIBS
-  AC_SEARCH_LIBS(idna_to_ascii_8z, idn, HAVE_LIBIDN=yes, AC_MSG_ERROR(You requested libidn but it is not installed.))
-  LIBS=$OLDLIBS
+  PKG_CHECK_MODULES([LIBIDN], [libidn], [
+    HAVE_LIBIDN2=yes
+    if test "$enable_runtime" = "libidn"; then
+      CFLAGS="$LIBIDN_CFLAGS $CFLAGS"
+    fi
+  ], [
+    OLDLIBS=$LIBS
+    AC_SEARCH_LIBS(idna_to_ascii_8z, idn, HAVE_LIBIDN=yes, AC_MSG_ERROR(You requested libidn but it is not installed.))
+    LIBS=$OLDLIBS
+  ])
 fi
 
 if test "x$HAVE_LIBIDN2" = "xyes" -o "x$HAVE_LIBIDN" = "xyes"; then
