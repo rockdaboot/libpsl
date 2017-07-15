@@ -16,7 +16,7 @@ if WITH_LIBICU
    libpsl_icu_load_dafsa_fuzzer$(EXEEXT)
 else
 if WITH_LIBIDN2
-  XLIBS = $(LIBIDN2_LIBS)
+  XLIBS = -lidn2 -lunistring
   XTYPE = _idn2
   libpsl_idn2_fuzzer_SOURCES = libpsl_fuzzer.c main.c fuzzer.h
   libpsl_idn2_load_fuzzer_SOURCES = libpsl_load_fuzzer.c main.c fuzzer.h
@@ -27,7 +27,7 @@ if WITH_LIBIDN2
    libpsl_idn2_load_dafsa_fuzzer$(EXEEXT)
 else
 if WITH_LIBIDN
-  XLIBS = $(LIBIDN_LIBS)
+  XLIBS = -lidn -lunistring
   XTYPE = _idn
   libpsl_idn_fuzzer_SOURCES = libpsl_fuzzer.c main.c fuzzer.h
   libpsl_idn_load_fuzzer_SOURCES = libpsl_load_fuzzer.c main.c fuzzer.h
