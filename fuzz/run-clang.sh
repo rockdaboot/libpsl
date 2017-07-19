@@ -41,7 +41,6 @@ jobs=$workers
 
 case $fuzzer in
   libpsl_idn2_*)
-    echo 1
     cfile="libpsl_"$(echo $fuzzer|cut -d'_' -f3-)".c"
     XLIBS="-lidn2 -lunistring";;
   libpsl_idn_*)
@@ -51,7 +50,6 @@ case $fuzzer in
     cfile="libpsl_"$(echo $fuzzer|cut -d'_' -f3-)".c"
     XLIBS="-licuuc -licudata";;
   libpsl_*)
-    echo x
     cfile=${fuzzer}.c
     XLIBS=
 esac
