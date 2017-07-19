@@ -1,0 +1,12 @@
+#!/bin/sh -eu
+#
+# 
+
+if $(grep -q '^#define WITH_LIBIDN2 1' ../config.h); then RUNTIME="_idn2";
+elif $(grep -q '^#define WITH_LIBIDN 1' ../config.h); then RUNTIME="_idn";
+elif $(grep -q '^#define WITH_LIBICU 1' ../config.h); then RUNTIME="_icu";
+else RUNTIME=""; fi
+
+for fuzzer in libpsl${RUNTIME}*_fuzzer; do
+  ./get_ossfuzz_corpora $fuzzer
+done
