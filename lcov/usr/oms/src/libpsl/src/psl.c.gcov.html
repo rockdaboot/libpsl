@@ -1,0 +1,1962 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - libpsl-fuzz - /usr/oms/src/libpsl/src/psl.c</title>
+  <link rel="stylesheet" type="text/css" href="../../../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../../../index.html">top level</a> - <a href="index.html">usr/oms/src/libpsl/src</a> - psl.c<span style="font-size: 80%;"> (source / <a href="psl.c.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">libpsl-fuzz</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">369</td>
+            <td class="headerCovTableEntry">420</td>
+            <td class="headerCovTableEntryMed">87.9 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2017-07-20 15:57:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">39</td>
+            <td class="headerCovTableEntry">39</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            :  * Copyright(c) 2014-2016 Tim Ruehsen
+<span class="lineNum">       3 </span>            :  *
+<span class="lineNum">       4 </span>            :  * Permission is hereby granted, free of charge, to any person obtaining a
+<span class="lineNum">       5 </span>            :  * copy of this software and associated documentation files (the &quot;Software&quot;),
+<span class="lineNum">       6 </span>            :  * to deal in the Software without restriction, including without limitation
+<span class="lineNum">       7 </span>            :  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+<span class="lineNum">       8 </span>            :  * and/or sell copies of the Software, and to permit persons to whom the
+<span class="lineNum">       9 </span>            :  * Software is furnished to do so, subject to the following conditions:
+<span class="lineNum">      10 </span>            :  *
+<span class="lineNum">      11 </span>            :  * The above copyright notice and this permission notice shall be included in
+<span class="lineNum">      12 </span>            :  * all copies or substantial portions of the Software.
+<span class="lineNum">      13 </span>            :  *
+<span class="lineNum">      14 </span>            :  * THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+<span class="lineNum">      15 </span>            :  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+<span class="lineNum">      16 </span>            :  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+<span class="lineNum">      17 </span>            :  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+<span class="lineNum">      18 </span>            :  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+<span class="lineNum">      19 </span>            :  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+<span class="lineNum">      20 </span>            :  * DEALINGS IN THE SOFTWARE.
+<span class="lineNum">      21 </span>            :  *
+<span class="lineNum">      22 </span>            :  * This file is part of libpsl.
+<span class="lineNum">      23 </span>            :  *
+<span class="lineNum">      24 </span>            :  * Public Suffix List routines
+<span class="lineNum">      25 </span>            :  *
+<span class="lineNum">      26 </span>            :  * Changelog
+<span class="lineNum">      27 </span>            :  * 19.03.2014  Tim Ruehsen  created from libmget/cookie.c
+<span class="lineNum">      28 </span>            :  *
+<span class="lineNum">      29 </span>            :  */
+<span class="lineNum">      30 </span>            : 
+<span class="lineNum">      31 </span>            : #if HAVE_CONFIG_H
+<span class="lineNum">      32 </span>            : # include &lt;config.h&gt;
+<span class="lineNum">      33 </span>            : #endif
+<span class="lineNum">      34 </span>            : 
+<span class="lineNum">      35 </span>            : #if defined(__GNUC__) &amp;&amp; defined(__GNUC_MINOR__)
+<span class="lineNum">      36 </span>            : #       define _GCC_VERSION_AT_LEAST(major, minor) ((__GNUC__ &gt; (major)) || (__GNUC__ == (major) &amp;&amp; __GNUC_MINOR__ &gt;= (minor)))
+<span class="lineNum">      37 </span>            : #else
+<span class="lineNum">      38 </span>            : #       define _GCC_VERSION_AT_LEAST(major, minor) 0
+<span class="lineNum">      39 </span>            : #endif
+<span class="lineNum">      40 </span>            : 
+<span class="lineNum">      41 </span>            : #if _GCC_VERSION_AT_LEAST(2,95)
+<span class="lineNum">      42 </span>            : #  define _UNUSED __attribute__ ((unused))
+<span class="lineNum">      43 </span>            : #else
+<span class="lineNum">      44 </span>            : #  define _UNUSED
+<span class="lineNum">      45 </span>            : #endif
+<span class="lineNum">      46 </span>            : 
+<span class="lineNum">      47 </span>            : #if ENABLE_NLS != 0
+<span class="lineNum">      48 </span>            : #       include &lt;libintl.h&gt;
+<span class="lineNum">      49 </span>            : #       define _(STRING) gettext(STRING)
+<span class="lineNum">      50 </span>            : #else
+<span class="lineNum">      51 </span>            : #       define _(STRING) STRING
+<span class="lineNum">      52 </span>            : #       define ngettext(STRING1,STRING2,N) STRING2
+<span class="lineNum">      53 </span>            : #endif
+<span class="lineNum">      54 </span>            : 
+<span class="lineNum">      55 </span>            : #include &lt;sys/types.h&gt;
+<span class="lineNum">      56 </span>            : #include &lt;sys/stat.h&gt;
+<span class="lineNum">      57 </span>            : #include &lt;sys/socket.h&gt;
+<span class="lineNum">      58 </span>            : #include &lt;netinet/in.h&gt;
+<span class="lineNum">      59 </span>            : #include &lt;unistd.h&gt;
+<span class="lineNum">      60 </span>            : #include &lt;stdio.h&gt;
+<span class="lineNum">      61 </span>            : #include &lt;stdlib.h&gt;
+<span class="lineNum">      62 </span>            : #include &lt;string.h&gt;
+<span class="lineNum">      63 </span>            : #include &lt;ctype.h&gt;
+<span class="lineNum">      64 </span>            : #include &lt;time.h&gt;
+<span class="lineNum">      65 </span>            : #include &lt;errno.h&gt;
+<span class="lineNum">      66 </span>            : #include &lt;limits.h&gt; /* for UINT_MAX */
+<span class="lineNum">      67 </span>            : #include &lt;langinfo.h&gt;
+<span class="lineNum">      68 </span>            : #include &lt;arpa/inet.h&gt;
+<span class="lineNum">      69 </span>            : #ifdef HAVE_ALLOCA_H
+<span class="lineNum">      70 </span>            : #       include &lt;alloca.h&gt;
+<span class="lineNum">      71 </span>            : #endif
+<span class="lineNum">      72 </span>            : 
+<span class="lineNum">      73 </span>            : #ifdef WITH_LIBICU
+<span class="lineNum">      74 </span>            : #       include &lt;unicode/uversion.h&gt;
+<span class="lineNum">      75 </span>            : #       include &lt;unicode/ustring.h&gt;
+<span class="lineNum">      76 </span>            : #       include &lt;unicode/uidna.h&gt;
+<span class="lineNum">      77 </span>            : #       include &lt;unicode/ucnv.h&gt;
+<span class="lineNum">      78 </span>            : #elif defined(WITH_LIBIDN2)
+<span class="lineNum">      79 </span>            : #       include &lt;iconv.h&gt;
+<span class="lineNum">      80 </span>            : #       include &lt;idn2.h&gt;
+<span class="lineNum">      81 </span>            : #       include &lt;unicase.h&gt;
+<span class="lineNum">      82 </span>            : #       include &lt;unistr.h&gt;
+<span class="lineNum">      83 </span>            : #elif defined(WITH_LIBIDN)
+<span class="lineNum">      84 </span>            : #       include &lt;iconv.h&gt;
+<span class="lineNum">      85 </span>            : #       include &lt;stringprep.h&gt;
+<span class="lineNum">      86 </span>            : #       include &lt;idna.h&gt;
+<span class="lineNum">      87 </span>            : #       include &lt;unicase.h&gt;
+<span class="lineNum">      88 </span>            : #       include &lt;unistr.h&gt;
+<span class="lineNum">      89 </span>            : #endif
+<span class="lineNum">      90 </span>            : 
+<span class="lineNum">      91 </span>            : #include &lt;libpsl.h&gt;
+<span class="lineNum">      92 </span>            : 
+<span class="lineNum">      93 </span>            : #ifndef HAVE_STRNDUP
+<span class="lineNum">      94 </span>            : /* I found no strndup on my old SUSE 7.3 test system (gcc 2.95) */
+<span class="lineNum">      95 </span>            : 
+<span class="lineNum">      96 </span>            : static char *strndup(const char *s, size_t n)
+<span class="lineNum">      97 </span>            : {
+<span class="lineNum">      98 </span>            :         char *dst;
+<span class="lineNum">      99 </span>            :         size_t s_len = strlen(s);
+<span class="lineNum">     100 </span>            : 
+<span class="lineNum">     101 </span>            :         if (s_len &gt; n)
+<span class="lineNum">     102 </span>            :                 n = s_len;
+<span class="lineNum">     103 </span>            : 
+<span class="lineNum">     104 </span>            :         dst = malloc(n + 1);
+<span class="lineNum">     105 </span>            : 
+<span class="lineNum">     106 </span>            :         if (dst) {
+<span class="lineNum">     107 </span>            :                 memcpy(dst, s, n);
+<span class="lineNum">     108 </span>            :                 dst[n] = 0;
+<span class="lineNum">     109 </span>            :         }
+<span class="lineNum">     110 </span>            : 
+<span class="lineNum">     111 </span>            :         return dst;
+<span class="lineNum">     112 </span>            : }
+<span class="lineNum">     113 </span>            : #endif
+<span class="lineNum">     114 </span>            : 
+<span class="lineNum">     115 </span>            : /**
+<span class="lineNum">     116 </span>            :  * SECTION:libpsl
+<span class="lineNum">     117 </span>            :  * @short_description: Public Suffix List library functions
+<span class="lineNum">     118 </span>            :  * @title: libpsl
+<span class="lineNum">     119 </span>            :  * @stability: Stable
+<span class="lineNum">     120 </span>            :  * @include: libpsl.h
+<span class="lineNum">     121 </span>            :  *
+<span class="lineNum">     122 </span>            :  * [Public Suffix List](https://publicsuffix.org/) library functions.
+<span class="lineNum">     123 </span>            :  *
+<span class="lineNum">     124 </span>            :  */
+<span class="lineNum">     125 </span>            : 
+<span class="lineNum">     126 </span>            : #define countof(a) (sizeof(a)/sizeof(*(a)))
+<span class="lineNum">     127 </span>            : 
+<span class="lineNum">     128 </span>            : #define _PSL_FLAG_EXCEPTION (1&lt;&lt;0)
+<span class="lineNum">     129 </span>            : #define _PSL_FLAG_WILDCARD  (1&lt;&lt;1)
+<span class="lineNum">     130 </span>            : #define _PSL_FLAG_ICANN     (1&lt;&lt;2) /* entry of ICANN section */
+<span class="lineNum">     131 </span>            : #define _PSL_FLAG_PRIVATE   (1&lt;&lt;3) /* entry of PRIVATE section */
+<span class="lineNum">     132 </span>            : #define _PSL_FLAG_PLAIN     (1&lt;&lt;4) /* just used for PSL syntax checking */
+<span class="lineNum">     133 </span>            : 
+<span class="lineNum">     134 </span>            : typedef struct {
+<span class="lineNum">     135 </span>            :         char
+<span class="lineNum">     136 </span>            :                 label_buf[48];
+<span class="lineNum">     137 </span>            :         const char *
+<span class="lineNum">     138 </span>            :                 label;
+<span class="lineNum">     139 </span>            :         unsigned short
+<span class="lineNum">     140 </span>            :                 length;
+<span class="lineNum">     141 </span>            :         unsigned char
+<span class="lineNum">     142 </span>            :                 nlabels, /* number of labels */
+<span class="lineNum">     143 </span>            :                 flags;
+<span class="lineNum">     144 </span>            : } _psl_entry_t;
+<span class="lineNum">     145 </span>            : 
+<span class="lineNum">     146 </span>            : /* stripped down version libmget vector routines */
+<span class="lineNum">     147 </span>            : typedef struct {
+<span class="lineNum">     148 </span>            :         int
+<span class="lineNum">     149 </span>            :                 (*cmp)(const _psl_entry_t **, const _psl_entry_t **); /* comparison function */
+<span class="lineNum">     150 </span>            :         _psl_entry_t
+<span class="lineNum">     151 </span>            :                 **entry; /* pointer to array of pointers to elements */
+<span class="lineNum">     152 </span>            :         int
+<span class="lineNum">     153 </span>            :                 max,     /* allocated elements */
+<span class="lineNum">     154 </span>            :                 cur;     /* number of elements in use */
+<span class="lineNum">     155 </span>            : } _psl_vector_t;
+<span class="lineNum">     156 </span>            : 
+<span class="lineNum">     157 </span>            : struct _psl_ctx_st {
+<span class="lineNum">     158 </span>            :         _psl_vector_t
+<span class="lineNum">     159 </span>            :                 *suffixes;
+<span class="lineNum">     160 </span>            :         unsigned char
+<span class="lineNum">     161 </span>            :                 *dafsa;
+<span class="lineNum">     162 </span>            :         size_t
+<span class="lineNum">     163 </span>            :                 dafsa_size;
+<span class="lineNum">     164 </span>            :         int
+<span class="lineNum">     165 </span>            :                 nsuffixes,
+<span class="lineNum">     166 </span>            :                 nexceptions,
+<span class="lineNum">     167 </span>            :                 nwildcards;
+<span class="lineNum">     168 </span>            :         unsigned
+<span class="lineNum">     169 </span>            :                 utf8 : 1; /* 1: data contains UTF-8 + punycode encoded rules */
+<span class="lineNum">     170 </span>            : };
+<span class="lineNum">     171 </span>            : 
+<span class="lineNum">     172 </span>            : /* include the PSL data generated by psl-make-dafsa */
+<span class="lineNum">     173 </span>            : #include &quot;suffixes_dafsa.c&quot;
+<span class="lineNum">     174 </span>            : 
+<span class="lineNum">     175 </span>            : /* references to these PSLs will result in lookups to built-in data */
+<span class="lineNum">     176 </span>            : static const psl_ctx_t
+<span class="lineNum">     177 </span>            :         _builtin_psl;
+<span class="lineNum">     178 </span>            : 
+<span class="lineNum">     179 </span>            : #ifdef PSL_DISTFILE
+<span class="lineNum">     180 </span>            : static const char _psl_dist_filename[] = PSL_DISTFILE;
+<span class="lineNum">     181 </span>            : #else
+<span class="lineNum">     182 </span>            : static const char _psl_dist_filename[] = &quot;&quot;;
+<a name="183"><span class="lineNum">     183 </span>            : #endif</a>
+<span class="lineNum">     184 </span>            : 
+<span class="lineNum">     185 </span><span class="lineCov">      58893 : static _psl_vector_t *_vector_alloc(int max, int (*cmp)(const _psl_entry_t **, const _psl_entry_t **))</span>
+<span class="lineNum">     186 </span>            : {
+<span class="lineNum">     187 </span>            :         _psl_vector_t *v;
+<span class="lineNum">     188 </span>            : 
+<span class="lineNum">     189 </span><span class="lineCov">      58893 :         if (!(v = calloc(1, sizeof(_psl_vector_t))))</span>
+<span class="lineNum">     190 </span><span class="lineNoCov">          0 :                 return NULL;</span>
+<span class="lineNum">     191 </span>            : 
+<span class="lineNum">     192 </span><span class="lineCov">      58893 :         if (!(v-&gt;entry = malloc(max * sizeof(_psl_entry_t *)))) {</span>
+<span class="lineNum">     193 </span><span class="lineNoCov">          0 :                 free(v);</span>
+<span class="lineNum">     194 </span><span class="lineNoCov">          0 :                 return NULL;</span>
+<span class="lineNum">     195 </span>            :         }
+<span class="lineNum">     196 </span>            : 
+<span class="lineNum">     197 </span><span class="lineCov">      58893 :         v-&gt;max = max;</span>
+<span class="lineNum">     198 </span><span class="lineCov">      58893 :         v-&gt;cmp = cmp;</span>
+<span class="lineNum">     199 </span><span class="lineCov">      58893 :         return v;</span>
+<a name="200"><span class="lineNum">     200 </span>            : }</a>
+<span class="lineNum">     201 </span>            : 
+<span class="lineNum">     202 </span><span class="lineCov">     177174 : static void _vector_free(_psl_vector_t **v)</span>
+<span class="lineNum">     203 </span>            : {
+<span class="lineNum">     204 </span><span class="lineCov">     177174 :         if (v &amp;&amp; *v) {</span>
+<span class="lineNum">     205 </span><span class="lineCov">      58893 :                 if ((*v)-&gt;entry) {</span>
+<span class="lineNum">     206 </span>            :                         int it;
+<span class="lineNum">     207 </span>            : 
+<span class="lineNum">     208 </span><span class="lineCov">    8126355 :                         for (it = 0; it &lt; (*v)-&gt;cur; it++)</span>
+<span class="lineNum">     209 </span><span class="lineCov">    8067462 :                                 free((*v)-&gt;entry[it]);</span>
+<span class="lineNum">     210 </span>            : 
+<span class="lineNum">     211 </span><span class="lineCov">      58893 :                         free((*v)-&gt;entry);</span>
+<span class="lineNum">     212 </span>            :                 }
+<span class="lineNum">     213 </span><span class="lineCov">      58893 :                 free(*v);</span>
+<span class="lineNum">     214 </span>            :         }
+<a name="215"><span class="lineNum">     215 </span><span class="lineCov">     177174 : }</span></a>
+<span class="lineNum">     216 </span>            : 
+<span class="lineNum">     217 </span><span class="lineCov">   10389854 : static _psl_entry_t *_vector_get(const _psl_vector_t *v, int pos)</span>
+<span class="lineNum">     218 </span>            : {
+<span class="lineNum">     219 </span><span class="lineCov">   10389854 :         if (pos &lt; 0 || !v || pos &gt;= v-&gt;cur) return NULL;</span>
+<span class="lineNum">     220 </span>            : 
+<span class="lineNum">     221 </span><span class="lineCov">   10293383 :         return v-&gt;entry[pos];</span>
+<span class="lineNum">     222 </span>            : }
+<a name="223"><span class="lineNum">     223 </span>            : </a>
+<span class="lineNum">     224 </span>            : /* the entries must be sorted by */
+<span class="lineNum">     225 </span><span class="lineCov">    7376861 : static int _vector_find(const _psl_vector_t *v, const _psl_entry_t *elem)</span>
+<span class="lineNum">     226 </span>            : {
+<span class="lineNum">     227 </span><span class="lineCov">    7376861 :         if (v) {</span>
+<span class="lineNum">     228 </span>            :                 int l, r, m;
+<span class="lineNum">     229 </span>            :                 int res;
+<span class="lineNum">     230 </span>            : 
+<span class="lineNum">     231 </span>            :                 /* binary search for element (exact match) */
+<span class="lineNum">     232 </span><span class="lineCov">   81138146 :                 for (l = 0, r = v-&gt;cur - 1; l &lt;= r;) {</span>
+<span class="lineNum">     233 </span><span class="lineCov">   68570204 :                         m = (l + r) / 2;</span>
+<span class="lineNum">     234 </span><span class="lineCov">   68570204 :                         if ((res = v-&gt;cmp(&amp;elem, (const _psl_entry_t **)&amp;(v-&gt;entry[m]))) &gt; 0) l = m + 1;</span>
+<span class="lineNum">     235 </span><span class="lineCov">   45848933 :                         else if (res &lt; 0) r = m - 1;</span>
+<span class="lineNum">     236 </span><span class="lineCov">    2185780 :                         else return m;</span>
+<span class="lineNum">     237 </span>            :                 }
+<span class="lineNum">     238 </span>            :         }
+<span class="lineNum">     239 </span>            : 
+<span class="lineNum">     240 </span><span class="lineCov">    5191081 :         return -1; /* not found */</span>
+<a name="241"><span class="lineNum">     241 </span>            : }</a>
+<span class="lineNum">     242 </span>            : 
+<span class="lineNum">     243 </span><span class="lineCov">    8067462 : static int _vector_add(_psl_vector_t *v, const _psl_entry_t *elem)</span>
+<span class="lineNum">     244 </span>            : {
+<span class="lineNum">     245 </span><span class="lineCov">    8067462 :         if (v) {</span>
+<span class="lineNum">     246 </span>            :                 void *elemp;
+<span class="lineNum">     247 </span>            : 
+<span class="lineNum">     248 </span><span class="lineCov">    8067462 :                 if (!(elemp = malloc(sizeof(_psl_entry_t))))</span>
+<span class="lineNum">     249 </span><span class="lineNoCov">          0 :                         return -1;</span>
+<span class="lineNum">     250 </span>            : 
+<span class="lineNum">     251 </span><span class="lineCov">    8067462 :                 memcpy(elemp, elem, sizeof(_psl_entry_t));</span>
+<span class="lineNum">     252 </span>            : 
+<span class="lineNum">     253 </span><span class="lineCov">    8067462 :                 if (v-&gt;max == v-&gt;cur) {</span>
+<span class="lineNum">     254 </span><span class="lineCov">        879 :                         void *m = realloc(v-&gt;entry, (v-&gt;max *= 2) * sizeof(_psl_entry_t *));</span>
+<span class="lineNum">     255 </span>            : 
+<span class="lineNum">     256 </span><span class="lineCov">        879 :                         if (m)</span>
+<span class="lineNum">     257 </span><span class="lineCov">        879 :                                 v-&gt;entry = m;</span>
+<span class="lineNum">     258 </span>            :                         else {
+<span class="lineNum">     259 </span><span class="lineNoCov">          0 :                                 free(elemp);</span>
+<span class="lineNum">     260 </span><span class="lineNoCov">          0 :                                 return -1;</span>
+<span class="lineNum">     261 </span>            :                         }
+<span class="lineNum">     262 </span>            :                 }
+<span class="lineNum">     263 </span>            : 
+<span class="lineNum">     264 </span><span class="lineCov">    8067462 :                 v-&gt;entry[v-&gt;cur++] = elemp;</span>
+<span class="lineNum">     265 </span><span class="lineCov">    8067462 :                 return v-&gt;cur - 1;</span>
+<span class="lineNum">     266 </span>            :         }
+<span class="lineNum">     267 </span>            : 
+<span class="lineNum">     268 </span><span class="lineNoCov">          0 :         return -1;</span>
+<a name="269"><span class="lineNum">     269 </span>            : }</a>
+<span class="lineNum">     270 </span>            : 
+<span class="lineNum">     271 </span><span class="lineCov">      58893 : static void _vector_sort(_psl_vector_t *v)</span>
+<span class="lineNum">     272 </span>            : {
+<span class="lineNum">     273 </span><span class="lineCov">      58893 :         if (v &amp;&amp; v-&gt;cmp)</span>
+<span class="lineNum">     274 </span><span class="lineCov">      58893 :                 qsort(v-&gt;entry, v-&gt;cur, sizeof(_psl_vector_t **), (int(*)(const void *, const void *))v-&gt;cmp);</span>
+<span class="lineNum">     275 </span><span class="lineCov">      58893 : }</span>
+<a name="276"><span class="lineNum">     276 </span>            : </a>
+<span class="lineNum">     277 </span>            : /* by this kind of sorting, we can easily see if a domain matches or not */
+<span class="lineNum">     278 </span><span class="lineCov">  158994399 : static int _suffix_compare(const _psl_entry_t *s1, const _psl_entry_t *s2)</span>
+<span class="lineNum">     279 </span>            : {
+<span class="lineNum">     280 </span>            :         int n;
+<span class="lineNum">     281 </span>            : 
+<span class="lineNum">     282 </span><span class="lineCov">  158994399 :         if ((n = s2-&gt;nlabels - s1-&gt;nlabels))</span>
+<span class="lineNum">     283 </span><span class="lineCov">   16889692 :                 return n; /* most labels first */</span>
+<span class="lineNum">     284 </span>            : 
+<span class="lineNum">     285 </span><span class="lineCov">  142104707 :         if ((n = s1-&gt;length - s2-&gt;length))</span>
+<span class="lineNum">     286 </span><span class="lineCov">   46562974 :                 return n;  /* shorter rules first */</span>
+<span class="lineNum">     287 </span>            : 
+<span class="lineNum">     288 </span><span class="lineCov">   95541733 :         return strcmp(s1-&gt;label ? s1-&gt;label : s1-&gt;label_buf, s2-&gt;label ? s2-&gt;label : s2-&gt;label_buf);</span>
+<span class="lineNum">     289 </span>            : }
+<a name="290"><span class="lineNum">     290 </span>            : </a>
+<span class="lineNum">     291 </span>            : /* needed to sort array of pointers, given to qsort() */
+<span class="lineNum">     292 </span><span class="lineCov">  158994399 : static int _suffix_compare_array(const _psl_entry_t **s1, const _psl_entry_t **s2)</span>
+<span class="lineNum">     293 </span>            : {
+<span class="lineNum">     294 </span><span class="lineCov">  158994399 :         return _suffix_compare(*s1, *s2);</span>
+<a name="295"><span class="lineNum">     295 </span>            : }</a>
+<span class="lineNum">     296 </span>            : 
+<span class="lineNum">     297 </span><span class="lineCov">   10796757 : static int _suffix_init(_psl_entry_t *suffix, const char *rule, size_t length)</span>
+<span class="lineNum">     298 </span>            : {
+<span class="lineNum">     299 </span>            :         const char *src;
+<span class="lineNum">     300 </span>            :         char *dst;
+<span class="lineNum">     301 </span>            : 
+<span class="lineNum">     302 </span><span class="lineCov">   10796757 :         suffix-&gt;label = suffix-&gt;label_buf;</span>
+<span class="lineNum">     303 </span>            : 
+<span class="lineNum">     304 </span><span class="lineCov">   10796757 :         if (length &gt;= sizeof(suffix-&gt;label_buf) - 1) {</span>
+<span class="lineNum">     305 </span><span class="lineCov">     545273 :                 suffix-&gt;nlabels = 0;</span>
+<span class="lineNum">     306 </span>            :                 /* fprintf(stderr, _(&quot;Suffix rule too long (%zd, ignored): %s\n&quot;), length, rule); */
+<span class="lineNum">     307 </span><span class="lineCov">     545273 :                 return -1;</span>
+<span class="lineNum">     308 </span>            :         }
+<span class="lineNum">     309 </span>            : 
+<span class="lineNum">     310 </span><span class="lineCov">   10251484 :         suffix-&gt;length = (unsigned char)length;</span>
+<span class="lineNum">     311 </span>            : 
+<span class="lineNum">     312 </span><span class="lineCov">   10251484 :         suffix-&gt;nlabels = 1;</span>
+<span class="lineNum">     313 </span>            : 
+<span class="lineNum">     314 </span><span class="lineCov">   86237518 :         for (dst = suffix-&gt;label_buf, src = rule; *src;) {</span>
+<span class="lineNum">     315 </span><span class="lineCov">   65734550 :                 if (*src == '.')</span>
+<span class="lineNum">     316 </span><span class="lineCov">   10758667 :                         suffix-&gt;nlabels++;</span>
+<span class="lineNum">     317 </span><span class="lineCov">   65734550 :                 *dst++ = *src++;</span>
+<span class="lineNum">     318 </span>            :         }
+<span class="lineNum">     319 </span><span class="lineCov">   10251484 :         *dst = 0;</span>
+<span class="lineNum">     320 </span>            : 
+<span class="lineNum">     321 </span><span class="lineCov">   10251484 :         return 0;</span>
+<span class="lineNum">     322 </span>            : }
+<span class="lineNum">     323 </span>            : 
+<span class="lineNum">     324 </span>            : #if !defined(WITH_LIBIDN) &amp;&amp; !defined(WITH_LIBIDN2) &amp;&amp; !defined(WITH_LIBICU)
+<span class="lineNum">     325 </span>            : /*
+<span class="lineNum">     326 </span>            :  * When configured without runtime IDNA support (./configure --disable-runtime), we need a pure ASCII
+<span class="lineNum">     327 </span>            :  * representation of non-ASCII characters in labels as found in UTF-8 domain names.
+<span class="lineNum">     328 </span>            :  * This is because the current DAFSA format used may only hold character values [21..127].
+<span class="lineNum">     329 </span>            :  *
+<span class="lineNum">     330 </span>            :   Code copied from http://www.nicemice.net/idn/punycode-spec.gz on
+<span class="lineNum">     331 </span>            :   2011-01-04 with SHA-1 a966a8017f6be579d74a50a226accc7607c40133
+<span class="lineNum">     332 </span>            :   labeled punycode-spec 1.0.3 (2006-Mar-24-Thu).  It is modified for
+<span class="lineNum">     333 </span>            :   libpsl by Tim Rühsen.  License on the original code:
+<span class="lineNum">     334 </span>            : 
+<span class="lineNum">     335 </span>            :   punycode-spec 1.0.3 (2006-Mar-23-Thu)
+<span class="lineNum">     336 </span>            :   http://www.nicemice.net/idn/
+<span class="lineNum">     337 </span>            :   Adam M. Costello
+<span class="lineNum">     338 </span>            :   http://www.nicemice.net/amc/
+<span class="lineNum">     339 </span>            : 
+<span class="lineNum">     340 </span>            :   B. Disclaimer and license
+<span class="lineNum">     341 </span>            : 
+<span class="lineNum">     342 </span>            :     Regarding this entire document or any portion of it (including
+<span class="lineNum">     343 </span>            :     the pseudocode and C code), the author makes no guarantees and
+<span class="lineNum">     344 </span>            :     is not responsible for any damage resulting from its use.  The
+<span class="lineNum">     345 </span>            :     author grants irrevocable permission to anyone to use, modify,
+<span class="lineNum">     346 </span>            :     and distribute it in any way that does not diminish the rights
+<span class="lineNum">     347 </span>            :     of anyone else to use, modify, and distribute it, provided that
+<span class="lineNum">     348 </span>            :     redistributed derivative works do not contain misleading author or
+<span class="lineNum">     349 </span>            :     version information.  Derivative works need not be licensed under
+<span class="lineNum">     350 </span>            :     similar terms.
+<span class="lineNum">     351 </span>            : 
+<span class="lineNum">     352 </span>            :   C. Punycode sample implementation
+<span class="lineNum">     353 </span>            : 
+<span class="lineNum">     354 </span>            :   punycode-sample.c 2.0.0 (2004-Mar-21-Sun)
+<span class="lineNum">     355 </span>            :   http://www.nicemice.net/idn/
+<span class="lineNum">     356 </span>            :   Adam M. Costello
+<span class="lineNum">     357 </span>            :   http://www.nicemice.net/amc/
+<span class="lineNum">     358 </span>            : 
+<span class="lineNum">     359 </span>            :   This is ANSI C code (C89) implementing Punycode 1.0.x.
+<span class="lineNum">     360 </span>            :  */
+<span class="lineNum">     361 </span>            : enum punycode_status {
+<span class="lineNum">     362 </span>            :         punycode_success = 0,
+<span class="lineNum">     363 </span>            :         punycode_bad_input = 1, /* Input is invalid.                       */
+<span class="lineNum">     364 </span>            :         punycode_big_output = 2, /* Output would exceed the space provided. */
+<span class="lineNum">     365 </span>            :         punycode_overflow = 3 /* Wider integers needed to process input. */
+<span class="lineNum">     366 </span>            : };
+<span class="lineNum">     367 </span>            : 
+<span class="lineNum">     368 </span>            : #ifdef PUNYCODE_UINT
+<span class="lineNum">     369 </span>            :         typedef PUNYCODE_UINT punycode_uint;
+<span class="lineNum">     370 </span>            : #elif UINT_MAX &gt;= (1 &lt;&lt; 26) - 1
+<span class="lineNum">     371 </span>            :         typedef unsigned int punycode_uint;
+<span class="lineNum">     372 </span>            : #else
+<span class="lineNum">     373 </span>            :         typedef unsigned long punycode_uint;
+<span class="lineNum">     374 </span>            : #endif
+<span class="lineNum">     375 </span>            : 
+<span class="lineNum">     376 </span>            : /*** Bootstring parameters for Punycode ***/
+<span class="lineNum">     377 </span>            : enum {
+<span class="lineNum">     378 </span>            :         base = 36, tmin = 1, tmax = 26, skew = 38, damp = 700,
+<span class="lineNum">     379 </span>            :         initial_bias = 72, initial_n = 0x80, delimiter = 0x2D
+<span class="lineNum">     380 </span>            : };
+<span class="lineNum">     381 </span>            : 
+<span class="lineNum">     382 </span>            : static char encode_digit(punycode_uint d)
+<span class="lineNum">     383 </span>            : {
+<span class="lineNum">     384 </span>            :         return d + 22 + 75 * (d &lt; 26);
+<span class="lineNum">     385 </span>            :         /*  0..25 map to ASCII a..z or A..Z */
+<span class="lineNum">     386 </span>            :         /* 26..35 map to ASCII 0..9         */
+<span class="lineNum">     387 </span>            : }
+<span class="lineNum">     388 </span>            : #define flagged(bcp) ((punycode_uint)(bcp) - 65 &lt; 26)
+<span class="lineNum">     389 </span>            : static const punycode_uint maxint = -1;
+<span class="lineNum">     390 </span>            : 
+<span class="lineNum">     391 </span>            : static punycode_uint adapt(punycode_uint delta, punycode_uint numpoints, int firsttime)
+<span class="lineNum">     392 </span>            : {
+<span class="lineNum">     393 </span>            :         punycode_uint k;
+<span class="lineNum">     394 </span>            : 
+<span class="lineNum">     395 </span>            :         delta = firsttime ? delta / damp : delta &gt;&gt; 1;
+<span class="lineNum">     396 </span>            :         /* delta &gt;&gt; 1 is a faster way of doing delta / 2 */
+<span class="lineNum">     397 </span>            :         delta += delta / numpoints;
+<span class="lineNum">     398 </span>            : 
+<span class="lineNum">     399 </span>            :         for (k = 0; delta &gt; ((base - tmin) * tmax) / 2; k += base) {
+<span class="lineNum">     400 </span>            :                 delta /= base - tmin;
+<span class="lineNum">     401 </span>            :         }
+<span class="lineNum">     402 </span>            : 
+<span class="lineNum">     403 </span>            :         return k + (base - tmin + 1) * delta / (delta + skew);
+<span class="lineNum">     404 </span>            : }
+<span class="lineNum">     405 </span>            : 
+<span class="lineNum">     406 </span>            : static enum punycode_status punycode_encode(
+<span class="lineNum">     407 </span>            :         size_t input_length_orig,
+<span class="lineNum">     408 </span>            :         const punycode_uint input[],
+<span class="lineNum">     409 </span>            :         size_t *output_length,
+<span class="lineNum">     410 </span>            :         char output[])
+<span class="lineNum">     411 </span>            : {
+<span class="lineNum">     412 </span>            :         punycode_uint input_length, n, delta, h, b, bias, j, m, q, k, t;
+<span class="lineNum">     413 </span>            :         size_t out, max_out;
+<span class="lineNum">     414 </span>            : 
+<span class="lineNum">     415 </span>            :         /* The Punycode spec assumes that the input length is the same type */
+<span class="lineNum">     416 </span>            :         /* of integer as a code point, so we need to convert the size_t to  */
+<span class="lineNum">     417 </span>            :         /* a punycode_uint, which could overflow.                           */
+<span class="lineNum">     418 </span>            : 
+<span class="lineNum">     419 </span>            :         if (input_length_orig &gt; maxint)
+<span class="lineNum">     420 </span>            :                 return punycode_overflow;
+<span class="lineNum">     421 </span>            : 
+<span class="lineNum">     422 </span>            :         input_length = (punycode_uint) input_length_orig;
+<span class="lineNum">     423 </span>            : 
+<span class="lineNum">     424 </span>            :         /* Initialize the state: */
+<span class="lineNum">     425 </span>            : 
+<span class="lineNum">     426 </span>            :         n = initial_n;
+<span class="lineNum">     427 </span>            :         delta = 0;
+<span class="lineNum">     428 </span>            :         out = 0;
+<span class="lineNum">     429 </span>            :         max_out = *output_length;
+<span class="lineNum">     430 </span>            :         bias = initial_bias;
+<span class="lineNum">     431 </span>            : 
+<span class="lineNum">     432 </span>            :         /* Handle the basic code points: */
+<span class="lineNum">     433 </span>            :         for (j = 0; j &lt; input_length; ++j) {
+<span class="lineNum">     434 </span>            :                 if (input[j] &lt; 0x80) {
+<span class="lineNum">     435 </span>            :                         if (max_out - out &lt; 2)
+<span class="lineNum">     436 </span>            :                                 return punycode_big_output;
+<span class="lineNum">     437 </span>            :                         output[out++] = (char) input[j];
+<span class="lineNum">     438 </span>            :                 }
+<span class="lineNum">     439 </span>            :                 /* else if (input[j] &lt; n) return punycode_bad_input; */
+<span class="lineNum">     440 </span>            :                 /* (not needed for Punycode with unsigned code points) */
+<span class="lineNum">     441 </span>            :         }
+<span class="lineNum">     442 </span>            : 
+<span class="lineNum">     443 </span>            :         h = b = (punycode_uint) out;
+<span class="lineNum">     444 </span>            :         /* cannot overflow because out &lt;= input_length &lt;= maxint */
+<span class="lineNum">     445 </span>            : 
+<span class="lineNum">     446 </span>            :         /* h is the number of code points that have been handled, b is the  */
+<span class="lineNum">     447 </span>            :         /* number of basic code points, and out is the number of ASCII code */
+<span class="lineNum">     448 </span>            :         /* points that have been output.                                    */
+<span class="lineNum">     449 </span>            : 
+<span class="lineNum">     450 </span>            :         if (b &gt; 0)
+<span class="lineNum">     451 </span>            :                 output[out++] = delimiter;
+<span class="lineNum">     452 </span>            : 
+<span class="lineNum">     453 </span>            :         /* Main encoding loop: */
+<span class="lineNum">     454 </span>            : 
+<span class="lineNum">     455 </span>            :         while (h &lt; input_length) {
+<span class="lineNum">     456 </span>            :                 /* All non-basic code points &lt; n have been     */
+<span class="lineNum">     457 </span>            :                 /* handled already.  Find the next larger one: */
+<span class="lineNum">     458 </span>            : 
+<span class="lineNum">     459 </span>            :                 for (m = maxint, j = 0; j &lt; input_length; ++j) {
+<span class="lineNum">     460 </span>            :                         /* if (basic(input[j])) continue; */
+<span class="lineNum">     461 </span>            :                         /* (not needed for Punycode) */
+<span class="lineNum">     462 </span>            :                         if (input[j] &gt;= n &amp;&amp; input[j] &lt; m)
+<span class="lineNum">     463 </span>            :                                 m = input[j];
+<span class="lineNum">     464 </span>            :                 }
+<span class="lineNum">     465 </span>            : 
+<span class="lineNum">     466 </span>            :                 /* Increase delta enough to advance the decoder's    */
+<span class="lineNum">     467 </span>            :                 /* &lt;n,i&gt; state to &lt;m,0&gt;, but guard against overflow: */
+<span class="lineNum">     468 </span>            : 
+<span class="lineNum">     469 </span>            :                 if (m - n &gt; (maxint - delta) / (h + 1))
+<span class="lineNum">     470 </span>            :                         return punycode_overflow;
+<span class="lineNum">     471 </span>            :                 delta += (m - n) * (h + 1);
+<span class="lineNum">     472 </span>            :                 n = m;
+<span class="lineNum">     473 </span>            : 
+<span class="lineNum">     474 </span>            :                 for (j = 0; j &lt; input_length; ++j) {
+<span class="lineNum">     475 </span>            :                         /* Punycode does not need to check whether input[j] is basic: */
+<span class="lineNum">     476 </span>            :                         if (input[j] &lt; n /* || basic(input[j]) */) {
+<span class="lineNum">     477 </span>            :                                 if (++delta == 0)
+<span class="lineNum">     478 </span>            :                                         return punycode_overflow;
+<span class="lineNum">     479 </span>            :                         }
+<span class="lineNum">     480 </span>            : 
+<span class="lineNum">     481 </span>            :                         if (input[j] == n) {
+<span class="lineNum">     482 </span>            :                                 /* Represent delta as a generalized variable-length integer: */
+<span class="lineNum">     483 </span>            : 
+<span class="lineNum">     484 </span>            :                                 for (q = delta, k = base;; k += base) {
+<span class="lineNum">     485 </span>            :                                         if (out &gt;= max_out)
+<span class="lineNum">     486 </span>            :                                                 return punycode_big_output;
+<span class="lineNum">     487 </span>            :                                         t = k &lt;= bias /* + tmin */ ? tmin : /* +tmin not needed */
+<span class="lineNum">     488 </span>            :                                                 k &gt;= bias + tmax ? tmax : k - bias;
+<span class="lineNum">     489 </span>            :                                         if (q &lt; t)
+<span class="lineNum">     490 </span>            :                                                 break;
+<span class="lineNum">     491 </span>            :                                         output[out++] = encode_digit(t + (q - t) % (base - t));
+<span class="lineNum">     492 </span>            :                                         q = (q - t) / (base - t);
+<span class="lineNum">     493 </span>            :                                 }
+<span class="lineNum">     494 </span>            : 
+<span class="lineNum">     495 </span>            :                                 output[out++] = encode_digit(q);
+<span class="lineNum">     496 </span>            :                                 bias = adapt(delta, h + 1, h == b);
+<span class="lineNum">     497 </span>            :                                 delta = 0;
+<span class="lineNum">     498 </span>            :                                 ++h;
+<span class="lineNum">     499 </span>            :                         }
+<span class="lineNum">     500 </span>            :                 }
+<span class="lineNum">     501 </span>            : 
+<span class="lineNum">     502 </span>            :                 ++delta, ++n;
+<span class="lineNum">     503 </span>            :         }
+<span class="lineNum">     504 </span>            : 
+<span class="lineNum">     505 </span>            :         *output_length = out;
+<span class="lineNum">     506 </span>            :         return punycode_success;
+<span class="lineNum">     507 </span>            : }
+<span class="lineNum">     508 </span>            : 
+<span class="lineNum">     509 </span>            : static ssize_t _utf8_to_utf32(const char *in, size_t inlen, punycode_uint *out, size_t outlen)
+<span class="lineNum">     510 </span>            : {
+<span class="lineNum">     511 </span>            :         size_t n = 0;
+<span class="lineNum">     512 </span>            :         const unsigned char *s = (void *)in;
+<span class="lineNum">     513 </span>            :         const unsigned char *e = (void *)(in + inlen);
+<span class="lineNum">     514 </span>            : 
+<span class="lineNum">     515 </span>            :         if (!outlen)
+<span class="lineNum">     516 </span>            :                 return -1;
+<span class="lineNum">     517 </span>            : 
+<span class="lineNum">     518 </span>            :         outlen--;
+<span class="lineNum">     519 </span>            : 
+<span class="lineNum">     520 </span>            :         while (n &lt; outlen) {
+<span class="lineNum">     521 </span>            :                 size_t inleft = e - s;
+<span class="lineNum">     522 </span>            : 
+<span class="lineNum">     523 </span>            :                 if (inleft &gt;= 1 &amp;&amp; (*s &amp; 0x80) == 0) { /* 0xxxxxxx ASCII char */
+<span class="lineNum">     524 </span>            :                         out[n++] = *s;
+<span class="lineNum">     525 </span>            :                         s++;
+<span class="lineNum">     526 </span>            :                 } else if (inleft &gt;= 2 &amp;&amp; (*s &amp; 0xE0) == 0xC0) /* 110xxxxx 10xxxxxx */ {
+<span class="lineNum">     527 </span>            :                         if ((s[1] &amp; 0xC0) != 0x80)
+<span class="lineNum">     528 </span>            :                                 return -1;
+<span class="lineNum">     529 </span>            :                         out[n++] = ((*s &amp; 0x1F) &lt;&lt; 6) | (s[1] &amp; 0x3F);
+<span class="lineNum">     530 </span>            :                         s += 2;
+<span class="lineNum">     531 </span>            :                 } else if (inleft &gt;= 3 &amp;&amp; (*s &amp; 0xF0) == 0xE0) /* 1110xxxx 10xxxxxx 10xxxxxx */ {
+<span class="lineNum">     532 </span>            :                         if ((s[1] &amp; 0xC0) != 0x80 || (s[2] &amp; 0xC0) != 0x80)
+<span class="lineNum">     533 </span>            :                                 return -1;
+<span class="lineNum">     534 </span>            :                         out[n++] = ((*s &amp; 0x0F) &lt;&lt; 12) | ((s[1] &amp; 0x3F) &lt;&lt; 6) | (s[2] &amp; 0x3F);
+<span class="lineNum">     535 </span>            :                         s += 3;
+<span class="lineNum">     536 </span>            :                 } else if (inleft &gt;= 4 &amp;&amp; (*s &amp; 0xF8) == 0xF0) /* 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx */ {
+<span class="lineNum">     537 </span>            :                         if ((s[1] &amp; 0xC0) != 0x80 || (s[2] &amp; 0xC0) != 0x80 || (s[3] &amp; 0xC0) != 0x80)
+<span class="lineNum">     538 </span>            :                                 return -1;
+<span class="lineNum">     539 </span>            :                         out[n++] = ((*s &amp; 0x07) &lt;&lt; 18) | ((s[1] &amp; 0x3F) &lt;&lt; 12) | ((s[1] &amp; 0x3F) &lt;&lt; 6) | (s[2] &amp; 0x3F);
+<span class="lineNum">     540 </span>            :                         s += 4;
+<span class="lineNum">     541 </span>            :                 } else if (!inleft) {
+<span class="lineNum">     542 </span>            :                         break;
+<span class="lineNum">     543 </span>            :                 } else
+<span class="lineNum">     544 </span>            :                         return -1;
+<span class="lineNum">     545 </span>            :         }
+<span class="lineNum">     546 </span>            : 
+<span class="lineNum">     547 </span>            :         return n;
+<span class="lineNum">     548 </span>            : }
+<span class="lineNum">     549 </span>            : 
+<span class="lineNum">     550 </span>            : static int _mem_is_ascii(const char *s, size_t n)
+<span class="lineNum">     551 </span>            : {
+<span class="lineNum">     552 </span>            :         while (n--)
+<span class="lineNum">     553 </span>            :                 if (*((unsigned char *)s++) &gt;= 128)
+<span class="lineNum">     554 </span>            :                         return 0;
+<span class="lineNum">     555 </span>            : 
+<span class="lineNum">     556 </span>            :         return 1;
+<span class="lineNum">     557 </span>            : }
+<span class="lineNum">     558 </span>            : 
+<span class="lineNum">     559 </span>            : static int _domain_to_punycode(const char *domain, char *out, size_t outsize)
+<span class="lineNum">     560 </span>            : {
+<span class="lineNum">     561 </span>            :         size_t outlen = 0, labellen;
+<span class="lineNum">     562 </span>            :         punycode_uint input[256];
+<span class="lineNum">     563 </span>            :         const char *label, *e;
+<span class="lineNum">     564 </span>            : 
+<span class="lineNum">     565 </span>            :         for (e = label = domain; e; label = e + 1) {
+<span class="lineNum">     566 </span>            :                 e = strchr(label, '.');
+<span class="lineNum">     567 </span>            :                 labellen = e ? (size_t) (e - label) : strlen(label);
+<span class="lineNum">     568 </span>            :                 /* printf(&quot;s=%s inlen=%zd\n&quot;, label, labellen); */
+<span class="lineNum">     569 </span>            : 
+<span class="lineNum">     570 </span>            :                 if (_mem_is_ascii(label, labellen)) {
+<span class="lineNum">     571 </span>            :                         if (outlen + labellen + (e != NULL) &gt;= outsize)
+<span class="lineNum">     572 </span>            :                                 return 1;
+<span class="lineNum">     573 </span>            : 
+<span class="lineNum">     574 </span>            :                         /* printf(&quot;outlen=%zd labellen=%zd\n&quot;, outlen, labellen); */
+<span class="lineNum">     575 </span>            :                         memcpy(out + outlen, label, labellen);
+<span class="lineNum">     576 </span>            :                         outlen += labellen;
+<span class="lineNum">     577 </span>            :                 } else {
+<span class="lineNum">     578 </span>            :                         ssize_t inputlen = 0;
+<span class="lineNum">     579 </span>            : 
+<span class="lineNum">     580 </span>            :                         if (outlen + labellen + (e != NULL) + 4 &gt;= outsize)
+<span class="lineNum">     581 </span>            :                                 return 1;
+<span class="lineNum">     582 </span>            : 
+<span class="lineNum">     583 </span>            :                         if ((inputlen = _utf8_to_utf32(label, labellen, input, countof(input))) &lt; 0)
+<span class="lineNum">     584 </span>            :                                 return 1;
+<span class="lineNum">     585 </span>            : 
+<span class="lineNum">     586 </span>            :                         memcpy(out + outlen, &quot;xn--&quot;, 4);
+<span class="lineNum">     587 </span>            :                         outlen += 4;
+<span class="lineNum">     588 </span>            : 
+<span class="lineNum">     589 </span>            :                         labellen = outsize - outlen;
+<span class="lineNum">     590 </span>            :                         /* printf(&quot;n=%zd space_left=%zd\n&quot;, n, labellen); */
+<span class="lineNum">     591 </span>            :                         if (punycode_encode(inputlen, input, &amp;labellen, out + outlen))
+<span class="lineNum">     592 </span>            :                                 return 1;
+<span class="lineNum">     593 </span>            :                         outlen += labellen;
+<span class="lineNum">     594 </span>            :                 }
+<span class="lineNum">     595 </span>            : 
+<span class="lineNum">     596 </span>            :                 if (e)
+<span class="lineNum">     597 </span>            :                         out[outlen++] = '.';
+<span class="lineNum">     598 </span>            :                 out[outlen] = 0;
+<span class="lineNum">     599 </span>            :         }
+<span class="lineNum">     600 </span>            : 
+<span class="lineNum">     601 </span>            :         return 0;
+<span class="lineNum">     602 </span>            : }
+<a name="603"><span class="lineNum">     603 </span>            : #endif</a>
+<span class="lineNum">     604 </span>            : 
+<span class="lineNum">     605 </span><span class="lineCov">  265675113 : static int _isspace_ascii(const char c)</span>
+<span class="lineNum">     606 </span>            : {
+<span class="lineNum">     607 </span><span class="lineCov">  265675113 :         return c == ' ' || c == '\t' || c == '\r' || c == '\n';</span>
+<a name="608"><span class="lineNum">     608 </span>            : }</a>
+<span class="lineNum">     609 </span>            : 
+<span class="lineNum">     610 </span><span class="lineCov">    7410077 : static int _str_is_ascii(const char *s)</span>
+<span class="lineNum">     611 </span>            : {
+<span class="lineNum">     612 </span><span class="lineCov">    7410077 :         while (*s &amp;&amp; *((unsigned char *)s) &lt; 128) s++;</span>
+<span class="lineNum">     613 </span>            : 
+<span class="lineNum">     614 </span><span class="lineCov">    7410077 :         return !*s;</span>
+<span class="lineNum">     615 </span>            : }
+<span class="lineNum">     616 </span>            : 
+<span class="lineNum">     617 </span>            : #if defined(WITH_LIBIDN)
+<span class="lineNum">     618 </span>            : /*
+<span class="lineNum">     619 </span>            :  * Work around a libidn &lt;= 1.30 vulnerability.
+<span class="lineNum">     620 </span>            :  *
+<span class="lineNum">     621 </span>            :  * The function checks for a valid UTF-8 character sequence before
+<span class="lineNum">     622 </span>            :  * passing it to idna_to_ascii_8z().
+<span class="lineNum">     623 </span>            :  *
+<span class="lineNum">     624 </span>            :  * [1] https://lists.gnu.org/archive/html/help-libidn/2015-05/msg00002.html
+<span class="lineNum">     625 </span>            :  * [2] https://lists.gnu.org/archive/html/bug-wget/2015-06/msg00002.html
+<span class="lineNum">     626 </span>            :  * [3] https://curl.haxx.se/mail/lib-2015-06/0143.html
+<span class="lineNum">     627 </span>            :  */
+<span class="lineNum">     628 </span>            : static int _utf8_is_valid(const char *utf8)
+<span class="lineNum">     629 </span>            : {
+<span class="lineNum">     630 </span>            :         const unsigned char *s = (const unsigned char *) utf8;
+<span class="lineNum">     631 </span>            : 
+<span class="lineNum">     632 </span>            :         while (*s) {
+<span class="lineNum">     633 </span>            :                 if ((*s &amp; 0x80) == 0) /* 0xxxxxxx ASCII char */
+<span class="lineNum">     634 </span>            :                         s++;
+<span class="lineNum">     635 </span>            :                 else if ((*s &amp; 0xE0) == 0xC0) /* 110xxxxx 10xxxxxx */ {
+<span class="lineNum">     636 </span>            :                         if ((s[1] &amp; 0xC0) != 0x80)
+<span class="lineNum">     637 </span>            :                                 return 0;
+<span class="lineNum">     638 </span>            :                         s += 2;
+<span class="lineNum">     639 </span>            :                 } else if ((*s &amp; 0xF0) == 0xE0) /* 1110xxxx 10xxxxxx 10xxxxxx */ {
+<span class="lineNum">     640 </span>            :                         if ((s[1] &amp; 0xC0) != 0x80 || (s[2] &amp; 0xC0) != 0x80)
+<span class="lineNum">     641 </span>            :                                 return 0;
+<span class="lineNum">     642 </span>            :                         s += 3;
+<span class="lineNum">     643 </span>            :                 } else if ((*s &amp; 0xF8) == 0xF0) /* 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx */ {
+<span class="lineNum">     644 </span>            :                         if ((s[1] &amp; 0xC0) != 0x80 || (s[2] &amp; 0xC0) != 0x80 || (s[3] &amp; 0xC0) != 0x80)
+<span class="lineNum">     645 </span>            :                                 return 0;
+<span class="lineNum">     646 </span>            :                         s += 4;
+<span class="lineNum">     647 </span>            :                 } else
+<span class="lineNum">     648 </span>            :                         return 0;
+<span class="lineNum">     649 </span>            :         }
+<span class="lineNum">     650 </span>            : 
+<span class="lineNum">     651 </span>            :         return 1;
+<span class="lineNum">     652 </span>            : }
+<span class="lineNum">     653 </span>            : #endif
+<span class="lineNum">     654 </span>            : 
+<a name="655"><span class="lineNum">     655 </span>            : typedef void *_psl_idna_t;</a>
+<span class="lineNum">     656 </span>            : 
+<span class="lineNum">     657 </span><span class="lineCov">      64031 : static _psl_idna_t *_psl_idna_open(void)</span>
+<span class="lineNum">     658 </span>            : {
+<span class="lineNum">     659 </span>            : #if defined(WITH_LIBICU)
+<span class="lineNum">     660 </span>            :         UErrorCode status = 0;
+<span class="lineNum">     661 </span>            :         return (void *)uidna_openUTS46(UIDNA_USE_STD3_RULES | UIDNA_NONTRANSITIONAL_TO_ASCII, &amp;status);
+<span class="lineNum">     662 </span>            : #endif
+<span class="lineNum">     663 </span><span class="lineCov">      64031 :         return NULL;</span>
+<a name="664"><span class="lineNum">     664 </span>            : }</a>
+<span class="lineNum">     665 </span>            : 
+<span class="lineNum">     666 </span><span class="lineCov">      64031 : static void _psl_idna_close(_psl_idna_t *idna _UNUSED)</span>
+<span class="lineNum">     667 </span>            : {
+<span class="lineNum">     668 </span>            : #if defined(WITH_LIBICU)
+<span class="lineNum">     669 </span>            :         if (idna)
+<span class="lineNum">     670 </span>            :                 uidna_close((UIDNA *)idna);
+<span class="lineNum">     671 </span>            : #endif
+<a name="672"><span class="lineNum">     672 </span><span class="lineCov">      64031 : }</span></a>
+<span class="lineNum">     673 </span>            : 
+<span class="lineNum">     674 </span><span class="lineCov">    3915516 : static int _psl_idna_toASCII(_psl_idna_t *idna _UNUSED, const char *utf8, char **ascii)</span>
+<span class="lineNum">     675 </span>            : {
+<span class="lineNum">     676 </span><span class="lineCov">    3915516 :         int ret = -1;</span>
+<span class="lineNum">     677 </span>            : 
+<span class="lineNum">     678 </span>            : #if defined(WITH_LIBICU)
+<span class="lineNum">     679 </span>            :         /* IDNA2008 UTS#46 punycode conversion */
+<span class="lineNum">     680 </span>            :         if (idna) {
+<span class="lineNum">     681 </span>            :                 char lookupname_buf[128] = &quot;&quot;, *lookupname = lookupname_buf;
+<span class="lineNum">     682 </span>            :                 UErrorCode status = 0;
+<span class="lineNum">     683 </span>            :                 UIDNAInfo info = UIDNA_INFO_INITIALIZER;
+<span class="lineNum">     684 </span>            :                 UChar utf16_dst[128], utf16_src_buf[128];
+<span class="lineNum">     685 </span>            :                 UChar *utf16_src = utf16_src_buf;
+<span class="lineNum">     686 </span>            :                 int32_t utf16_src_length, bytes_written;
+<span class="lineNum">     687 </span>            :                 int32_t utf16_dst_length;
+<span class="lineNum">     688 </span>            : 
+<span class="lineNum">     689 </span>            :                 u_strFromUTF8(utf16_src, countof(utf16_src_buf), &amp;utf16_src_length, utf8, -1, &amp;status);
+<span class="lineNum">     690 </span>            :                 if (!U_SUCCESS(status)) goto cleanup; /* UTF-8 to UTF-16 conversion failed */
+<span class="lineNum">     691 </span>            : 
+<span class="lineNum">     692 </span>            :                 if (utf16_src_length &gt;= (int) countof(utf16_src_buf)) {
+<span class="lineNum">     693 </span>            :                         utf16_src = malloc((utf16_src_length + 1) * sizeof(UChar));
+<span class="lineNum">     694 </span>            :                         if (!utf16_src) goto cleanup;
+<span class="lineNum">     695 </span>            : 
+<span class="lineNum">     696 </span>            :                         u_strFromUTF8(utf16_src, utf16_src_length, NULL, utf8, -1, &amp;status);
+<span class="lineNum">     697 </span>            :                         if (!U_SUCCESS(status)) goto cleanup; /* UTF-8 to UTF-16 conversion failed */
+<span class="lineNum">     698 </span>            : 
+<span class="lineNum">     699 </span>            :                         utf16_src[utf16_src_length] = 0; /* u_strFromUTF8() doesn't 0-terminate if dest is filled up */
+<span class="lineNum">     700 </span>            :                 }
+<span class="lineNum">     701 </span>            : 
+<span class="lineNum">     702 </span>            :                 utf16_dst_length = uidna_nameToASCII((UIDNA *)idna, utf16_src, utf16_src_length, utf16_dst, countof(utf16_dst), &amp;info, &amp;status);
+<span class="lineNum">     703 </span>            :                 if (!U_SUCCESS(status)) goto cleanup; /* to ASCII conversion failed */
+<span class="lineNum">     704 </span>            : 
+<span class="lineNum">     705 </span>            :                 u_strToUTF8(lookupname, sizeof(lookupname_buf), &amp;bytes_written, utf16_dst, utf16_dst_length, &amp;status);
+<span class="lineNum">     706 </span>            :                 if (!U_SUCCESS(status)) goto cleanup; /* UTF-16 to UTF-8 conversion failed */
+<span class="lineNum">     707 </span>            : 
+<span class="lineNum">     708 </span>            :                 if (bytes_written &gt;= (int) sizeof(lookupname_buf)) {
+<span class="lineNum">     709 </span>            :                         lookupname = malloc(bytes_written + 1);
+<span class="lineNum">     710 </span>            :                         if (!lookupname) goto cleanup;
+<span class="lineNum">     711 </span>            : 
+<span class="lineNum">     712 </span>            :                         u_strToUTF8(lookupname, bytes_written, NULL, utf16_dst, utf16_dst_length, &amp;status);
+<span class="lineNum">     713 </span>            :                         if (!U_SUCCESS(status)) goto cleanup; /* UTF-16 to UTF-8 conversion failed */
+<span class="lineNum">     714 </span>            : 
+<span class="lineNum">     715 </span>            :                         lookupname[bytes_written] = 0; /* u_strToUTF8() doesn't 0-terminate if dest is filled up */
+<span class="lineNum">     716 </span>            :                 } else {
+<span class="lineNum">     717 </span>            :                         if (!(lookupname = strdup(lookupname)))
+<span class="lineNum">     718 </span>            :                                 goto cleanup;
+<span class="lineNum">     719 </span>            :                 }
+<span class="lineNum">     720 </span>            : 
+<span class="lineNum">     721 </span>            :                 if (ascii) {
+<span class="lineNum">     722 </span>            :                         *ascii = lookupname;
+<span class="lineNum">     723 </span>            :                         lookupname = NULL;
+<span class="lineNum">     724 </span>            :                 }
+<span class="lineNum">     725 </span>            : 
+<span class="lineNum">     726 </span>            :                 ret = 0;
+<span class="lineNum">     727 </span>            : 
+<span class="lineNum">     728 </span>            : cleanup:
+<span class="lineNum">     729 </span>            :                 if (lookupname != lookupname_buf)
+<span class="lineNum">     730 </span>            :                         free(lookupname);
+<span class="lineNum">     731 </span>            :                 if (utf16_src != utf16_src_buf)
+<span class="lineNum">     732 </span>            :                         free(utf16_src);
+<span class="lineNum">     733 </span>            :         }
+<span class="lineNum">     734 </span>            : #elif defined(WITH_LIBIDN2)
+<span class="lineNum">     735 </span>            : #if IDN2_VERSION_NUMBER &gt;= 0x00140000
+<span class="lineNum">     736 </span>            :         int rc;
+<span class="lineNum">     737 </span>            : 
+<span class="lineNum">     738 </span>            :         /* IDN2_TRANSITIONAL automatically converts to lowercase
+<span class="lineNum">     739 </span>            :          * IDN2_NFC_INPUT converts to NFC before toASCII conversion
+<span class="lineNum">     740 </span>            :          * Since IDN2_TRANSITIONAL implicitly does NFC conversion, we don't need
+<span class="lineNum">     741 </span>            :          * the additional IDN2_NFC_INPUT. But just for the unlikely case that the linked
+<span class="lineNum">     742 </span>            :          * library is not matching the headers when building and it doesn't support TR46,
+<span class="lineNum">     743 </span>            :          * we provide IDN2_NFC_INPUT. */
+<span class="lineNum">     744 </span>            : 
+<span class="lineNum">     745 </span><span class="lineCov">    3915516 :         if ((rc = idn2_lookup_u8((uint8_t *)utf8, (uint8_t **)ascii, IDN2_NFC_INPUT | IDN2_NONTRANSITIONAL)) == IDN2_OK)</span>
+<span class="lineNum">     746 </span><span class="lineCov">    3049115 :                 ret = 0;</span>
+<span class="lineNum">     747 </span>            :         /* else
+<span class="lineNum">     748 </span>            :                 fprintf(stderr, &quot;toASCII(%s) failed (%d): %s\n&quot;, lower, rc, idn2_strerror(rc)); */
+<span class="lineNum">     749 </span>            : #else
+<span class="lineNum">     750 </span>            :         int rc;
+<span class="lineNum">     751 </span>            :         uint8_t *lower;
+<span class="lineNum">     752 </span>            :         size_t len = u8_strlen((uint8_t *)utf8) + 1;
+<span class="lineNum">     753 </span>            : 
+<span class="lineNum">     754 </span>            :         /* we need a conversion to lowercase */
+<span class="lineNum">     755 </span>            :         if (!(lower = u8_tolower((uint8_t *)utf8, len, 0, UNINORM_NFKC, NULL, &amp;len))) {
+<span class="lineNum">     756 </span>            :                 /* fprintf(stderr, &quot;u8_tolower(%s) failed (%d)\n&quot;, utf8, errno); */
+<span class="lineNum">     757 </span>            :                 return -1;
+<span class="lineNum">     758 </span>            :         }
+<span class="lineNum">     759 </span>            : 
+<span class="lineNum">     760 </span>            :         if ((rc = idn2_lookup_u8(lower, (uint8_t **)ascii, 0)) == IDN2_OK) {
+<span class="lineNum">     761 </span>            :                 ret = 0;
+<span class="lineNum">     762 </span>            :         } /* else
+<span class="lineNum">     763 </span>            :                 fprintf(stderr, &quot;toASCII(%s) failed (%d): %s\n&quot;, lower, rc, idn2_strerror(rc)); */
+<span class="lineNum">     764 </span>            : 
+<span class="lineNum">     765 </span>            :         free(lower);
+<span class="lineNum">     766 </span>            : #endif
+<span class="lineNum">     767 </span>            : #elif defined(WITH_LIBIDN)
+<span class="lineNum">     768 </span>            :         int rc;
+<span class="lineNum">     769 </span>            : 
+<span class="lineNum">     770 </span>            :         if (!_utf8_is_valid(utf8)) {
+<span class="lineNum">     771 </span>            :                 /* fprintf(_(stderr, &quot;Invalid UTF-8 sequence not converted: '%s'\n&quot;), utf8); */
+<span class="lineNum">     772 </span>            :                 return -1;
+<span class="lineNum">     773 </span>            :         }
+<span class="lineNum">     774 </span>            : 
+<span class="lineNum">     775 </span>            :         /* idna_to_ascii_8z() automatically converts UTF-8 to lowercase */
+<span class="lineNum">     776 </span>            : 
+<span class="lineNum">     777 </span>            :         if ((rc = idna_to_ascii_8z(utf8, ascii, IDNA_USE_STD3_ASCII_RULES)) == IDNA_SUCCESS) {
+<span class="lineNum">     778 </span>            :                 ret = 0;
+<span class="lineNum">     779 </span>            :         } /* else
+<span class="lineNum">     780 </span>            :                 fprintf(_(stderr, &quot;toASCII failed (%d): %s\n&quot;), rc, idna_strerror(rc)); */
+<span class="lineNum">     781 </span>            : #else
+<span class="lineNum">     782 </span>            :         char lookupname[128];
+<span class="lineNum">     783 </span>            : 
+<span class="lineNum">     784 </span>            :         if (_domain_to_punycode(utf8, lookupname, sizeof(lookupname)) == 0) {
+<span class="lineNum">     785 </span>            :                 if (ascii)
+<span class="lineNum">     786 </span>            :                         if ((*ascii = strdup(lookupname)))
+<span class="lineNum">     787 </span>            :                                 ret = 0;
+<span class="lineNum">     788 </span>            :         }
+<span class="lineNum">     789 </span>            : #endif
+<span class="lineNum">     790 </span>            : 
+<span class="lineNum">     791 </span><span class="lineCov">    3915516 :         return ret;</span>
+<a name="792"><span class="lineNum">     792 </span>            : }</a>
+<span class="lineNum">     793 </span>            : 
+<span class="lineNum">     794 </span><span class="lineCov">    7297751 : static void _add_punycode_if_needed(_psl_idna_t *idna, _psl_vector_t *v, _psl_entry_t *e)</span>
+<span class="lineNum">     795 </span>            : {
+<span class="lineNum">     796 </span>            :         char *lookupname;
+<span class="lineNum">     797 </span>            : 
+<span class="lineNum">     798 </span><span class="lineCov">    7297751 :         if (_str_is_ascii(e-&gt;label_buf))</span>
+<span class="lineNum">     799 </span><span class="lineCov">    3387373 :                 return;</span>
+<span class="lineNum">     800 </span>            : 
+<span class="lineNum">     801 </span><span class="lineCov">    3910378 :         if (_psl_idna_toASCII(idna, e-&gt;label_buf, &amp;lookupname) == 0) {</span>
+<span class="lineNum">     802 </span><span class="lineCov">    3043977 :                 if (strcmp(e-&gt;label_buf, lookupname)) {</span>
+<span class="lineNum">     803 </span>            :                         _psl_entry_t suffix, *suffixp;
+<span class="lineNum">     804 </span>            : 
+<span class="lineNum">     805 </span>            :                         /* fprintf(stderr, &quot;toASCII '%s' -&gt; '%s'\n&quot;, e-&gt;label_buf, lookupname); */
+<span class="lineNum">     806 </span><span class="lineCov">    3043977 :                         if (_suffix_init(&amp;suffix, lookupname, strlen(lookupname)) == 0) {</span>
+<span class="lineNum">     807 </span><span class="lineCov">    2953733 :                                 suffix.flags = e-&gt;flags;</span>
+<span class="lineNum">     808 </span><span class="lineCov">    2953733 :                                 if ((suffixp = _vector_get(v, _vector_add(v, &amp;suffix))))</span>
+<span class="lineNum">     809 </span><span class="lineCov">    2953733 :                                         suffixp-&gt;label = suffixp-&gt;label_buf; /* set label to changed address */</span>
+<span class="lineNum">     810 </span>            :                         }
+<span class="lineNum">     811 </span>            :                 } /* else ignore */
+<span class="lineNum">     812 </span>            : 
+<span class="lineNum">     813 </span><span class="lineCov">    3043977 :                 free(lookupname);</span>
+<span class="lineNum">     814 </span>            :         }
+<span class="lineNum">     815 </span>            : }
+<span class="lineNum">     816 </span>            : 
+<span class="lineNum">     817 </span>            : /* prototypes */
+<span class="lineNum">     818 </span>            : int LookupStringInFixedSet(const unsigned char* graph, size_t length, const char* key, size_t key_length);
+<a name="819"><span class="lineNum">     819 </span>            : int GetUtfMode(const unsigned char *graph, size_t length);</a>
+<span class="lineNum">     820 </span>            : 
+<span class="lineNum">     821 </span><span class="lineCov">    1038176 : static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int type)</span>
+<span class="lineNum">     822 </span>            : {
+<span class="lineNum">     823 </span>            :         _psl_entry_t suffix;
+<span class="lineNum">     824 </span>            :         const char *p;
+<span class="lineNum">     825 </span><span class="lineCov">    1038176 :         char *punycode = NULL;</span>
+<span class="lineNum">     826 </span><span class="lineCov">    1038176 :         int need_conversion = 0;</span>
+<span class="lineNum">     827 </span>            : 
+<span class="lineNum">     828 </span>            :         /* this function should be called without leading dots, just make sure */
+<span class="lineNum">     829 </span><span class="lineCov">    1038176 :         if (*domain == '.')</span>
+<span class="lineNum">     830 </span><span class="lineCov">     742886 :                 domain++;</span>
+<span class="lineNum">     831 </span>            : 
+<span class="lineNum">     832 </span><span class="lineCov">    1038176 :         suffix.nlabels = 1;</span>
+<span class="lineNum">     833 </span>            : 
+<span class="lineNum">     834 </span><span class="lineCov">   54747934 :         for (p = domain; *p; p++) {</span>
+<span class="lineNum">     835 </span><span class="lineCov">   53709758 :                 if (*p == '.')</span>
+<span class="lineNum">     836 </span><span class="lineCov">   45450371 :                         suffix.nlabels++;</span>
+<span class="lineNum">     837 </span><span class="lineCov">    8259387 :                 else if (*((unsigned char *)p) &gt;= 128)</span>
+<span class="lineNum">     838 </span><span class="lineCov">    1713898 :                         need_conversion = 1; /* in case domain is non-ascii we need a toASCII conversion */</span>
+<span class="lineNum">     839 </span>            :         }
+<span class="lineNum">     840 </span>            : 
+<span class="lineNum">     841 </span><span class="lineCov">    1038176 :         if (suffix.nlabels == 1) {</span>
+<span class="lineNum">     842 </span>            :                 /* TLD, this is the prevailing '*' match.
+<span class="lineNum">     843 </span>            :                  * We don't currently support exception TLDs (TLDs that are not a public suffix)
+<span class="lineNum">     844 </span>            :                  */
+<span class="lineNum">     845 </span><span class="lineCov">      38021 :                 return 1;</span>
+<span class="lineNum">     846 </span>            :         }
+<span class="lineNum">     847 </span>            : 
+<span class="lineNum">     848 </span><span class="lineCov">    1000155 :         if (psl-&gt;utf8 || psl == &amp;_builtin_psl)</span>
+<span class="lineNum">     849 </span><span class="lineCov">     995017 :                 need_conversion = 0;</span>
+<span class="lineNum">     850 </span>            : 
+<span class="lineNum">     851 </span>            : #if defined(WITH_LIBIDN) || defined(WITH_LIBIDN2) || defined(WITH_LIBICU)
+<span class="lineNum">     852 </span><span class="lineCov">    1000155 :         if (psl == &amp;_builtin_psl)</span>
+<span class="lineNum">     853 </span><span class="lineCov">     909416 :                 need_conversion = 0;</span>
+<span class="lineNum">     854 </span>            : #endif
+<span class="lineNum">     855 </span>            : 
+<span class="lineNum">     856 </span><span class="lineCov">    1000155 :         if (need_conversion) {</span>
+<span class="lineNum">     857 </span><span class="lineCov">       5138 :                 _psl_idna_t *idna = _psl_idna_open();</span>
+<span class="lineNum">     858 </span>            : 
+<span class="lineNum">     859 </span><span class="lineCov">       5138 :                 if (_psl_idna_toASCII(idna, domain, &amp;punycode) == 0) {</span>
+<span class="lineNum">     860 </span><span class="lineCov">       5138 :                         suffix.label = punycode;</span>
+<span class="lineNum">     861 </span><span class="lineCov">       5138 :                         suffix.length = strlen(punycode);</span>
+<span class="lineNum">     862 </span>            :                 } else {
+<span class="lineNum">     863 </span>            :                         /* fallback */
+<span class="lineNum">     864 </span>            : 
+<span class="lineNum">     865 </span><span class="lineNoCov">          0 :                         suffix.label = domain;</span>
+<span class="lineNum">     866 </span><span class="lineNoCov">          0 :                         suffix.length = p - suffix.label;</span>
+<span class="lineNum">     867 </span>            :                 }
+<span class="lineNum">     868 </span>            : 
+<span class="lineNum">     869 </span><span class="lineCov">       5138 :                 _psl_idna_close(idna);</span>
+<span class="lineNum">     870 </span>            :         } else {
+<span class="lineNum">     871 </span><span class="lineCov">     995017 :                 suffix.label = domain;</span>
+<span class="lineNum">     872 </span><span class="lineCov">     995017 :                 suffix.length = p - suffix.label;</span>
+<span class="lineNum">     873 </span>            :         }
+<span class="lineNum">     874 </span>            : 
+<span class="lineNum">     875 </span><span class="lineCov">    1895485 :         if (psl == &amp;_builtin_psl || psl-&gt;dafsa) {</span>
+<span class="lineNum">     876 </span><span class="lineCov">     940895 :                 size_t dafsa_size = psl == &amp;_builtin_psl ? sizeof(kDafsa) : psl-&gt;dafsa_size;</span>
+<span class="lineNum">     877 </span><span class="lineCov">     940895 :                 const unsigned char *dafsa = psl == &amp;_builtin_psl ? kDafsa : psl-&gt;dafsa;</span>
+<span class="lineNum">     878 </span><span class="lineCov">     940895 :                 int rc = LookupStringInFixedSet(dafsa, dafsa_size, suffix.label, suffix.length);</span>
+<span class="lineNum">     879 </span><span class="lineCov">     940895 :                 if (rc != -1) {</span>
+<span class="lineNum">     880 </span>            :                         /* check for correct rule type */
+<span class="lineNum">     881 </span><span class="lineCov">       6717 :                         if (type == PSL_TYPE_ICANN &amp;&amp; !(rc &amp; _PSL_FLAG_ICANN))</span>
+<span class="lineNum">     882 </span>            :                                 goto suffix_no;
+<span class="lineNum">     883 </span><span class="lineCov">       6331 :                         else if (type == PSL_TYPE_PRIVATE &amp;&amp; !(rc &amp; _PSL_FLAG_PRIVATE))</span>
+<span class="lineNum">     884 </span><span class="lineCov">        386 :                                 goto suffix_no;</span>
+<span class="lineNum">     885 </span>            : 
+<span class="lineNum">     886 </span><span class="lineCov">       5945 :                         if (rc &amp; _PSL_FLAG_EXCEPTION)</span>
+<span class="lineNum">     887 </span><span class="lineCov">       1525 :                                 goto suffix_no;</span>
+<span class="lineNum">     888 </span>            : 
+<span class="lineNum">     889 </span>            :                         /* wildcard *.foo.bar implicitly make foo.bar a public suffix */
+<span class="lineNum">     890 </span>            :                         /* definitely a match, no matter if the found rule is a wildcard or not */
+<span class="lineNum">     891 </span><span class="lineCov">       4420 :                         goto suffix_yes;</span>
+<span class="lineNum">     892 </span>            :                 }
+<span class="lineNum">     893 </span><span class="lineCov">     934178 :                 if ((suffix.label = strchr(suffix.label, '.'))) {</span>
+<span class="lineNum">     894 </span><span class="lineCov">     934178 :                         suffix.label++;</span>
+<span class="lineNum">     895 </span><span class="lineCov">     934178 :                         suffix.length = strlen(suffix.label);</span>
+<span class="lineNum">     896 </span><span class="lineCov">     934178 :                         suffix.nlabels--;</span>
+<span class="lineNum">     897 </span>            : 
+<span class="lineNum">     898 </span><span class="lineCov">     934178 :                         rc = LookupStringInFixedSet(dafsa, dafsa_size, suffix.label, suffix.length);</span>
+<span class="lineNum">     899 </span><span class="lineCov">     934178 :                         if (rc != -1) {</span>
+<span class="lineNum">     900 </span>            :                                 /* check for correct rule type */
+<span class="lineNum">     901 </span><span class="lineCov">      43561 :                                 if (type == PSL_TYPE_ICANN &amp;&amp; !(rc &amp; _PSL_FLAG_ICANN))</span>
+<span class="lineNum">     902 </span>            :                                         goto suffix_no;
+<span class="lineNum">     903 </span><span class="lineCov">      43175 :                                 else if (type == PSL_TYPE_PRIVATE &amp;&amp; !(rc &amp; _PSL_FLAG_PRIVATE))</span>
+<span class="lineNum">     904 </span><span class="lineCov">        579 :                                         goto suffix_no;</span>
+<span class="lineNum">     905 </span>            : 
+<span class="lineNum">     906 </span><span class="lineCov">      42596 :                                 if (rc &amp; _PSL_FLAG_WILDCARD)</span>
+<span class="lineNum">     907 </span><span class="lineCov">      37883 :                                         goto suffix_yes;</span>
+<span class="lineNum">     908 </span>            :                         }
+<span class="lineNum">     909 </span>            :                 }
+<span class="lineNum">     910 </span>            :         } else {
+<span class="lineNum">     911 </span><span class="lineCov">      59260 :                 _psl_entry_t *rule = _vector_get(psl-&gt;suffixes, 0);</span>
+<span class="lineNum">     912 </span>            : 
+<span class="lineNum">     913 </span><span class="lineCov">      59260 :                 if (!rule || rule-&gt;nlabels &lt; suffix.nlabels - 1)</span>
+<span class="lineNum">     914 </span>            :                         goto suffix_no;
+<span class="lineNum">     915 </span>            : 
+<span class="lineNum">     916 </span><span class="lineCov">      40141 :                 rule = _vector_get(psl-&gt;suffixes, _vector_find(psl-&gt;suffixes, &amp;suffix));</span>
+<span class="lineNum">     917 </span>            : 
+<span class="lineNum">     918 </span><span class="lineCov">      40141 :                 if (rule) {</span>
+<span class="lineNum">     919 </span>            :                         /* check for correct rule type */
+<span class="lineNum">     920 </span><span class="lineCov">       1172 :                         if (type == PSL_TYPE_ICANN &amp;&amp; !(rule-&gt;flags &amp; _PSL_FLAG_ICANN))</span>
+<span class="lineNum">     921 </span>            :                                 goto suffix_no;
+<span class="lineNum">     922 </span><span class="lineCov">       1172 :                         else if (type == PSL_TYPE_PRIVATE &amp;&amp; !(rule-&gt;flags &amp; _PSL_FLAG_PRIVATE))</span>
+<span class="lineNum">     923 </span><span class="lineNoCov">          0 :                                 goto suffix_no;</span>
+<span class="lineNum">     924 </span>            : 
+<span class="lineNum">     925 </span><span class="lineCov">       1172 :                         if (rule-&gt;flags &amp; _PSL_FLAG_EXCEPTION)</span>
+<span class="lineNum">     926 </span><span class="lineCov">        293 :                                 goto suffix_no;</span>
+<span class="lineNum">     927 </span>            : 
+<span class="lineNum">     928 </span>            :                         /* wildcard *.foo.bar implicitly make foo.bar a public suffix */
+<span class="lineNum">     929 </span>            :                         /* definitely a match, no matter if the found rule is a wildcard or not */
+<span class="lineNum">     930 </span><span class="lineCov">        879 :                         goto suffix_yes;</span>
+<span class="lineNum">     931 </span>            :                 }
+<span class="lineNum">     932 </span>            : 
+<span class="lineNum">     933 </span><span class="lineCov">      38969 :                 if ((suffix.label = strchr(suffix.label, '.'))) {</span>
+<span class="lineNum">     934 </span>            :                         int pos;
+<span class="lineNum">     935 </span>            : 
+<span class="lineNum">     936 </span><span class="lineCov">      38969 :                         suffix.label++;</span>
+<span class="lineNum">     937 </span><span class="lineCov">      38969 :                         suffix.length = strlen(suffix.label);</span>
+<span class="lineNum">     938 </span><span class="lineCov">      38969 :                         suffix.nlabels--;</span>
+<span class="lineNum">     939 </span>            : 
+<span class="lineNum">     940 </span><span class="lineCov">      38969 :                         rule = _vector_get(psl-&gt;suffixes, (pos = _vector_find(psl-&gt;suffixes, &amp;suffix)));</span>
+<span class="lineNum">     941 </span>            : 
+<span class="lineNum">     942 </span><span class="lineCov">      38969 :                         if (rule) {</span>
+<span class="lineNum">     943 </span>            :                                 /* check for correct rule type */
+<span class="lineNum">     944 </span><span class="lineCov">        586 :                                 if (type == PSL_TYPE_ICANN &amp;&amp; !(rule-&gt;flags &amp; _PSL_FLAG_ICANN))</span>
+<span class="lineNum">     945 </span>            :                                         goto suffix_no;
+<span class="lineNum">     946 </span><span class="lineCov">        586 :                                 else if (type == PSL_TYPE_PRIVATE &amp;&amp; !(rule-&gt;flags &amp; _PSL_FLAG_PRIVATE))</span>
+<span class="lineNum">     947 </span><span class="lineNoCov">          0 :                                         goto suffix_no;</span>
+<span class="lineNum">     948 </span>            : 
+<span class="lineNum">     949 </span><span class="lineCov">        586 :                                 if (rule-&gt;flags &amp; _PSL_FLAG_WILDCARD)</span>
+<span class="lineNum">     950 </span><span class="lineCov">        293 :                                         goto suffix_yes;</span>
+<span class="lineNum">     951 </span>            :                         }
+<span class="lineNum">     952 </span>            :                 }
+<span class="lineNum">     953 </span>            :         }
+<span class="lineNum">     954 </span>            : 
+<span class="lineNum">     955 </span>            : suffix_no:
+<span class="lineNum">     956 </span><span class="lineCov">     956680 :         if (punycode)</span>
+<span class="lineNum">     957 </span><span class="lineCov">       4771 :                 free(punycode);</span>
+<span class="lineNum">     958 </span><span class="lineCov">     956680 :         return 0;</span>
+<span class="lineNum">     959 </span>            : 
+<span class="lineNum">     960 </span>            : suffix_yes:
+<span class="lineNum">     961 </span><span class="lineCov">      43475 :         if (punycode)</span>
+<span class="lineNum">     962 </span><span class="lineCov">        367 :                 free(punycode);</span>
+<span class="lineNum">     963 </span><span class="lineCov">      43475 :         return 1;</span>
+<span class="lineNum">     964 </span>            : }
+<span class="lineNum">     965 </span>            : 
+<span class="lineNum">     966 </span>            : /**
+<span class="lineNum">     967 </span>            :  * psl_is_public_suffix:
+<span class="lineNum">     968 </span>            :  * @psl: PSL context
+<span class="lineNum">     969 </span>            :  * @domain: Domain string
+<span class="lineNum">     970 </span>            :  *
+<span class="lineNum">     971 </span>            :  * This function checks if @domain is a public suffix by the means of the
+<span class="lineNum">     972 </span>            :  * [Mozilla Public Suffix List](https://publicsuffix.org).
+<span class="lineNum">     973 </span>            :  *
+<span class="lineNum">     974 </span>            :  * For cookie domain checking see psl_is_cookie_domain_acceptable().
+<span class="lineNum">     975 </span>            :  *
+<span class="lineNum">     976 </span>            :  * International @domain names have to be either in UTF-8 (lowercase + NFKC) or in ASCII/ACE format (punycode).
+<span class="lineNum">     977 </span>            :  * Other encodings likely result in incorrect return values.
+<span class="lineNum">     978 </span>            :  * Use helper function psl_str_to_utf8lower() for normalization @domain.
+<span class="lineNum">     979 </span>            :  *
+<span class="lineNum">     980 </span>            :  * @psl is a context returned by either psl_load_file(), psl_load_fp() or
+<span class="lineNum">     981 </span>            :  * psl_builtin().
+<span class="lineNum">     982 </span>            :  *
+<span class="lineNum">     983 </span>            :  * Returns: 1 if domain is a public suffix, 0 if not.
+<span class="lineNum">     984 </span>            :  *
+<a name="985"><span class="lineNum">     985 </span>            :  * Since: 0.1</a>
+<span class="lineNum">     986 </span>            :  */
+<span class="lineNum">     987 </span><span class="lineCov">     220285 : int psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)</span>
+<span class="lineNum">     988 </span>            : {
+<span class="lineNum">     989 </span><span class="lineCov">     220285 :         if (!psl || !domain)</span>
+<span class="lineNum">     990 </span><span class="lineCov">      92104 :                 return 1;</span>
+<span class="lineNum">     991 </span>            : 
+<span class="lineNum">     992 </span><span class="lineCov">     128181 :         return _psl_is_public_suffix(psl, domain, PSL_TYPE_ANY);</span>
+<span class="lineNum">     993 </span>            : }
+<span class="lineNum">     994 </span>            : 
+<span class="lineNum">     995 </span>            : /**
+<span class="lineNum">     996 </span>            :  * psl_is_public_suffix2:
+<span class="lineNum">     997 </span>            :  * @psl: PSL context
+<span class="lineNum">     998 </span>            :  * @domain: Domain string
+<span class="lineNum">     999 </span>            :  * @type: Domain type
+<span class="lineNum">    1000 </span>            :  *
+<span class="lineNum">    1001 </span>            :  * This function checks if @domain is a public suffix by the means of the
+<span class="lineNum">    1002 </span>            :  * [Mozilla Public Suffix List](https://publicsuffix.org).
+<span class="lineNum">    1003 </span>            :  *
+<span class="lineNum">    1004 </span>            :  * @type specifies the PSL section where to perform the lookup. Valid values are
+<span class="lineNum">    1005 </span>            :  * %PSL_TYPE_PRIVATE, %PSL_TYPE_ICANN and %PSL_TYPE_ANY.
+<span class="lineNum">    1006 </span>            :  *
+<span class="lineNum">    1007 </span>            :  * International @domain names have to be either in UTF-8 (lowercase + NFKC) or in ASCII/ACE format (punycode).
+<span class="lineNum">    1008 </span>            :  * Other encodings likely result in incorrect return values.
+<span class="lineNum">    1009 </span>            :  * Use helper function psl_str_to_utf8lower() for normalization @domain.
+<span class="lineNum">    1010 </span>            :  *
+<span class="lineNum">    1011 </span>            :  * @psl is a context returned by either psl_load_file(), psl_load_fp() or
+<span class="lineNum">    1012 </span>            :  * psl_builtin().
+<span class="lineNum">    1013 </span>            :  *
+<span class="lineNum">    1014 </span>            :  * Returns: 1 if domain is a public suffix, 0 if not.
+<span class="lineNum">    1015 </span>            :  *
+<a name="1016"><span class="lineNum">    1016 </span>            :  * Since: 0.1</a>
+<span class="lineNum">    1017 </span>            :  */
+<span class="lineNum">    1018 </span><span class="lineCov">      74884 : int psl_is_public_suffix2(const psl_ctx_t *psl, const char *domain, int type)</span>
+<span class="lineNum">    1019 </span>            : {
+<span class="lineNum">    1020 </span><span class="lineCov">      74884 :         if (!psl || !domain)</span>
+<span class="lineNum">    1021 </span><span class="lineNoCov">          0 :                 return 1;</span>
+<span class="lineNum">    1022 </span>            : 
+<span class="lineNum">    1023 </span><span class="lineCov">      74884 :         return _psl_is_public_suffix(psl, domain, type);</span>
+<span class="lineNum">    1024 </span>            : }
+<span class="lineNum">    1025 </span>            : 
+<span class="lineNum">    1026 </span>            : /**
+<span class="lineNum">    1027 </span>            :  * psl_unregistrable_domain:
+<span class="lineNum">    1028 </span>            :  * @psl: PSL context
+<span class="lineNum">    1029 </span>            :  * @domain: Domain string
+<span class="lineNum">    1030 </span>            :  *
+<span class="lineNum">    1031 </span>            :  * This function finds the longest public suffix part of @domain by the means
+<span class="lineNum">    1032 </span>            :  * of the [Mozilla Public Suffix List](https://publicsuffix.org).
+<span class="lineNum">    1033 </span>            :  *
+<span class="lineNum">    1034 </span>            :  * International @domain names have to be either in UTF-8 (lowercase + NFKC) or in ASCII/ACE format (punycode).
+<span class="lineNum">    1035 </span>            :  * Other encodings likely result in incorrect return values.
+<span class="lineNum">    1036 </span>            :  * Use helper function psl_str_to_utf8lower() for normalization @domain.
+<span class="lineNum">    1037 </span>            :  *
+<span class="lineNum">    1038 </span>            :  * @psl is a context returned by either psl_load_file(), psl_load_fp() or
+<span class="lineNum">    1039 </span>            :  * psl_builtin().
+<span class="lineNum">    1040 </span>            :  *
+<span class="lineNum">    1041 </span>            :  * Returns: Pointer to longest public suffix part of @domain or %NULL if @domain
+<span class="lineNum">    1042 </span>            :  * does not contain a public suffix (or if @psl is %NULL).
+<span class="lineNum">    1043 </span>            :  *
+<a name="1044"><span class="lineNum">    1044 </span>            :  * Since: 0.1</a>
+<span class="lineNum">    1045 </span>            :  */
+<span class="lineNum">    1046 </span><span class="lineCov">      38793 : const char *psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain)</span>
+<span class="lineNum">    1047 </span>            : {
+<span class="lineNum">    1048 </span><span class="lineCov">      38793 :         if (!psl || !domain)</span>
+<span class="lineNum">    1049 </span><span class="lineNoCov">          0 :                 return NULL;</span>
+<span class="lineNum">    1050 </span>            : 
+<span class="lineNum">    1051 </span>            :         /*
+<span class="lineNum">    1052 </span>            :          *  We check from left to right to catch special PSL entries like 'forgot.his.name':
+<span class="lineNum">    1053 </span>            :          *   'forgot.his.name' and 'name' are in the PSL while 'his.name' is not.
+<span class="lineNum">    1054 </span>            :          */
+<span class="lineNum">    1055 </span>            : 
+<span class="lineNum">    1056 </span><span class="lineCov">     617214 :         while (!_psl_is_public_suffix(psl, domain, 0)) {</span>
+<span class="lineNum">    1057 </span><span class="lineCov">     539628 :                 if ((domain = strchr(domain, '.')))</span>
+<span class="lineNum">    1058 </span><span class="lineCov">     539628 :                         domain++;</span>
+<span class="lineNum">    1059 </span>            :                 else
+<span class="lineNum">    1060 </span><span class="lineNoCov">          0 :                         break; /* prevent endless loop if psl_is_public_suffix() is broken. */</span>
+<span class="lineNum">    1061 </span>            :         }
+<span class="lineNum">    1062 </span>            : 
+<span class="lineNum">    1063 </span><span class="lineCov">      38793 :         return domain;</span>
+<span class="lineNum">    1064 </span>            : }
+<span class="lineNum">    1065 </span>            : 
+<span class="lineNum">    1066 </span>            : /**
+<span class="lineNum">    1067 </span>            :  * psl_registrable_domain:
+<span class="lineNum">    1068 </span>            :  * @psl: PSL context
+<span class="lineNum">    1069 </span>            :  * @domain: Domain string
+<span class="lineNum">    1070 </span>            :  *
+<span class="lineNum">    1071 </span>            :  * This function finds the shortest private suffix part of @domain by the means
+<span class="lineNum">    1072 </span>            :  * of the [Mozilla Public Suffix List](https://publicsuffix.org).
+<span class="lineNum">    1073 </span>            :  *
+<span class="lineNum">    1074 </span>            :  * International @domain names have to be either in UTF-8 (lowercase + NFKC) or in ASCII/ACE format (punycode).
+<span class="lineNum">    1075 </span>            :  * Other encodings likely result in incorrect return values.
+<span class="lineNum">    1076 </span>            :  * Use helper function psl_str_to_utf8lower() for normalization @domain.
+<span class="lineNum">    1077 </span>            :  *
+<span class="lineNum">    1078 </span>            :  * @psl is a context returned by either psl_load_file(), psl_load_fp() or
+<span class="lineNum">    1079 </span>            :  * psl_builtin().
+<span class="lineNum">    1080 </span>            :  *
+<span class="lineNum">    1081 </span>            :  * Returns: Pointer to shortest private suffix part of @domain or %NULL if @domain
+<span class="lineNum">    1082 </span>            :  * does not contain a private suffix (or if @psl is %NULL).
+<span class="lineNum">    1083 </span>            :  *
+<a name="1084"><span class="lineNum">    1084 </span>            :  * Since: 0.1</a>
+<span class="lineNum">    1085 </span>            :  */
+<span class="lineNum">    1086 </span><span class="lineCov">      37442 : const char *psl_registrable_domain(const psl_ctx_t *psl, const char *domain)</span>
+<span class="lineNum">    1087 </span>            : {
+<span class="lineNum">    1088 </span><span class="lineCov">      37442 :         const char *p, *regdom = NULL;</span>
+<span class="lineNum">    1089 </span>            : 
+<span class="lineNum">    1090 </span><span class="lineCov">      37442 :         if (!psl || !domain || *domain == '.')</span>
+<span class="lineNum">    1091 </span><span class="lineCov">      12738 :                 return NULL;</span>
+<span class="lineNum">    1092 </span>            : 
+<span class="lineNum">    1093 </span>            :         /*
+<span class="lineNum">    1094 </span>            :          *  We check from left to right to catch special PSL entries like 'forgot.his.name':
+<span class="lineNum">    1095 </span>            :          *   'forgot.his.name' and 'name' are in the PSL while 'his.name' is not.
+<span class="lineNum">    1096 </span>            :          */
+<span class="lineNum">    1097 </span>            : 
+<span class="lineNum">    1098 </span><span class="lineCov">     281394 :         while (!_psl_is_public_suffix(psl, domain, 0)) {</span>
+<span class="lineNum">    1099 </span><span class="lineCov">     231986 :                 if ((p = strchr(domain, '.'))) {</span>
+<span class="lineNum">    1100 </span><span class="lineCov">     231986 :                         regdom = domain;</span>
+<span class="lineNum">    1101 </span><span class="lineCov">     231986 :                         domain = p + 1;</span>
+<span class="lineNum">    1102 </span>            :                 } else
+<span class="lineNum">    1103 </span><span class="lineNoCov">          0 :                         break; /* prevent endless loop if psl_is_public_suffix() is broken. */</span>
+<span class="lineNum">    1104 </span>            :         }
+<span class="lineNum">    1105 </span>            : 
+<span class="lineNum">    1106 </span><span class="lineCov">      24704 :         return regdom;</span>
+<span class="lineNum">    1107 </span>            : }
+<span class="lineNum">    1108 </span>            : 
+<span class="lineNum">    1109 </span>            : /**
+<span class="lineNum">    1110 </span>            :  * psl_load_file:
+<span class="lineNum">    1111 </span>            :  * @fname: Name of PSL file
+<span class="lineNum">    1112 </span>            :  *
+<span class="lineNum">    1113 </span>            :  * This function loads the public suffixes file named @fname.
+<span class="lineNum">    1114 </span>            :  * To free the allocated resources, call psl_free().
+<span class="lineNum">    1115 </span>            :  *
+<span class="lineNum">    1116 </span>            :  * The suffixes are expected to be UTF-8 encoded (lowercase + NFKC) if they are international.
+<span class="lineNum">    1117 </span>            :  *
+<span class="lineNum">    1118 </span>            :  * Returns: Pointer to a PSL context or %NULL on failure.
+<span class="lineNum">    1119 </span>            :  *
+<a name="1120"><span class="lineNum">    1120 </span>            :  * Since: 0.1</a>
+<span class="lineNum">    1121 </span>            :  */
+<span class="lineNum">    1122 </span><span class="lineCov">      85849 : psl_ctx_t *psl_load_file(const char *fname)</span>
+<span class="lineNum">    1123 </span>            : {
+<span class="lineNum">    1124 </span>            :         FILE *fp;
+<span class="lineNum">    1125 </span><span class="lineCov">      85849 :         psl_ctx_t *psl = NULL;</span>
+<span class="lineNum">    1126 </span>            : 
+<span class="lineNum">    1127 </span><span class="lineCov">      85849 :         if (!fname)</span>
+<span class="lineNum">    1128 </span><span class="lineNoCov">          0 :                 return NULL;</span>
+<span class="lineNum">    1129 </span>            : 
+<span class="lineNum">    1130 </span><span class="lineCov">      85849 :         if ((fp = fopen(fname, &quot;r&quot;))) {</span>
+<span class="lineNum">    1131 </span><span class="lineCov">      85849 :                 psl = psl_load_fp(fp);</span>
+<span class="lineNum">    1132 </span><span class="lineCov">      85849 :                 fclose(fp);</span>
+<span class="lineNum">    1133 </span>            :         }
+<span class="lineNum">    1134 </span>            : 
+<span class="lineNum">    1135 </span><span class="lineCov">      85849 :         return psl;</span>
+<span class="lineNum">    1136 </span>            : }
+<span class="lineNum">    1137 </span>            : 
+<span class="lineNum">    1138 </span>            : /**
+<span class="lineNum">    1139 </span>            :  * psl_load_fp:
+<span class="lineNum">    1140 </span>            :  * @fp: FILE pointer
+<span class="lineNum">    1141 </span>            :  *
+<span class="lineNum">    1142 </span>            :  * This function loads the public suffixes from a FILE pointer.
+<span class="lineNum">    1143 </span>            :  * To free the allocated resources, call psl_free().
+<span class="lineNum">    1144 </span>            :  *
+<span class="lineNum">    1145 </span>            :  * The suffixes are expected to be UTF-8 encoded (lowercase + NFKC) if they are international.
+<span class="lineNum">    1146 </span>            :  *
+<span class="lineNum">    1147 </span>            :  * Returns: Pointer to a PSL context or %NULL on failure.
+<span class="lineNum">    1148 </span>            :  *
+<a name="1149"><span class="lineNum">    1149 </span>            :  * Since: 0.1</a>
+<span class="lineNum">    1150 </span>            :  */
+<span class="lineNum">    1151 </span><span class="lineCov">     177174 : psl_ctx_t *psl_load_fp(FILE *fp)</span>
+<span class="lineNum">    1152 </span>            : {
+<span class="lineNum">    1153 </span>            :         psl_ctx_t *psl;
+<span class="lineNum">    1154 </span>            :         _psl_entry_t suffix, *suffixp;
+<span class="lineNum">    1155 </span>            :         char buf[256], *linep, *p;
+<span class="lineNum">    1156 </span><span class="lineCov">     177174 :         int type = 0, is_dafsa;</span>
+<span class="lineNum">    1157 </span>            :         _psl_idna_t *idna;
+<span class="lineNum">    1158 </span>            : 
+<span class="lineNum">    1159 </span><span class="lineCov">     177174 :         if (!fp)</span>
+<span class="lineNum">    1160 </span><span class="lineNoCov">          0 :                 return NULL;</span>
+<span class="lineNum">    1161 </span>            : 
+<span class="lineNum">    1162 </span><span class="lineCov">     177174 :         if (!(psl = calloc(1, sizeof(psl_ctx_t))))</span>
+<span class="lineNum">    1163 </span><span class="lineNoCov">          0 :                 return NULL;</span>
+<span class="lineNum">    1164 </span>            : 
+<span class="lineNum">    1165 </span>            :         /* read first line to allow ASCII / DAFSA detection */
+<span class="lineNum">    1166 </span><span class="lineCov">     177174 :         if (!(linep = fgets(buf, sizeof(buf) - 1, fp)))</span>
+<span class="lineNum">    1167 </span><span class="lineCov">      86142 :                 goto fail;</span>
+<span class="lineNum">    1168 </span>            : 
+<span class="lineNum">    1169 </span><span class="lineCov">      91032 :         is_dafsa = strlen(buf) == 16 &amp;&amp; !strncmp(buf, &quot;.DAFSA@PSL_&quot;, 11);</span>
+<span class="lineNum">    1170 </span>            : 
+<span class="lineNum">    1171 </span><span class="lineCov">      91032 :         if (is_dafsa) {</span>
+<span class="lineNum">    1172 </span>            :                 void *m;
+<span class="lineNum">    1173 </span><span class="lineCov">      32139 :                 size_t size = 65536, n, len = 0;</span>
+<span class="lineNum">    1174 </span><span class="lineCov">      32139 :                 int version = atoi(buf + 11);</span>
+<span class="lineNum">    1175 </span>            : 
+<span class="lineNum">    1176 </span><span class="lineCov">      32139 :                 if (version != 0)</span>
+<span class="lineNum">    1177 </span><span class="lineCov">        293 :                         goto fail;</span>
+<span class="lineNum">    1178 </span>            : 
+<span class="lineNum">    1179 </span><span class="lineCov">      31846 :                 if (!(psl-&gt;dafsa = malloc(size)))</span>
+<span class="lineNum">    1180 </span><span class="lineNoCov">          0 :                         goto fail;</span>
+<span class="lineNum">    1181 </span>            : 
+<span class="lineNum">    1182 </span><span class="lineCov">      31846 :                 memcpy(psl-&gt;dafsa, buf, len);</span>
+<span class="lineNum">    1183 </span>            : 
+<span class="lineNum">    1184 </span><span class="lineCov">      98841 :                 while ((n = fread(psl-&gt;dafsa + len, 1, size - len, fp)) &gt; 0) {</span>
+<span class="lineNum">    1185 </span><span class="lineCov">      35149 :                         len += n;</span>
+<span class="lineNum">    1186 </span><span class="lineCov">      35149 :                         if (len &gt;= size) {</span>
+<span class="lineNum">    1187 </span><span class="lineCov">       3670 :                                 if (!(m = realloc(psl-&gt;dafsa, size *= 2)))</span>
+<span class="lineNum">    1188 </span><span class="lineNoCov">          0 :                                         goto fail;</span>
+<span class="lineNum">    1189 </span><span class="lineCov">       3670 :                                 psl-&gt;dafsa = m;</span>
+<span class="lineNum">    1190 </span>            :                         }
+<span class="lineNum">    1191 </span>            :                 }
+<span class="lineNum">    1192 </span>            : 
+<span class="lineNum">    1193 </span>            :                 /* release unused memory */
+<span class="lineNum">    1194 </span><span class="lineCov">      31846 :                 if ((m = realloc(psl-&gt;dafsa, len)))</span>
+<span class="lineNum">    1195 </span><span class="lineCov">      31479 :                         psl-&gt;dafsa = m;</span>
+<span class="lineNum">    1196 </span><span class="lineCov">        367 :                 else if (!len)</span>
+<span class="lineNum">    1197 </span><span class="lineCov">        367 :                         psl-&gt;dafsa = NULL; /* realloc() just free'd psl-&gt;dafsa */</span>
+<span class="lineNum">    1198 </span>            : 
+<span class="lineNum">    1199 </span><span class="lineCov">      31846 :                 psl-&gt;dafsa_size = len;</span>
+<span class="lineNum">    1200 </span><span class="lineCov">      31846 :                 psl-&gt;utf8 = !!GetUtfMode(psl-&gt;dafsa, len);</span>
+<span class="lineNum">    1201 </span>            : 
+<span class="lineNum">    1202 </span><span class="lineCov">      31846 :                 return psl;</span>
+<span class="lineNum">    1203 </span>            :         }
+<span class="lineNum">    1204 </span>            : 
+<span class="lineNum">    1205 </span><span class="lineCov">      58893 :         idna = _psl_idna_open();</span>
+<span class="lineNum">    1206 </span>            : 
+<span class="lineNum">    1207 </span>            :         /*
+<span class="lineNum">    1208 </span>            :          *  as of 02.11.2012, the list at https://publicsuffix.org/list/ contains ~6000 rules and 40 exceptions.
+<span class="lineNum">    1209 </span>            :          *  as of 19.02.2014, the list at https://publicsuffix.org/list/ contains ~6500 rules and 19 exceptions.
+<span class="lineNum">    1210 </span>            :          */
+<span class="lineNum">    1211 </span><span class="lineCov">      58893 :         psl-&gt;suffixes = _vector_alloc(8*1024, _suffix_compare_array);</span>
+<span class="lineNum">    1212 </span><span class="lineCov">      58893 :         psl-&gt;utf8 = 1; /* we put UTF-8 and punycode rules in the lookup vector */</span>
+<span class="lineNum">    1213 </span>            : 
+<span class="lineNum">    1214 </span>            :         do {
+<span class="lineNum">    1215 </span><span class="lineCov">   12948549 :                 while (_isspace_ascii(*linep)) linep++; /* ignore leading whitespace */</span>
+<span class="lineNum">    1216 </span><span class="lineCov">   12948549 :                 if (!*linep) continue; /* skip empty lines */</span>
+<span class="lineNum">    1217 </span>            : 
+<span class="lineNum">    1218 </span><span class="lineCov">   12247986 :                 if (*linep == '/' &amp;&amp; linep[1] == '/') {</span>
+<span class="lineNum">    1219 </span><span class="lineCov">     511871 :                         if (!type) {</span>
+<span class="lineNum">    1220 </span><span class="lineCov">     237623 :                                 if (strstr(linep + 2, &quot;===BEGIN ICANN DOMAINS===&quot;))</span>
+<span class="lineNum">    1221 </span><span class="lineCov">     159099 :                                         type = _PSL_FLAG_ICANN;</span>
+<span class="lineNum">    1222 </span><span class="lineCov">      78524 :                                 else if (!type &amp;&amp; strstr(linep + 2, &quot;===BEGIN PRIVATE DOMAINS===&quot;))</span>
+<span class="lineNum">    1223 </span><span class="lineCov">       2344 :                                         type = _PSL_FLAG_PRIVATE;</span>
+<span class="lineNum">    1224 </span>            :                         }
+<span class="lineNum">    1225 </span><span class="lineCov">     274248 :                         else if (type == _PSL_FLAG_ICANN &amp;&amp; strstr(linep + 2, &quot;===END ICANN DOMAINS===&quot;))</span>
+<span class="lineNum">    1226 </span><span class="lineCov">     154411 :                                 type = 0;</span>
+<span class="lineNum">    1227 </span><span class="lineCov">     119837 :                         else if (type == _PSL_FLAG_PRIVATE &amp;&amp; strstr(linep + 2, &quot;===END PRIVATE DOMAINS===&quot;))</span>
+<span class="lineNum">    1228 </span><span class="lineNoCov">          0 :                                 type = 0;</span>
+<span class="lineNum">    1229 </span>            : 
+<span class="lineNum">    1230 </span><span class="lineCov">     511871 :                         continue; /* skip comments */</span>
+<span class="lineNum">    1231 </span>            :                 }
+<span class="lineNum">    1232 </span>            : 
+<span class="lineNum">    1233 </span>            :                 /* parse suffix rule */
+<span class="lineNum">    1234 </span><span class="lineCov">   11736115 :                 for (p = linep; *linep &amp;&amp; !_isspace_ascii(*linep);) linep++;</span>
+<span class="lineNum">    1235 </span><span class="lineCov">   11736115 :                 *linep = 0;</span>
+<span class="lineNum">    1236 </span>            : 
+<span class="lineNum">    1237 </span><span class="lineCov">   11736115 :                 if (*p == '!') {</span>
+<span class="lineNum">    1238 </span><span class="lineCov">     467628 :                         p++;</span>
+<span class="lineNum">    1239 </span><span class="lineCov">     467628 :                         suffix.flags = _PSL_FLAG_EXCEPTION | type;</span>
+<span class="lineNum">    1240 </span><span class="lineCov">     467628 :                         psl-&gt;nexceptions++;</span>
+<span class="lineNum">    1241 </span><span class="lineCov">   11268487 :                 } else if (*p == '*') {</span>
+<span class="lineNum">    1242 </span><span class="lineCov">     262235 :                         if (*++p != '.') {</span>
+<span class="lineNum">    1243 </span>            :                                 /* fprintf(stderr, _(&quot;Unsupported kind of rule (ignored): %s\n&quot;), p - 1); */
+<span class="lineNum">    1244 </span><span class="lineCov">      85556 :                                 continue;</span>
+<span class="lineNum">    1245 </span>            :                         }
+<span class="lineNum">    1246 </span><span class="lineCov">     176679 :                         p++;</span>
+<span class="lineNum">    1247 </span>            :                         /* wildcard *.foo.bar implicitly make foo.bar a public suffix */
+<span class="lineNum">    1248 </span><span class="lineCov">     176679 :                         suffix.flags = _PSL_FLAG_WILDCARD | _PSL_FLAG_PLAIN | type;</span>
+<span class="lineNum">    1249 </span><span class="lineCov">     176679 :                         psl-&gt;nwildcards++;</span>
+<span class="lineNum">    1250 </span><span class="lineCov">     176679 :                         psl-&gt;nsuffixes++;</span>
+<span class="lineNum">    1251 </span>            :                 } else {
+<span class="lineNum">    1252 </span><span class="lineCov">   11006252 :                         if (!strchr(p, '.'))</span>
+<span class="lineNum">    1253 </span><span class="lineCov">    3897779 :                                 continue; /* we do not need an explicit plain TLD rule, already covered by implicit '*' rule */</span>
+<span class="lineNum">    1254 </span><span class="lineCov">    7108473 :                         suffix.flags = _PSL_FLAG_PLAIN | type;</span>
+<span class="lineNum">    1255 </span><span class="lineCov">    7108473 :                         psl-&gt;nsuffixes++;</span>
+<span class="lineNum">    1256 </span>            :                 }
+<span class="lineNum">    1257 </span>            : 
+<span class="lineNum">    1258 </span><span class="lineCov">    7752780 :                 if (_suffix_init(&amp;suffix, p, linep - p) == 0) {</span>
+<span class="lineNum">    1259 </span>            :                         int index;
+<span class="lineNum">    1260 </span>            : 
+<span class="lineNum">    1261 </span><span class="lineCov">    7297751 :                         if ((index = _vector_find(psl-&gt;suffixes, &amp;suffix)) &gt;= 0) {</span>
+<span class="lineNum">    1262 </span>            :                                 /* Found existing entry:
+<span class="lineNum">    1263 </span>            :                                  * Combination of exception and plain rule is ambiguous
+<span class="lineNum">    1264 </span>            :                                  * !foo.bar
+<span class="lineNum">    1265 </span>            :                                  * foo.bar
+<span class="lineNum">    1266 </span>            :                                  *
+<span class="lineNum">    1267 </span>            :                                  * Allowed:
+<span class="lineNum">    1268 </span>            :                                  * !foo.bar + *.foo.bar
+<span class="lineNum">    1269 </span>            :                                  * foo.bar + *.foo.bar
+<span class="lineNum">    1270 </span>            :                                  *
+<span class="lineNum">    1271 </span>            :                                  * We do not check here, let's do it later.
+<span class="lineNum">    1272 </span>            :                                  */
+<span class="lineNum">    1273 </span>            : 
+<span class="lineNum">    1274 </span><span class="lineCov">    2184022 :                                 suffixp = _vector_get(psl-&gt;suffixes, index);</span>
+<span class="lineNum">    1275 </span><span class="lineCov">    2184022 :                                 suffixp-&gt;flags |= suffix.flags;</span>
+<span class="lineNum">    1276 </span>            :                         } else {
+<span class="lineNum">    1277 </span>            :                                 /* New entry */
+<span class="lineNum">    1278 </span><span class="lineCov">    5113729 :                                 suffixp = _vector_get(psl-&gt;suffixes, _vector_add(psl-&gt;suffixes, &amp;suffix));</span>
+<span class="lineNum">    1279 </span>            :                         }
+<span class="lineNum">    1280 </span>            : 
+<span class="lineNum">    1281 </span><span class="lineCov">    7297751 :                         if (suffixp) {</span>
+<span class="lineNum">    1282 </span><span class="lineCov">    7297751 :                                 suffixp-&gt;label = suffixp-&gt;label_buf; /* set label to changed address */</span>
+<span class="lineNum">    1283 </span><span class="lineCov">    7297751 :                                 _add_punycode_if_needed(idna, psl-&gt;suffixes, suffixp);</span>
+<span class="lineNum">    1284 </span>            :                         }
+<span class="lineNum">    1285 </span>            :                 }
+<span class="lineNum">    1286 </span><span class="lineCov">   12948549 :         } while ((linep = fgets(buf, sizeof(buf), fp)));</span>
+<span class="lineNum">    1287 </span>            : 
+<span class="lineNum">    1288 </span><span class="lineCov">      58893 :         _vector_sort(psl-&gt;suffixes);</span>
+<span class="lineNum">    1289 </span>            : 
+<span class="lineNum">    1290 </span><span class="lineCov">      58893 :         _psl_idna_close(idna);</span>
+<span class="lineNum">    1291 </span>            : 
+<span class="lineNum">    1292 </span><span class="lineCov">      58893 :         return psl;</span>
+<span class="lineNum">    1293 </span>            : 
+<span class="lineNum">    1294 </span>            : fail:
+<span class="lineNum">    1295 </span><span class="lineCov">      86435 :         psl_free(psl);</span>
+<span class="lineNum">    1296 </span><span class="lineCov">      86435 :         return NULL;</span>
+<span class="lineNum">    1297 </span>            : }
+<span class="lineNum">    1298 </span>            : 
+<span class="lineNum">    1299 </span>            : /**
+<span class="lineNum">    1300 </span>            :  * psl_free:
+<span class="lineNum">    1301 </span>            :  * @psl: PSL context pointer
+<span class="lineNum">    1302 </span>            :  *
+<span class="lineNum">    1303 </span>            :  * This function frees the the PSL context that has been retrieved via
+<span class="lineNum">    1304 </span>            :  * psl_load_fp() or psl_load_file().
+<span class="lineNum">    1305 </span>            :  *
+<a name="1306"><span class="lineNum">    1306 </span>            :  * Since: 0.1</a>
+<span class="lineNum">    1307 </span>            :  */
+<span class="lineNum">    1308 </span><span class="lineCov">     220678 : void psl_free(psl_ctx_t *psl)</span>
+<span class="lineNum">    1309 </span>            : {
+<span class="lineNum">    1310 </span><span class="lineCov">     220678 :         if (psl &amp;&amp; psl != &amp;_builtin_psl) {</span>
+<span class="lineNum">    1311 </span><span class="lineCov">     177174 :                 _vector_free(&amp;psl-&gt;suffixes);</span>
+<span class="lineNum">    1312 </span><span class="lineCov">     177174 :                 free(psl-&gt;dafsa);</span>
+<span class="lineNum">    1313 </span><span class="lineCov">     177174 :                 free(psl);</span>
+<span class="lineNum">    1314 </span>            :         }
+<span class="lineNum">    1315 </span><span class="lineCov">     220678 : }</span>
+<span class="lineNum">    1316 </span>            : 
+<span class="lineNum">    1317 </span>            : /**
+<span class="lineNum">    1318 </span>            :  * psl_builtin:
+<span class="lineNum">    1319 </span>            :  *
+<span class="lineNum">    1320 </span>            :  * This function returns the PSL context that has been generated and built in at compile-time.
+<span class="lineNum">    1321 </span>            :  * You don't have to free the returned context explicitly.
+<span class="lineNum">    1322 </span>            :  *
+<span class="lineNum">    1323 </span>            :  * The builtin data also contains punycode entries, one for each international domain name.
+<span class="lineNum">    1324 </span>            :  *
+<span class="lineNum">    1325 </span>            :  * If the generation of built-in data has been disabled during compilation, %NULL will be returned.
+<span class="lineNum">    1326 </span>            :  * When using the builtin psl context, you can provide UTF-8 (lowercase + NFKC) or ASCII/ACE (punycode)
+<span class="lineNum">    1327 </span>            :  * representations of domains to functions like psl_is_public_suffix().
+<span class="lineNum">    1328 </span>            :  *
+<span class="lineNum">    1329 </span>            :  * Returns: Pointer to the built in PSL data or NULL if this data is not available.
+<span class="lineNum">    1330 </span>            :  *
+<a name="1331"><span class="lineNum">    1331 </span>            :  * Since: 0.1</a>
+<span class="lineNum">    1332 </span>            :  */
+<span class="lineNum">    1333 </span><span class="lineCov">      42918 : const psl_ctx_t *psl_builtin(void)</span>
+<span class="lineNum">    1334 </span>            : {
+<span class="lineNum">    1335 </span>            : #if defined(BUILTIN_GENERATOR_LIBICU) || defined(BUILTIN_GENERATOR_LIBIDN2) || defined(BUILTIN_GENERATOR_LIBIDN)
+<span class="lineNum">    1336 </span><span class="lineCov">      42918 :         return &amp;_builtin_psl;</span>
+<span class="lineNum">    1337 </span>            : #else
+<span class="lineNum">    1338 </span>            :         return NULL;
+<span class="lineNum">    1339 </span>            : #endif
+<span class="lineNum">    1340 </span>            : }
+<span class="lineNum">    1341 </span>            : 
+<span class="lineNum">    1342 </span>            : /**
+<span class="lineNum">    1343 </span>            :  * psl_suffix_count:
+<span class="lineNum">    1344 </span>            :  * @psl: PSL context pointer
+<span class="lineNum">    1345 </span>            :  *
+<span class="lineNum">    1346 </span>            :  * This function returns number of public suffixes maintained by @psl.
+<span class="lineNum">    1347 </span>            :  * The number of exceptions within the Public Suffix List are not included.
+<span class="lineNum">    1348 </span>            :  *
+<span class="lineNum">    1349 </span>            :  * Returns: Number of public suffixes entries in PSL context.
+<span class="lineNum">    1350 </span>            :  *
+<a name="1351"><span class="lineNum">    1351 </span>            :  * Since: 0.1</a>
+<span class="lineNum">    1352 </span>            :  */
+<span class="lineNum">    1353 </span><span class="lineCov">       5476 : int psl_suffix_count(const psl_ctx_t *psl)</span>
+<span class="lineNum">    1354 </span>            : {
+<span class="lineNum">    1355 </span><span class="lineCov">       5476 :         if (psl == &amp;_builtin_psl)</span>
+<span class="lineNum">    1356 </span><span class="lineNoCov">          0 :                 return _psl_nsuffixes;</span>
+<span class="lineNum">    1357 </span><span class="lineCov">       5476 :         else if (psl)</span>
+<span class="lineNum">    1358 </span><span class="lineCov">       5476 :                 return psl-&gt;nsuffixes;</span>
+<span class="lineNum">    1359 </span>            :         else
+<span class="lineNum">    1360 </span><span class="lineNoCov">          0 :                 return 0;</span>
+<span class="lineNum">    1361 </span>            : }
+<span class="lineNum">    1362 </span>            : 
+<span class="lineNum">    1363 </span>            : /**
+<span class="lineNum">    1364 </span>            :  * psl_suffix_exception_count:
+<span class="lineNum">    1365 </span>            :  * @psl: PSL context pointer
+<span class="lineNum">    1366 </span>            :  *
+<span class="lineNum">    1367 </span>            :  * This function returns number of public suffix exceptions maintained by @psl.
+<span class="lineNum">    1368 </span>            :  *
+<span class="lineNum">    1369 </span>            :  * Returns: Number of public suffix exceptions in PSL context.
+<span class="lineNum">    1370 </span>            :  *
+<a name="1371"><span class="lineNum">    1371 </span>            :  * Since: 0.1</a>
+<span class="lineNum">    1372 </span>            :  */
+<span class="lineNum">    1373 </span><span class="lineCov">       5476 : int psl_suffix_exception_count(const psl_ctx_t *psl)</span>
+<span class="lineNum">    1374 </span>            : {
+<span class="lineNum">    1375 </span><span class="lineCov">       5476 :         if (psl == &amp;_builtin_psl)</span>
+<span class="lineNum">    1376 </span><span class="lineNoCov">          0 :                 return _psl_nexceptions;</span>
+<span class="lineNum">    1377 </span><span class="lineCov">       5476 :         else if (psl)</span>
+<span class="lineNum">    1378 </span><span class="lineCov">       5476 :                 return psl-&gt;nexceptions;</span>
+<span class="lineNum">    1379 </span>            :         else
+<span class="lineNum">    1380 </span><span class="lineNoCov">          0 :                 return 0;</span>
+<span class="lineNum">    1381 </span>            : }
+<span class="lineNum">    1382 </span>            : 
+<span class="lineNum">    1383 </span>            : /**
+<span class="lineNum">    1384 </span>            :  * psl_suffix_wildcard_count:
+<span class="lineNum">    1385 </span>            :  * @psl: PSL context pointer
+<span class="lineNum">    1386 </span>            :  *
+<span class="lineNum">    1387 </span>            :  * This function returns number of public suffix wildcards maintained by @psl.
+<span class="lineNum">    1388 </span>            :  *
+<span class="lineNum">    1389 </span>            :  * Returns: Number of public suffix wildcards in PSL context.
+<span class="lineNum">    1390 </span>            :  *
+<a name="1391"><span class="lineNum">    1391 </span>            :  * Since: 0.10.0</a>
+<span class="lineNum">    1392 </span>            :  */
+<span class="lineNum">    1393 </span><span class="lineCov">       5476 : int psl_suffix_wildcard_count(const psl_ctx_t *psl)</span>
+<span class="lineNum">    1394 </span>            : {
+<span class="lineNum">    1395 </span><span class="lineCov">       5476 :         if (psl == &amp;_builtin_psl)</span>
+<span class="lineNum">    1396 </span><span class="lineNoCov">          0 :                 return _psl_nwildcards;</span>
+<span class="lineNum">    1397 </span><span class="lineCov">       5476 :         else if (psl)</span>
+<span class="lineNum">    1398 </span><span class="lineCov">       5476 :                 return psl-&gt;nwildcards;</span>
+<span class="lineNum">    1399 </span>            :         else
+<span class="lineNum">    1400 </span><span class="lineNoCov">          0 :                 return 0;</span>
+<span class="lineNum">    1401 </span>            : }
+<span class="lineNum">    1402 </span>            : 
+<span class="lineNum">    1403 </span>            : /**
+<span class="lineNum">    1404 </span>            :  * psl_builtin_file_time:
+<span class="lineNum">    1405 </span>            :  *
+<span class="lineNum">    1406 </span>            :  * This function returns the mtime of the Public Suffix List file that has been built in.
+<span class="lineNum">    1407 </span>            :  *
+<span class="lineNum">    1408 </span>            :  * If the generation of built-in data has been disabled during compilation, 0 will be returned.
+<span class="lineNum">    1409 </span>            :  *
+<span class="lineNum">    1410 </span>            :  * Returns: time_t value or 0.
+<span class="lineNum">    1411 </span>            :  *
+<a name="1412"><span class="lineNum">    1412 </span>            :  * Since: 0.1</a>
+<span class="lineNum">    1413 </span>            :  */
+<span class="lineNum">    1414 </span><span class="lineCov">        193 : time_t psl_builtin_file_time(void)</span>
+<span class="lineNum">    1415 </span>            : {
+<span class="lineNum">    1416 </span><span class="lineCov">        193 :         return _psl_file_time;</span>
+<span class="lineNum">    1417 </span>            : }
+<span class="lineNum">    1418 </span>            : 
+<span class="lineNum">    1419 </span>            : /**
+<span class="lineNum">    1420 </span>            :  * psl_builtin_sha1sum:
+<span class="lineNum">    1421 </span>            :  *
+<span class="lineNum">    1422 </span>            :  * This function returns the SHA1 checksum of the Public Suffix List file that has been built in.
+<span class="lineNum">    1423 </span>            :  * The returned string is in lowercase hex encoding, e.g. &quot;2af1e9e3044eda0678bb05949d7cca2f769901d8&quot;.
+<span class="lineNum">    1424 </span>            :  *
+<span class="lineNum">    1425 </span>            :  * If the generation of built-in data has been disabled during compilation, an empty string will be returned.
+<span class="lineNum">    1426 </span>            :  *
+<span class="lineNum">    1427 </span>            :  * Returns: String containing SHA1 checksum or an empty string.
+<span class="lineNum">    1428 </span>            :  *
+<a name="1429"><span class="lineNum">    1429 </span>            :  * Since: 0.1</a>
+<span class="lineNum">    1430 </span>            :  */
+<span class="lineNum">    1431 </span><span class="lineCov">        193 : const char *psl_builtin_sha1sum(void)</span>
+<span class="lineNum">    1432 </span>            : {
+<span class="lineNum">    1433 </span><span class="lineCov">        193 :         return _psl_sha1_checksum;</span>
+<span class="lineNum">    1434 </span>            : }
+<span class="lineNum">    1435 </span>            : 
+<span class="lineNum">    1436 </span>            : /**
+<span class="lineNum">    1437 </span>            :  * psl_builtin_filename:
+<span class="lineNum">    1438 </span>            :  *
+<span class="lineNum">    1439 </span>            :  * This function returns the file name of the Public Suffix List file that has been built in.
+<span class="lineNum">    1440 </span>            :  *
+<span class="lineNum">    1441 </span>            :  * If the generation of built-in data has been disabled during compilation, an empty string will be returned.
+<span class="lineNum">    1442 </span>            :  *
+<span class="lineNum">    1443 </span>            :  * Returns: String containing the PSL file name or an empty string.
+<span class="lineNum">    1444 </span>            :  *
+<a name="1445"><span class="lineNum">    1445 </span>            :  * Since: 0.1</a>
+<span class="lineNum">    1446 </span>            :  */
+<span class="lineNum">    1447 </span><span class="lineCov">        193 : const char *psl_builtin_filename(void)</span>
+<span class="lineNum">    1448 </span>            : {
+<span class="lineNum">    1449 </span><span class="lineCov">        193 :         return _psl_filename;</span>
+<span class="lineNum">    1450 </span>            : }
+<span class="lineNum">    1451 </span>            : 
+<span class="lineNum">    1452 </span>            : /**
+<span class="lineNum">    1453 </span>            :  * psl_builtin_outdated:
+<span class="lineNum">    1454 </span>            :  *
+<span class="lineNum">    1455 </span>            :  * This function checks if the built-in data is older than the file it has been created from.
+<span class="lineNum">    1456 </span>            :  * If it is, it might be a good idea for the application to reload the PSL.
+<span class="lineNum">    1457 </span>            :  * The mtime is taken as reference.
+<span class="lineNum">    1458 </span>            :  *
+<span class="lineNum">    1459 </span>            :  * If the PSL file does not exist, it is assumed that the built-in data is not outdated.
+<span class="lineNum">    1460 </span>            :  *
+<span class="lineNum">    1461 </span>            :  * Returns: 1 if the built-in is outdated, 0 otherwise.
+<span class="lineNum">    1462 </span>            :  *
+<a name="1463"><span class="lineNum">    1463 </span>            :  * Since: 0.10.0</a>
+<span class="lineNum">    1464 </span>            :  */
+<span class="lineNum">    1465 </span><span class="lineCov">        193 : int psl_builtin_outdated(void)</span>
+<span class="lineNum">    1466 </span>            : {
+<span class="lineNum">    1467 </span>            :         struct stat st;
+<span class="lineNum">    1468 </span>            : 
+<span class="lineNum">    1469 </span><span class="lineCov">        193 :         if (stat(_psl_filename, &amp;st) == 0 &amp;&amp; st.st_mtime &gt; _psl_file_time)</span>
+<span class="lineNum">    1470 </span><span class="lineNoCov">          0 :                 return 1;</span>
+<span class="lineNum">    1471 </span>            : 
+<span class="lineNum">    1472 </span><span class="lineCov">        193 :         return 0;</span>
+<span class="lineNum">    1473 </span>            : }
+<span class="lineNum">    1474 </span>            : 
+<span class="lineNum">    1475 </span>            : /**
+<span class="lineNum">    1476 </span>            :  * psl_dist_filename:
+<span class="lineNum">    1477 </span>            :  *
+<span class="lineNum">    1478 </span>            :  * This function returns the file name of the distribution/system PSL data file.
+<span class="lineNum">    1479 </span>            :  * This file will be considered by psl_latest().
+<span class="lineNum">    1480 </span>            :  *
+<span class="lineNum">    1481 </span>            :  * Return the filename that is set by ./configure --with-psl-distfile, or an empty string.
+<span class="lineNum">    1482 </span>            :  *
+<span class="lineNum">    1483 </span>            :  * Returns: String containing a PSL file name or an empty string.
+<span class="lineNum">    1484 </span>            :  *
+<a name="1485"><span class="lineNum">    1485 </span>            :  * Since: 0.16</a>
+<span class="lineNum">    1486 </span>            :  */
+<span class="lineNum">    1487 </span><span class="lineCov">        193 : const char *psl_dist_filename(void)</span>
+<span class="lineNum">    1488 </span>            : {
+<span class="lineNum">    1489 </span><span class="lineCov">        193 :         return _psl_dist_filename;</span>
+<span class="lineNum">    1490 </span>            : }
+<span class="lineNum">    1491 </span>            : 
+<span class="lineNum">    1492 </span>            : /**
+<span class="lineNum">    1493 </span>            :  * psl_get_version:
+<span class="lineNum">    1494 </span>            :  *
+<span class="lineNum">    1495 </span>            :  * Get libpsl version.
+<span class="lineNum">    1496 </span>            :  *
+<span class="lineNum">    1497 </span>            :  * Returns: String containing version of libpsl.
+<span class="lineNum">    1498 </span>            :  *
+<a name="1499"><span class="lineNum">    1499 </span>            :  * Since: 0.2.5</a>
+<span class="lineNum">    1500 </span>            :  **/
+<span class="lineNum">    1501 </span><span class="lineCov">        193 : const char *psl_get_version(void)</span>
+<span class="lineNum">    1502 </span>            : {
+<span class="lineNum">    1503 </span>            : #ifdef WITH_LIBICU
+<span class="lineNum">    1504 </span>            :         return PACKAGE_VERSION &quot; (+libicu/&quot; U_ICU_VERSION &quot;)&quot;;
+<span class="lineNum">    1505 </span>            : #elif defined(WITH_LIBIDN2)
+<span class="lineNum">    1506 </span><span class="lineCov">        193 :         return PACKAGE_VERSION &quot; (+libidn2/&quot; IDN2_VERSION &quot;)&quot;;</span>
+<span class="lineNum">    1507 </span>            : #elif defined(WITH_LIBIDN)
+<span class="lineNum">    1508 </span>            :         return PACKAGE_VERSION &quot; (+libidn/&quot; STRINGPREP_VERSION &quot;)&quot;;
+<span class="lineNum">    1509 </span>            : #else
+<span class="lineNum">    1510 </span>            :         return PACKAGE_VERSION &quot; (no IDNA support)&quot;;
+<span class="lineNum">    1511 </span>            : #endif
+<span class="lineNum">    1512 </span>            : }
+<span class="lineNum">    1513 </span>            : 
+<span class="lineNum">    1514 </span>            : /**
+<span class="lineNum">    1515 </span>            :  * psl_check_version_number:
+<span class="lineNum">    1516 </span>            :  * @version: Version number (hex) to check against.
+<span class="lineNum">    1517 </span>            :  *
+<span class="lineNum">    1518 </span>            :  * Check the given version number is at minimum the current library version number.
+<span class="lineNum">    1519 </span>            :  * The version number must be a hexadecimal number like 0x000a01 (V0.10.1).
+<span class="lineNum">    1520 </span>            :  *
+<span class="lineNum">    1521 </span>            :  * Returns: Returns the library version number if the given version number is at least
+<span class="lineNum">    1522 </span>            :  * the version of the library, else return 0; If the argument is 0, the function returns
+<span class="lineNum">    1523 </span>            :  * the library version number without performing a check.
+<span class="lineNum">    1524 </span>            :  *
+<a name="1525"><span class="lineNum">    1525 </span>            :  * Since: 0.11.0</a>
+<span class="lineNum">    1526 </span>            :  **/
+<span class="lineNum">    1527 </span><span class="lineCov">        193 : int psl_check_version_number(int version)</span>
+<span class="lineNum">    1528 </span>            : {
+<span class="lineNum">    1529 </span><span class="lineCov">        193 :         if (version) {</span>
+<span class="lineNum">    1530 </span><span class="lineCov">        193 :                 int major = version &gt;&gt; 16;</span>
+<span class="lineNum">    1531 </span><span class="lineCov">        193 :                 int minor = (version &gt;&gt; 8) &amp; 0xFF;</span>
+<span class="lineNum">    1532 </span><span class="lineCov">        193 :                 int patch = version &amp; 0xFF;</span>
+<span class="lineNum">    1533 </span>            : 
+<span class="lineNum">    1534 </span><span class="lineCov">        193 :                 if (major &lt; PSL_VERSION_MAJOR</span>
+<span class="lineNum">    1535 </span><span class="lineCov">        193 :                         || (major == PSL_VERSION_MAJOR &amp;&amp; minor &lt; PSL_VERSION_MINOR)</span>
+<span class="lineNum">    1536 </span><span class="lineNoCov">          0 :                         || (major == PSL_VERSION_MAJOR &amp;&amp; minor == PSL_VERSION_MINOR &amp;&amp; patch &lt; PSL_VERSION_PATCH))</span>
+<span class="lineNum">    1537 </span>            :                 {
+<span class="lineNum">    1538 </span><span class="lineCov">        193 :                         return 0;</span>
+<span class="lineNum">    1539 </span>            :                 }
+<span class="lineNum">    1540 </span>            :         }
+<span class="lineNum">    1541 </span>            : 
+<span class="lineNum">    1542 </span><span class="lineNoCov">          0 :         return PSL_VERSION_NUMBER;</span>
+<span class="lineNum">    1543 </span>            : }
+<a name="1544"><span class="lineNum">    1544 </span>            : </a>
+<span class="lineNum">    1545 </span>            : /* return whether hostname is an IP address or not */
+<span class="lineNum">    1546 </span><span class="lineCov">      37249 : static int _isip(const char *hostname)</span>
+<span class="lineNum">    1547 </span>            : {
+<span class="lineNum">    1548 </span>            :         struct in_addr addr;
+<span class="lineNum">    1549 </span>            :         struct in6_addr addr6;
+<span class="lineNum">    1550 </span>            : 
+<span class="lineNum">    1551 </span><span class="lineCov">      37249 :         return inet_pton(AF_INET, hostname, &amp;addr) || inet_pton(AF_INET6, hostname, &amp;addr6);</span>
+<span class="lineNum">    1552 </span>            : }
+<span class="lineNum">    1553 </span>            : 
+<span class="lineNum">    1554 </span>            : /**
+<span class="lineNum">    1555 </span>            :  * psl_is_cookie_domain_acceptable:
+<span class="lineNum">    1556 </span>            :  * @psl: PSL context pointer
+<span class="lineNum">    1557 </span>            :  * @hostname: The request hostname.
+<span class="lineNum">    1558 </span>            :  * @cookie_domain: The domain value from a cookie
+<span class="lineNum">    1559 </span>            :  *
+<span class="lineNum">    1560 </span>            :  * This helper function checks whether @cookie_domain is an acceptable cookie domain value for the request
+<span class="lineNum">    1561 </span>            :  * @hostname.
+<span class="lineNum">    1562 </span>            :  *
+<span class="lineNum">    1563 </span>            :  * For international domain names both, @hostname and @cookie_domain, have to be either in UTF-8 (lowercase + NFKC)
+<span class="lineNum">    1564 </span>            :  * or in ASCII/ACE (punycode) format. Other encodings or mixing UTF-8 and punycode likely result in incorrect return values.
+<span class="lineNum">    1565 </span>            :  *
+<span class="lineNum">    1566 </span>            :  * Use helper function psl_str_to_utf8lower() for normalization of @hostname and @cookie_domain.
+<span class="lineNum">    1567 </span>            :  *
+<span class="lineNum">    1568 </span>            :  * Examples:
+<span class="lineNum">    1569 </span>            :  * 1. Cookie domain 'example.com' would be acceptable for hostname 'www.example.com',
+<span class="lineNum">    1570 </span>            :  * but '.com' or 'com' would NOT be acceptable since 'com' is a public suffix.
+<span class="lineNum">    1571 </span>            :  *
+<span class="lineNum">    1572 </span>            :  * 2. Cookie domain 'his.name' would be acceptable for hostname 'remember.his.name',
+<span class="lineNum">    1573 </span>            :  *  but NOT for 'forgot.his.name' since 'forgot.his.name' is a public suffix.
+<span class="lineNum">    1574 </span>            :  *
+<span class="lineNum">    1575 </span>            :  * Returns: 1 if acceptable, 0 if not acceptable.
+<span class="lineNum">    1576 </span>            :  *
+<a name="1577"><span class="lineNum">    1577 </span>            :  * Since: 0.1</a>
+<span class="lineNum">    1578 </span>            :  */
+<span class="lineNum">    1579 </span><span class="lineCov">      74884 : int psl_is_cookie_domain_acceptable(const psl_ctx_t *psl, const char *hostname, const char *cookie_domain)</span>
+<span class="lineNum">    1580 </span>            : {
+<span class="lineNum">    1581 </span>            :         const char *p;
+<span class="lineNum">    1582 </span>            :         size_t hostname_length, cookie_domain_length;
+<span class="lineNum">    1583 </span>            : 
+<span class="lineNum">    1584 </span><span class="lineCov">      74884 :         if (!psl || !hostname || !cookie_domain)</span>
+<span class="lineNum">    1585 </span><span class="lineCov">      37442 :                 return 0;</span>
+<span class="lineNum">    1586 </span>            : 
+<span class="lineNum">    1587 </span><span class="lineCov">     327328 :         while (*cookie_domain == '.')</span>
+<span class="lineNum">    1588 </span><span class="lineCov">     252444 :                 cookie_domain++;</span>
+<span class="lineNum">    1589 </span>            : 
+<span class="lineNum">    1590 </span><span class="lineCov">      37442 :         if (!strcmp(hostname, cookie_domain))</span>
+<span class="lineNum">    1591 </span><span class="lineCov">        193 :                 return 1; /* an exact match is acceptable (and pretty common) */</span>
+<span class="lineNum">    1592 </span>            : 
+<span class="lineNum">    1593 </span><span class="lineCov">      37249 :         if (_isip(hostname))</span>
+<span class="lineNum">    1594 </span><span class="lineNoCov">          0 :                 return 0; /* Hostname is an IP address and these must match fully (RFC 6265, 5.1.3) */</span>
+<span class="lineNum">    1595 </span>            : 
+<span class="lineNum">    1596 </span><span class="lineCov">      37249 :         cookie_domain_length = strlen(cookie_domain);</span>
+<span class="lineNum">    1597 </span><span class="lineCov">      37249 :         hostname_length = strlen(hostname);</span>
+<span class="lineNum">    1598 </span>            : 
+<span class="lineNum">    1599 </span><span class="lineCov">      37249 :         if (cookie_domain_length &gt;= hostname_length)</span>
+<span class="lineNum">    1600 </span><span class="lineCov">       9843 :                 return 0; /* cookie_domain is too long */</span>
+<span class="lineNum">    1601 </span>            : 
+<span class="lineNum">    1602 </span><span class="lineCov">      27406 :         p = hostname + hostname_length - cookie_domain_length;</span>
+<span class="lineNum">    1603 </span><span class="lineCov">      27406 :         if (!strcmp(p, cookie_domain) &amp;&amp; p[-1] == '.') {</span>
+<span class="lineNum">    1604 </span>            :                 /* OK, cookie_domain matches, but it must be longer than the longest public suffix in 'hostname' */
+<span class="lineNum">    1605 </span>            : 
+<span class="lineNum">    1606 </span><span class="lineCov">       1351 :                 if (!(p = psl_unregistrable_domain(psl, hostname)))</span>
+<span class="lineNum">    1607 </span><span class="lineNoCov">          0 :                         return 1;</span>
+<span class="lineNum">    1608 </span>            : 
+<span class="lineNum">    1609 </span><span class="lineCov">       1351 :                 if (cookie_domain_length &gt; strlen(p))</span>
+<span class="lineNum">    1610 </span><span class="lineCov">        965 :                         return 1;</span>
+<span class="lineNum">    1611 </span>            :         }
+<span class="lineNum">    1612 </span>            : 
+<span class="lineNum">    1613 </span><span class="lineCov">      26441 :         return 0;</span>
+<span class="lineNum">    1614 </span>            : }
+<span class="lineNum">    1615 </span>            : 
+<span class="lineNum">    1616 </span>            : /**
+<span class="lineNum">    1617 </span>            :  * psl_str_to_utf8lower:
+<span class="lineNum">    1618 </span>            :  * @str: string to convert
+<span class="lineNum">    1619 </span>            :  * @encoding: charset encoding of @str, e.g. 'iso-8859-1' or %NULL
+<span class="lineNum">    1620 </span>            :  * @locale: locale of @str for to lowercase conversion, e.g. 'de' or %NULL
+<span class="lineNum">    1621 </span>            :  * @lower: return value containing the converted string
+<span class="lineNum">    1622 </span>            :  *
+<span class="lineNum">    1623 </span>            :  * This helper function converts a string to UTF-8 lowercase + NFKC representation.
+<span class="lineNum">    1624 </span>            :  * Lowercase + NFKC UTF-8 is needed as input to the domain checking functions.
+<span class="lineNum">    1625 </span>            :  *
+<span class="lineNum">    1626 </span>            :  * @lower stays unchanged on error.
+<span class="lineNum">    1627 </span>            :  *
+<span class="lineNum">    1628 </span>            :  * When returning PSL_SUCCESS, the return value 'lower' must be freed after usage.
+<span class="lineNum">    1629 </span>            :  *
+<span class="lineNum">    1630 </span>            :  * Returns: psl_error_t value.
+<span class="lineNum">    1631 </span>            :  *   PSL_SUCCESS: Success
+<span class="lineNum">    1632 </span>            :  *   PSL_ERR_INVALID_ARG: @str is a %NULL value.
+<span class="lineNum">    1633 </span>            :  *   PSL_ERR_CONVERTER: Failed to open the unicode converter with name @encoding
+<span class="lineNum">    1634 </span>            :  *   PSL_ERR_TO_UTF16: Failed to convert @str to unicode
+<span class="lineNum">    1635 </span>            :  *   PSL_ERR_TO_LOWER: Failed to convert unicode to lowercase
+<span class="lineNum">    1636 </span>            :  *   PSL_ERR_TO_UTF8: Failed to convert unicode to UTF-8
+<span class="lineNum">    1637 </span>            :  *   PSL_ERR_NO_MEM: Failed to allocate memory
+<span class="lineNum">    1638 </span>            :  *
+<a name="1639"><span class="lineNum">    1639 </span>            :  * Since: 0.4</a>
+<span class="lineNum">    1640 </span>            :  */
+<span class="lineNum">    1641 </span><span class="lineCov">     112326 : psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding _UNUSED, const char *locale _UNUSED, char **lower)</span>
+<span class="lineNum">    1642 </span>            : {
+<span class="lineNum">    1643 </span><span class="lineCov">     112326 :         int ret = PSL_ERR_INVALID_ARG;</span>
+<span class="lineNum">    1644 </span>            : 
+<span class="lineNum">    1645 </span><span class="lineCov">     112326 :         if (!str)</span>
+<span class="lineNum">    1646 </span><span class="lineNoCov">          0 :                 return PSL_ERR_INVALID_ARG;</span>
+<span class="lineNum">    1647 </span>            : 
+<span class="lineNum">    1648 </span>            :         /* shortcut to avoid costly conversion */
+<span class="lineNum">    1649 </span><span class="lineCov">     112326 :         if (_str_is_ascii(str)) {</span>
+<span class="lineNum">    1650 </span><span class="lineCov">      61374 :                 if (lower) {</span>
+<span class="lineNum">    1651 </span>            :                         char *p, *tmp;
+<span class="lineNum">    1652 </span>            : 
+<span class="lineNum">    1653 </span><span class="lineCov">      61374 :                         if (!(tmp = strdup(str)))</span>
+<span class="lineNum">    1654 </span><span class="lineNoCov">          0 :                                 return PSL_ERR_NO_MEM;</span>
+<span class="lineNum">    1655 </span>            : 
+<span class="lineNum">    1656 </span><span class="lineCov">      61374 :                         *lower = tmp;</span>
+<span class="lineNum">    1657 </span>            : 
+<span class="lineNum">    1658 </span>            :                         /* convert ASCII string to lowercase */
+<span class="lineNum">    1659 </span><span class="lineCov">    2099454 :                         for (p = *lower; *p; p++)</span>
+<span class="lineNum">    1660 </span><span class="lineCov">    2038080 :                                 if (isupper(*p))</span>
+<span class="lineNum">    1661 </span><span class="lineCov">     205545 :                                         *p = tolower(*p);</span>
+<span class="lineNum">    1662 </span>            :                 }
+<span class="lineNum">    1663 </span><span class="lineCov">      61374 :                 return PSL_SUCCESS;</span>
+<span class="lineNum">    1664 </span>            :         }
+<span class="lineNum">    1665 </span>            : 
+<span class="lineNum">    1666 </span>            : #ifdef WITH_LIBICU
+<span class="lineNum">    1667 </span>            :         do {
+<span class="lineNum">    1668 </span>            :         size_t str_length = strlen(str);
+<span class="lineNum">    1669 </span>            :         UErrorCode status = 0;
+<span class="lineNum">    1670 </span>            :         UChar *utf16_dst, *utf16_lower;
+<span class="lineNum">    1671 </span>            :         int32_t utf16_dst_length;
+<span class="lineNum">    1672 </span>            :         char *utf8_lower;
+<span class="lineNum">    1673 </span>            :         UConverter *uconv;
+<span class="lineNum">    1674 </span>            : 
+<span class="lineNum">    1675 </span>            :         if (str_length &lt; 256) {
+<span class="lineNum">    1676 </span>            :                 /* C89 allocation */
+<span class="lineNum">    1677 </span>            :                 utf16_dst   = alloca(sizeof(UChar) * (str_length * 2 + 1));
+<span class="lineNum">    1678 </span>            :                 utf16_lower = alloca(sizeof(UChar) * (str_length * 2 + 1));
+<span class="lineNum">    1679 </span>            :                 utf8_lower  = alloca(str_length * 6 + 1);
+<span class="lineNum">    1680 </span>            :         } else {
+<span class="lineNum">    1681 </span>            :                 utf16_dst   = malloc(sizeof(UChar) * (str_length * 2 + 1));
+<span class="lineNum">    1682 </span>            :                 utf16_lower = malloc(sizeof(UChar) * (str_length * 2 + 1));
+<span class="lineNum">    1683 </span>            :                 utf8_lower  = malloc(str_length * 6 + 1);
+<span class="lineNum">    1684 </span>            : 
+<span class="lineNum">    1685 </span>            :                 if (!utf16_dst || !utf16_lower || !utf8_lower) {
+<span class="lineNum">    1686 </span>            :                         ret = PSL_ERR_NO_MEM;
+<span class="lineNum">    1687 </span>            :                         goto out;
+<span class="lineNum">    1688 </span>            :                 }
+<span class="lineNum">    1689 </span>            :         }
+<span class="lineNum">    1690 </span>            : 
+<span class="lineNum">    1691 </span>            :         uconv = ucnv_open(encoding, &amp;status);
+<span class="lineNum">    1692 </span>            :         if (U_SUCCESS(status)) {
+<span class="lineNum">    1693 </span>            :                 utf16_dst_length = ucnv_toUChars(uconv, utf16_dst, str_length * 2 + 1, str, str_length, &amp;status);
+<span class="lineNum">    1694 </span>            :                 ucnv_close(uconv);
+<span class="lineNum">    1695 </span>            : 
+<span class="lineNum">    1696 </span>            :                 if (U_SUCCESS(status)) {
+<span class="lineNum">    1697 </span>            :                         int32_t utf16_lower_length = u_strToLower(utf16_lower, str_length * 2 + 1, utf16_dst, utf16_dst_length, locale, &amp;status);
+<span class="lineNum">    1698 </span>            :                         if (U_SUCCESS(status)) {
+<span class="lineNum">    1699 </span>            :                                 u_strToUTF8(utf8_lower, str_length * 6 + 1, NULL, utf16_lower, utf16_lower_length, &amp;status);
+<span class="lineNum">    1700 </span>            :                                 if (U_SUCCESS(status)) {
+<span class="lineNum">    1701 </span>            :                                         ret = PSL_SUCCESS;
+<span class="lineNum">    1702 </span>            :                                         if (lower) {
+<span class="lineNum">    1703 </span>            :                                                 char *tmp = strdup(utf8_lower);
+<span class="lineNum">    1704 </span>            : 
+<span class="lineNum">    1705 </span>            :                                                 if (tmp)
+<span class="lineNum">    1706 </span>            :                                                         *lower = tmp;
+<span class="lineNum">    1707 </span>            :                                                 else
+<span class="lineNum">    1708 </span>            :                                                         ret = PSL_ERR_NO_MEM;
+<span class="lineNum">    1709 </span>            :                                         }
+<span class="lineNum">    1710 </span>            :                                 } else {
+<span class="lineNum">    1711 </span>            :                                         ret = PSL_ERR_TO_UTF8;
+<span class="lineNum">    1712 </span>            :                                         /* fprintf(stderr, &quot;Failed to convert UTF-16 to UTF-8 (status %d)\n&quot;, status); */
+<span class="lineNum">    1713 </span>            :                                 }
+<span class="lineNum">    1714 </span>            :                         } else {
+<span class="lineNum">    1715 </span>            :                                 ret = PSL_ERR_TO_LOWER;
+<span class="lineNum">    1716 </span>            :                                 /* fprintf(stderr, &quot;Failed to convert UTF-16 to lowercase (status %d)\n&quot;, status); */
+<span class="lineNum">    1717 </span>            :                         }
+<span class="lineNum">    1718 </span>            :                 } else {
+<span class="lineNum">    1719 </span>            :                         ret = PSL_ERR_TO_UTF16;
+<span class="lineNum">    1720 </span>            :                         /* fprintf(stderr, &quot;Failed to convert string to UTF-16 (status %d)\n&quot;, status); */
+<span class="lineNum">    1721 </span>            :                 }
+<span class="lineNum">    1722 </span>            :         } else {
+<span class="lineNum">    1723 </span>            :                 ret = PSL_ERR_CONVERTER;
+<span class="lineNum">    1724 </span>            :                 /* fprintf(stderr, &quot;Failed to open converter for '%s' (status %d)\n&quot;, encoding, status); */
+<span class="lineNum">    1725 </span>            :         }
+<span class="lineNum">    1726 </span>            : out:
+<span class="lineNum">    1727 </span>            :         if (str_length &gt;= 256) {
+<span class="lineNum">    1728 </span>            :                 free(utf16_dst);
+<span class="lineNum">    1729 </span>            :                 free(utf16_lower);
+<span class="lineNum">    1730 </span>            :                 free(utf8_lower);
+<span class="lineNum">    1731 </span>            :         }
+<span class="lineNum">    1732 </span>            :         } while (0);
+<span class="lineNum">    1733 </span>            : #elif defined(WITH_LIBIDN2) || defined(WITH_LIBIDN)
+<span class="lineNum">    1734 </span>            :         do {
+<span class="lineNum">    1735 </span>            :                 /* find out local charset encoding */
+<span class="lineNum">    1736 </span><span class="lineCov">      50952 :                 if (!encoding) {</span>
+<span class="lineNum">    1737 </span><span class="lineCov">      16984 :                         encoding = nl_langinfo(CODESET);</span>
+<span class="lineNum">    1738 </span>            : 
+<span class="lineNum">    1739 </span><span class="lineCov">      16984 :                         if (!encoding || !*encoding)</span>
+<span class="lineNum">    1740 </span><span class="lineNoCov">          0 :                                 encoding = &quot;ASCII&quot;;</span>
+<span class="lineNum">    1741 </span>            :                 }
+<span class="lineNum">    1742 </span>            : 
+<span class="lineNum">    1743 </span>            :                 /* convert to UTF-8 */
+<span class="lineNum">    1744 </span><span class="lineCov">      50952 :                 if (strcasecmp(encoding, &quot;utf-8&quot;)) {</span>
+<span class="lineNum">    1745 </span><span class="lineCov">      33968 :                         iconv_t cd = iconv_open(&quot;utf-8&quot;, encoding);</span>
+<span class="lineNum">    1746 </span>            : 
+<span class="lineNum">    1747 </span><span class="lineCov">      33968 :                         if (cd != (iconv_t)-1) {</span>
+<span class="lineNum">    1748 </span><span class="lineCov">      33968 :                                 char *tmp = (char *)str; /* iconv won't change where str points to, but changes tmp itself */</span>
+<span class="lineNum">    1749 </span><span class="lineCov">      33968 :                                 size_t tmp_len = strlen(str) + 1;</span>
+<span class="lineNum">    1750 </span><span class="lineCov">      33968 :                                 size_t dst_len = tmp_len * 6, dst_len_tmp = dst_len;</span>
+<span class="lineNum">    1751 </span><span class="lineCov">      33968 :                                 char *dst = malloc(dst_len + 1), *dst_tmp = dst;</span>
+<span class="lineNum">    1752 </span>            : 
+<span class="lineNum">    1753 </span><span class="lineCov">      33968 :                                 if (!dst) {</span>
+<span class="lineNum">    1754 </span><span class="lineNoCov">          0 :                                         ret = PSL_ERR_NO_MEM;</span>
+<span class="lineNum">    1755 </span>            :                                 }
+<span class="lineNum">    1756 </span><span class="lineCov">      33968 :                                 else if (iconv(cd, &amp;tmp, &amp;tmp_len, &amp;dst_tmp, &amp;dst_len_tmp) != (size_t)-1</span>
+<span class="lineNum">    1757 </span><span class="lineCov">      16984 :                                         &amp;&amp; iconv(cd, NULL, NULL, &amp;dst_tmp, &amp;dst_len_tmp) != (size_t)-1)</span>
+<span class="lineNum">    1758 </span><span class="lineCov">      16984 :                                 {</span>
+<span class="lineNum">    1759 </span>            :                                         /* start size for u8_tolower internal memory allocation.
+<span class="lineNum">    1760 </span>            :                                          * u8_tolower() does not terminate the result string. we have 0 byte included in above tmp_len
+<span class="lineNum">    1761 </span>            :                                          * and thus in len. */
+<span class="lineNum">    1762 </span><span class="lineCov">      16984 :                                         size_t len = dst_len - dst_len_tmp;</span>
+<span class="lineNum">    1763 </span>            : 
+<span class="lineNum">    1764 </span><span class="lineCov">      16984 :                                         if ((tmp = (char *)u8_tolower((uint8_t *)dst, len, 0, UNINORM_NFKC, NULL, &amp;len))) {</span>
+<span class="lineNum">    1765 </span><span class="lineCov">      16984 :                                                 ret = PSL_SUCCESS;</span>
+<span class="lineNum">    1766 </span><span class="lineCov">      16984 :                                                 if (lower) {</span>
+<span class="lineNum">    1767 </span><span class="lineCov">      16984 :                                                         *lower = tmp;</span>
+<span class="lineNum">    1768 </span><span class="lineCov">      16984 :                                                         tmp = NULL;</span>
+<span class="lineNum">    1769 </span>            :                                                 } else
+<span class="lineNum">    1770 </span><span class="lineNoCov">          0 :                                                         free(tmp);</span>
+<span class="lineNum">    1771 </span>            :                                         } else {
+<span class="lineNum">    1772 </span><span class="lineNoCov">          0 :                                                 ret = PSL_ERR_TO_LOWER;</span>
+<span class="lineNum">    1773 </span>            :                                                 /* fprintf(stderr, &quot;Failed to convert UTF-8 to lowercase (errno %d)\n&quot;, errno); */
+<span class="lineNum">    1774 </span>            :                                         }
+<span class="lineNum">    1775 </span>            :                                 } else {
+<span class="lineNum">    1776 </span><span class="lineCov">      16984 :                                         ret = PSL_ERR_TO_UTF8;</span>
+<span class="lineNum">    1777 </span>            :                                         /* fprintf(stderr, &quot;Failed to convert '%s' string into '%s' (%d)\n&quot;, src_encoding, dst_encoding, errno); */
+<span class="lineNum">    1778 </span>            :                                 }
+<span class="lineNum">    1779 </span>            : 
+<span class="lineNum">    1780 </span><span class="lineCov">      33968 :                                 free(dst);</span>
+<span class="lineNum">    1781 </span><span class="lineCov">      33968 :                                 iconv_close(cd);</span>
+<span class="lineNum">    1782 </span>            :                         } else {
+<span class="lineNum">    1783 </span><span class="lineNoCov">          0 :                                 ret = PSL_ERR_TO_UTF8;</span>
+<span class="lineNum">    1784 </span>            :                                 /* fprintf(stderr, &quot;Failed to prepare encoding '%s' into '%s' (%d)\n&quot;, src_encoding, dst_encoding, errno); */
+<span class="lineNum">    1785 </span>            :                         }
+<span class="lineNum">    1786 </span>            :                 } else {
+<span class="lineNum">    1787 </span>            :                         /* we need a conversion to lowercase */
+<span class="lineNum">    1788 </span>            :                         uint8_t *tmp;
+<span class="lineNum">    1789 </span>            : 
+<span class="lineNum">    1790 </span>            :                         /* start size for u8_tolower internal memory allocation.
+<span class="lineNum">    1791 </span>            :                          * u8_tolower() does not terminate the result string, so include terminating 0 byte in len. */
+<span class="lineNum">    1792 </span><span class="lineCov">      16984 :                         size_t len = u8_strlen((uint8_t *)str) + 1;</span>
+<span class="lineNum">    1793 </span>            : 
+<span class="lineNum">    1794 </span><span class="lineCov">      16984 :                         if ((tmp = u8_tolower((uint8_t *)str, len, 0, UNINORM_NFKC, NULL, &amp;len))) {</span>
+<span class="lineNum">    1795 </span><span class="lineCov">      16984 :                                 ret = PSL_SUCCESS;</span>
+<span class="lineNum">    1796 </span><span class="lineCov">      16984 :                                 if (lower) {</span>
+<span class="lineNum">    1797 </span><span class="lineCov">      16984 :                                         *lower = (char*)tmp;</span>
+<span class="lineNum">    1798 </span><span class="lineCov">      16984 :                                         tmp = NULL;</span>
+<span class="lineNum">    1799 </span>            :                                 } else
+<span class="lineNum">    1800 </span><span class="lineNoCov">          0 :                                         free(tmp);</span>
+<span class="lineNum">    1801 </span>            :                         } else {
+<span class="lineNum">    1802 </span><span class="lineNoCov">          0 :                                 ret = PSL_ERR_TO_LOWER;</span>
+<span class="lineNum">    1803 </span>            :                                 /* fprintf(stderr, &quot;Failed to convert UTF-8 to lowercase (errno %d)\n&quot;, errno); */
+<span class="lineNum">    1804 </span>            :                         }
+<span class="lineNum">    1805 </span>            :                 }
+<span class="lineNum">    1806 </span>            : 
+<span class="lineNum">    1807 </span>            :         } while (0);
+<span class="lineNum">    1808 </span>            : #endif
+<span class="lineNum">    1809 </span>            : 
+<span class="lineNum">    1810 </span><span class="lineCov">      50952 :         return ret;</span>
+<span class="lineNum">    1811 </span>            : }
+<a name="1812"><span class="lineNum">    1812 </span>            : </a>
+<span class="lineNum">    1813 </span>            : /* if file is newer than the builtin data, insert it reverse sorted by mtime */
+<span class="lineNum">    1814 </span><span class="lineCov">      16428 : static int _insert_file(const char *fname, const char **psl_fname, time_t *psl_mtime, int n)</span>
+<span class="lineNum">    1815 </span>            : {
+<span class="lineNum">    1816 </span>            :         struct stat st;
+<span class="lineNum">    1817 </span>            :         int it;
+<span class="lineNum">    1818 </span>            : 
+<span class="lineNum">    1819 </span><span class="lineCov">      16428 :         if (fname &amp;&amp; *fname &amp;&amp; stat(fname, &amp;st) == 0 &amp;&amp; st.st_mtime &gt; _psl_file_time) {</span>
+<span class="lineNum">    1820 </span>            :                 /* add file name and mtime to end of array */
+<span class="lineNum">    1821 </span><span class="lineNoCov">          0 :                 psl_fname[n] = fname;</span>
+<span class="lineNum">    1822 </span><span class="lineNoCov">          0 :                 psl_mtime[n++] = st.st_mtime;</span>
+<span class="lineNum">    1823 </span>            : 
+<span class="lineNum">    1824 </span>            :                 /* move the new entry to it's correct position */
+<span class="lineNum">    1825 </span><span class="lineNoCov">          0 :                 for (it = n - 2; it &gt;= 0 &amp;&amp; st.st_mtime &gt; psl_mtime[it]; it--) {</span>
+<span class="lineNum">    1826 </span><span class="lineNoCov">          0 :                         psl_fname[it + 1] = psl_fname[it];</span>
+<span class="lineNum">    1827 </span><span class="lineNoCov">          0 :                         psl_mtime[it + 1] = psl_mtime[it];</span>
+<span class="lineNum">    1828 </span><span class="lineNoCov">          0 :                         psl_fname[it] = fname;</span>
+<span class="lineNum">    1829 </span><span class="lineNoCov">          0 :                         psl_mtime[it] = st.st_mtime;</span>
+<span class="lineNum">    1830 </span>            :                 }
+<span class="lineNum">    1831 </span>            :         }
+<span class="lineNum">    1832 </span>            : 
+<span class="lineNum">    1833 </span><span class="lineCov">      16428 :         return n;</span>
+<span class="lineNum">    1834 </span>            : }
+<span class="lineNum">    1835 </span>            : 
+<span class="lineNum">    1836 </span>            : /**
+<span class="lineNum">    1837 </span>            :  * psl_latest:
+<span class="lineNum">    1838 </span>            :  * @fname: Name of PSL file or %NULL
+<span class="lineNum">    1839 </span>            :  *
+<span class="lineNum">    1840 </span>            :  * This function loads the the latest available PSL data from either
+<span class="lineNum">    1841 </span>            :  * - @fname (application specific filename, may be %NULL)
+<span class="lineNum">    1842 </span>            :  * - location specified during built-time (filename from ./configure --with-psl-distfile)
+<span class="lineNum">    1843 </span>            :  * - built-in PSL data (generated from ./configure --with-psl-file)
+<span class="lineNum">    1844 </span>            :  * - location of built-in data (filename from ./configure --with-psl-file)
+<span class="lineNum">    1845 </span>            :  * 
+<span class="lineNum">    1846 </span>            :  * If none of the above is available, the function returns %NULL.
+<span class="lineNum">    1847 </span>            :  *
+<span class="lineNum">    1848 </span>            :  * To free the allocated resources, call psl_free().
+<span class="lineNum">    1849 </span>            :  *
+<span class="lineNum">    1850 </span>            :  * Returns: Pointer to a PSL context or %NULL on failure.
+<span class="lineNum">    1851 </span>            :  *
+<a name="1852"><span class="lineNum">    1852 </span>            :  * Since: 0.16</a>
+<span class="lineNum">    1853 </span>            :  */
+<span class="lineNum">    1854 </span><span class="lineCov">       5476 : psl_ctx_t *psl_latest(const char *fname)</span>
+<span class="lineNum">    1855 </span>            : {
+<span class="lineNum">    1856 </span>            :         psl_ctx_t *psl;
+<span class="lineNum">    1857 </span>            :         const char *psl_fname[3];
+<span class="lineNum">    1858 </span>            :         time_t psl_mtime[3];
+<span class="lineNum">    1859 </span>            :         int it, ntimes;
+<span class="lineNum">    1860 </span>            : 
+<span class="lineNum">    1861 </span><span class="lineCov">       5476 :         psl_fname[0] = NULL; /* silence gcc 6.2 false warning */</span>
+<span class="lineNum">    1862 </span>            : 
+<span class="lineNum">    1863 </span>            :         /* create array of PSL files reverse sorted by mtime (latest first) */
+<span class="lineNum">    1864 </span><span class="lineCov">       5476 :         ntimes = _insert_file(fname, psl_fname, psl_mtime, 0);</span>
+<span class="lineNum">    1865 </span><span class="lineCov">       5476 :         ntimes = _insert_file(_psl_dist_filename, psl_fname, psl_mtime, ntimes);</span>
+<span class="lineNum">    1866 </span><span class="lineCov">       5476 :         ntimes = _insert_file(_psl_filename, psl_fname, psl_mtime, ntimes);</span>
+<span class="lineNum">    1867 </span>            : 
+<span class="lineNum">    1868 </span>            :         /* load PSL data from the latest file, falling back to the second recent, ... */
+<span class="lineNum">    1869 </span><span class="lineCov">       5476 :         for (psl = NULL, it = 0; it &lt; ntimes; it++) {</span>
+<span class="lineNum">    1870 </span><span class="lineNoCov">          0 :                 if (psl_mtime[it] &gt; _psl_file_time)</span>
+<span class="lineNum">    1871 </span><span class="lineNoCov">          0 :                         if ((psl = psl_load_file(psl_fname[it])))</span>
+<span class="lineNum">    1872 </span><span class="lineNoCov">          0 :                                 break;</span>
+<span class="lineNum">    1873 </span>            :         }
+<span class="lineNum">    1874 </span>            : 
+<span class="lineNum">    1875 </span>            :         /* if file loading failed or there is no file newer than the builtin data,
+<span class="lineNum">    1876 </span>            :          * then return the builtin data. */
+<span class="lineNum">    1877 </span><span class="lineCov">       5476 :         return psl ? psl : (psl_ctx_t *) psl_builtin();</span>
+<span class="lineNum">    1878 </span>            : }
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

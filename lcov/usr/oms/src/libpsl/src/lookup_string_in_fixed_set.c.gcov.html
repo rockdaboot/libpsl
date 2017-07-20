@@ -1,0 +1,369 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - libpsl-fuzz - /usr/oms/src/libpsl/src/lookup_string_in_fixed_set.c</title>
+  <link rel="stylesheet" type="text/css" href="../../../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../../../index.html">top level</a> - <a href="index.html">usr/oms/src/libpsl/src</a> - lookup_string_in_fixed_set.c<span style="font-size: 80%;"> (source / <a href="lookup_string_in_fixed_set.c.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">libpsl-fuzz</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">84</td>
+            <td class="headerCovTableEntry">84</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2017-07-20 15:57:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">10</td>
+            <td class="headerCovTableEntry">10</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /* Copyright 2015-2016 The Chromium Authors. All rights reserved.</a>
+<span class="lineNum">       2 </span>            :  * Use of this source code is governed by a BSD-style license that can be
+<span class="lineNum">       3 </span>            :  * found in the LICENSE.chromium file.
+<span class="lineNum">       4 </span>            :  *
+<span class="lineNum">       5 </span>            :  * Converted to C89 2015 by Tim Rühsen
+<span class="lineNum">       6 </span>            :  */
+<span class="lineNum">       7 </span>            : 
+<span class="lineNum">       8 </span>            : #include &lt;stddef.h&gt;
+<span class="lineNum">       9 </span>            : 
+<span class="lineNum">      10 </span>            : #if defined(__GNUC__) &amp;&amp; defined(__GNUC_MINOR__)
+<span class="lineNum">      11 </span>            : #       define _GCC_VERSION_AT_LEAST(major, minor) ((__GNUC__ &gt; (major)) || (__GNUC__ == (major) &amp;&amp; __GNUC_MINOR__ &gt;= (minor)))
+<span class="lineNum">      12 </span>            : #else
+<span class="lineNum">      13 </span>            : #       define _GCC_VERSION_AT_LEAST(major, minor) 0
+<span class="lineNum">      14 </span>            : #endif
+<span class="lineNum">      15 </span>            : 
+<span class="lineNum">      16 </span>            : #if _GCC_VERSION_AT_LEAST(4,0)
+<span class="lineNum">      17 </span>            : #  define _HIDDEN __attribute__ ((visibility (&quot;hidden&quot;)))
+<span class="lineNum">      18 </span>            : #else
+<span class="lineNum">      19 </span>            : #  define _HIDDEN
+<span class="lineNum">      20 </span>            : #endif
+<span class="lineNum">      21 </span>            : 
+<span class="lineNum">      22 </span>            : #define CHECK_LT(a, b) if ((a) &gt;= b) return 0
+<span class="lineNum">      23 </span>            : 
+<span class="lineNum">      24 </span>            : static const char multibyte_length_table[16] = {
+<span class="lineNum">      25 </span>            :         0, 0, 0, 0,      /* 0x00-0x3F */
+<span class="lineNum">      26 </span>            :         0, 0, 0, 0,      /* 0x40-0x7F */
+<span class="lineNum">      27 </span>            :         0, 0, 0, 0,      /* 0x80-0xBF */
+<span class="lineNum">      28 </span>            :         2, 2, 3, 4,      /* 0xC0-0xFF */
+<span class="lineNum">      29 </span>            : };
+<span class="lineNum">      30 </span>            : 
+<span class="lineNum">      31 </span>            : 
+<span class="lineNum">      32 </span>            : /**
+<span class="lineNum">      33 </span>            :  * Get length of multibyte character sequence starting at a given byte.
+<a name="34"><span class="lineNum">      34 </span>            :  * Returns zero if the byte is not a valid leading byte in UTF-8.</a>
+<span class="lineNum">      35 </span>            :  */
+<span class="lineNum">      36 </span><span class="lineCov">   63020419 : static int GetMultibyteLength(char c) {</span>
+<span class="lineNum">      37 </span><span class="lineCov">   63020419 :         return multibyte_length_table[((unsigned char)c) &gt;&gt; 4];</span>
+<span class="lineNum">      38 </span>            : }
+<span class="lineNum">      39 </span>            : 
+<span class="lineNum">      40 </span>            : /**
+<a name="41"><span class="lineNum">      41 </span>            :  * Moves pointers one byte forward.</a>
+<span class="lineNum">      42 </span>            :  */
+<span class="lineNum">      43 </span><span class="lineCov">    1691448 : static void NextPos(const unsigned char** pos,</span>
+<span class="lineNum">      44 </span>            :         const char** key,
+<span class="lineNum">      45 </span>            :         const char** multibyte_start)
+<span class="lineNum">      46 </span>            : {
+<span class="lineNum">      47 </span><span class="lineCov">    1691448 :         ++*pos;</span>
+<span class="lineNum">      48 </span><span class="lineCov">    1691448 :         if (*multibyte_start) {</span>
+<span class="lineNum">      49 </span>            :                 /* Advance key to next byte in multibyte sequence. */
+<span class="lineNum">      50 </span><span class="lineCov">     291375 :                 ++*key;</span>
+<span class="lineNum">      51 </span>            :                 /* Reset multibyte_start if last byte in multibyte sequence was consumed. */
+<span class="lineNum">      52 </span><span class="lineCov">     291375 :                 if (*key - *multibyte_start == GetMultibyteLength(**multibyte_start))</span>
+<span class="lineNum">      53 </span><span class="lineCov">      87318 :                         *multibyte_start = 0;</span>
+<span class="lineNum">      54 </span>            :         } else {
+<span class="lineNum">      55 </span><span class="lineCov">    1400073 :                 if (GetMultibyteLength(**key)) {</span>
+<span class="lineNum">      56 </span>            :                         /* Multibyte prefix was matched in the dafsa, start matching multibyte
+<span class="lineNum">      57 </span>            :                          * content in next round. */
+<span class="lineNum">      58 </span><span class="lineCov">     212306 :                         *multibyte_start = *key;</span>
+<span class="lineNum">      59 </span>            :                 } else {
+<span class="lineNum">      60 </span>            :                         /* Advance key as a single byte character was matched. */
+<span class="lineNum">      61 </span><span class="lineCov">    1187767 :                         ++*key;</span>
+<span class="lineNum">      62 </span>            :                 }
+<span class="lineNum">      63 </span>            :         }
+<span class="lineNum">      64 </span><span class="lineCov">    1691448 : }</span>
+<span class="lineNum">      65 </span>            : 
+<span class="lineNum">      66 </span>            : /*
+<span class="lineNum">      67 </span>            :  * Read next offset from pos.
+<span class="lineNum">      68 </span>            :  * Returns true if an offset could be read, false otherwise.
+<a name="69"><span class="lineNum">      69 </span>            :  */</a>
+<span class="lineNum">      70 </span>            : 
+<span class="lineNum">      71 </span><span class="lineCov">   65132417 : static int GetNextOffset(const unsigned char** pos,</span>
+<span class="lineNum">      72 </span>            :         const unsigned char* end,
+<span class="lineNum">      73 </span>            :         const unsigned char** offset)
+<span class="lineNum">      74 </span>            : {
+<span class="lineNum">      75 </span>            :         size_t bytes_consumed;
+<span class="lineNum">      76 </span>            : 
+<span class="lineNum">      77 </span><span class="lineCov">   65132417 :         if (*pos == end)</span>
+<span class="lineNum">      78 </span><span class="lineCov">    1598430 :                 return 0;</span>
+<span class="lineNum">      79 </span>            : 
+<span class="lineNum">      80 </span>            :         /* When reading an offset the byte array must always contain at least
+<span class="lineNum">      81 </span>            :          * three more bytes to consume. First the offset to read, then a node
+<span class="lineNum">      82 </span>            :          * to skip over and finally a destination node. No object can be smaller
+<span class="lineNum">      83 </span>            :          * than one byte. */
+<span class="lineNum">      84 </span><span class="lineCov">   63533987 :         CHECK_LT(*pos + 2, end);</span>
+<span class="lineNum">      85 </span><span class="lineCov">   63479007 :         switch (**pos &amp; 0x60) {</span>
+<span class="lineNum">      86 </span>            :         case 0x60: /* Read three byte offset */
+<span class="lineNum">      87 </span><span class="lineCov">     285613 :                 *offset += (((*pos)[0] &amp; 0x1F) &lt;&lt; 16) | ((*pos)[1] &lt;&lt; 8) | (*pos)[2];</span>
+<span class="lineNum">      88 </span><span class="lineCov">     285613 :                 bytes_consumed = 3;</span>
+<span class="lineNum">      89 </span><span class="lineCov">     285613 :                 break;</span>
+<span class="lineNum">      90 </span>            :         case 0x40: /* Read two byte offset */
+<span class="lineNum">      91 </span><span class="lineCov">   44797947 :                 *offset += (((*pos)[0] &amp; 0x1F) &lt;&lt; 8) | (*pos)[1];</span>
+<span class="lineNum">      92 </span><span class="lineCov">   44797947 :                 bytes_consumed = 2;</span>
+<span class="lineNum">      93 </span><span class="lineCov">   44797947 :                 break;</span>
+<span class="lineNum">      94 </span>            :         default:
+<span class="lineNum">      95 </span><span class="lineCov">   18395447 :                 *offset += (*pos)[0] &amp; 0x3F;</span>
+<span class="lineNum">      96 </span><span class="lineCov">   18395447 :                 bytes_consumed = 1;</span>
+<span class="lineNum">      97 </span>            :         }
+<span class="lineNum">      98 </span><span class="lineCov">   63479007 :         if ((**pos &amp; 0x80) != 0) {</span>
+<span class="lineNum">      99 </span><span class="lineCov">    1939675 :                 *pos = end;</span>
+<span class="lineNum">     100 </span>            :         } else {
+<span class="lineNum">     101 </span><span class="lineCov">   61539332 :                 *pos += bytes_consumed;</span>
+<span class="lineNum">     102 </span>            :         }
+<span class="lineNum">     103 </span><span class="lineCov">   63479007 :         return 1;</span>
+<span class="lineNum">     104 </span>            : }
+<span class="lineNum">     105 </span>            : 
+<span class="lineNum">     106 </span>            : /*
+<span class="lineNum">     107 </span>            :  * Check if byte at offset is last in label.
+<a name="108"><span class="lineNum">     108 </span>            :  */</a>
+<span class="lineNum">     109 </span>            : 
+<span class="lineNum">     110 </span><span class="lineCov">   63466201 : static int IsEOL(const unsigned char* offset, const unsigned char* end)</span>
+<span class="lineNum">     111 </span>            : {
+<span class="lineNum">     112 </span><span class="lineCov">   63466201 :         CHECK_LT(offset, end);</span>
+<span class="lineNum">     113 </span><span class="lineCov">   63108856 :         return(*offset &amp; 0x80) != 0;</span>
+<span class="lineNum">     114 </span>            : }
+<span class="lineNum">     115 </span>            : 
+<span class="lineNum">     116 </span>            : /*
+<span class="lineNum">     117 </span>            :  * Check if byte at offset matches first character in key.
+<span class="lineNum">     118 </span>            :  * This version assumes a range check was already performed by the caller.
+<a name="119"><span class="lineNum">     119 </span>            :  */</a>
+<span class="lineNum">     120 </span>            : 
+<span class="lineNum">     121 </span><span class="lineCov">   63082696 : static int IsMatchUnchecked(const unsigned char matcher,</span>
+<span class="lineNum">     122 </span>            :         const char* key,
+<span class="lineNum">     123 </span>            :         const char* multibyte_start)
+<span class="lineNum">     124 </span>            : {
+<span class="lineNum">     125 </span><span class="lineCov">   63082696 :         if (multibyte_start) {</span>
+<span class="lineNum">     126 </span>            :                 /* Multibyte matching mode. */
+<span class="lineNum">     127 </span><span class="lineCov">    1753725 :                 if (multibyte_start == key) {</span>
+<span class="lineNum">     128 </span>            :                         /* Match leading byte, which will also match the sequence length. */
+<span class="lineNum">     129 </span><span class="lineCov">    1284096 :                         return (matcher ^ 0x80) == (const unsigned char)*key;</span>
+<span class="lineNum">     130 </span>            :                 } else {
+<span class="lineNum">     131 </span>            :                         /* Match following bytes. */
+<span class="lineNum">     132 </span><span class="lineCov">     469629 :                         return (matcher ^ 0xC0) == (const unsigned char)*key;</span>
+<span class="lineNum">     133 </span>            :                 }
+<span class="lineNum">     134 </span>            :         }
+<span class="lineNum">     135 </span>            :         /* If key points at a leading byte in a multibyte sequence, but we are not yet
+<span class="lineNum">     136 </span>            :          * in multibyte mode, then the dafsa should contain a special byte to indicate
+<span class="lineNum">     137 </span>            :          * a mode switch. */
+<span class="lineNum">     138 </span><span class="lineCov">   61328971 :         if (GetMultibyteLength(*key)) {</span>
+<span class="lineNum">     139 </span><span class="lineCov">     698165 :                 return matcher == 0x1F;</span>
+<span class="lineNum">     140 </span>            :         }
+<span class="lineNum">     141 </span>            :         /* Normal matching of a single byte character. */
+<span class="lineNum">     142 </span><span class="lineCov">   60630806 :         return matcher == (const unsigned char)*key;</span>
+<span class="lineNum">     143 </span>            : }
+<span class="lineNum">     144 </span>            : 
+<span class="lineNum">     145 </span>            : /*
+<span class="lineNum">     146 </span>            :  * Check if byte at offset matches first character in key.
+<span class="lineNum">     147 </span>            :  * This version matches characters not last in label.
+<a name="148"><span class="lineNum">     148 </span>            :  */</a>
+<span class="lineNum">     149 </span>            : 
+<span class="lineNum">     150 </span><span class="lineCov">    3678272 : static int IsMatch(const unsigned char* offset,</span>
+<span class="lineNum">     151 </span>            :         const unsigned char* end,
+<span class="lineNum">     152 </span>            :         const char* key,
+<span class="lineNum">     153 </span>            :         const char* multibyte_start)
+<span class="lineNum">     154 </span>            : {
+<span class="lineNum">     155 </span><span class="lineCov">    3678272 :         CHECK_LT(offset, end);</span>
+<span class="lineNum">     156 </span><span class="lineCov">    3321368 :         return IsMatchUnchecked(*offset, key, multibyte_start);</span>
+<span class="lineNum">     157 </span>            : }
+<span class="lineNum">     158 </span>            : 
+<span class="lineNum">     159 </span>            : /*
+<span class="lineNum">     160 </span>            :  * Check if byte at offset matches first character in key.
+<span class="lineNum">     161 </span>            :  * This version matches characters last in label.
+<a name="162"><span class="lineNum">     162 </span>            :  */</a>
+<span class="lineNum">     163 </span>            : 
+<span class="lineNum">     164 </span><span class="lineCov">   59761328 : static int IsEndCharMatch(const unsigned char* offset,</span>
+<span class="lineNum">     165 </span>            :         const unsigned char* end,
+<span class="lineNum">     166 </span>            :         const char* key,
+<span class="lineNum">     167 </span>            :         const char* multibyte_start)
+<span class="lineNum">     168 </span>            : {
+<span class="lineNum">     169 </span><span class="lineCov">   59761328 :         CHECK_LT(offset, end);</span>
+<span class="lineNum">     170 </span><span class="lineCov">   59761328 :         return IsMatchUnchecked(*offset ^ 0x80, key, multibyte_start);</span>
+<span class="lineNum">     171 </span>            : }
+<span class="lineNum">     172 </span>            : 
+<span class="lineNum">     173 </span>            : /*
+<span class="lineNum">     174 </span>            :  * Read return value at offset.
+<span class="lineNum">     175 </span>            :  * Returns true if a return value could be read, false otherwise.
+<a name="176"><span class="lineNum">     176 </span>            :  */</a>
+<span class="lineNum">     177 </span>            : 
+<span class="lineNum">     178 </span><span class="lineCov">     547480 : static int GetReturnValue(const unsigned char* offset,</span>
+<span class="lineNum">     179 </span>            :         const unsigned char* end,
+<span class="lineNum">     180 </span>            :         const char* multibyte_start,
+<span class="lineNum">     181 </span>            :         int* return_value)
+<span class="lineNum">     182 </span>            : {
+<span class="lineNum">     183 </span><span class="lineCov">     547480 :         CHECK_LT(offset, end);</span>
+<span class="lineNum">     184 </span><span class="lineCov">     458376 :         if (!multibyte_start &amp;&amp; (*offset &amp; 0xE0) == 0x80) {</span>
+<span class="lineNum">     185 </span><span class="lineCov">      50278 :                 *return_value = *offset &amp; 0x0F;</span>
+<span class="lineNum">     186 </span><span class="lineCov">      50278 :                 return 1;</span>
+<span class="lineNum">     187 </span>            :         }
+<span class="lineNum">     188 </span><span class="lineCov">     408098 :         return 0;</span>
+<span class="lineNum">     189 </span>            : }
+<span class="lineNum">     190 </span>            : 
+<span class="lineNum">     191 </span>            : /*
+<span class="lineNum">     192 </span>            :  *  Looks up the string |key| with length |key_length| in a fixed set of
+<span class="lineNum">     193 </span>            :  * strings. The set of strings must be known at compile time. It is converted to
+<span class="lineNum">     194 </span>            :  * a graph structure named a DAFSA (Deterministic Acyclic Finite State
+<span class="lineNum">     195 </span>            :  * Automaton) by the script psl-make-dafsa during compilation. This permits
+<span class="lineNum">     196 </span>            :  * efficient (in time and space) lookup. The graph generated by psl-make-dafsa
+<span class="lineNum">     197 </span>            :  * takes the form of a constant byte array which should be supplied via the
+<span class="lineNum">     198 </span>            :  * |graph| and |length| parameters.  The return value is kDafsaNotFound,
+<span class="lineNum">     199 </span>            :  * kDafsaFound, or a bitmap consisting of one or more of kDafsaExceptionRule,
+<span class="lineNum">     200 </span>            :  * kDafsaWildcardRule and kDafsaPrivateRule ORed together.
+<span class="lineNum">     201 </span>            :  * 
+<span class="lineNum">     202 </span>            :  * Lookup a domain key in a byte array generated by psl-make-dafsa.
+<span class="lineNum">     203 </span>            :  */
+<span class="lineNum">     204 </span>            : 
+<span class="lineNum">     205 </span>            : /* prototype to skip warning with -Wmissing-prototypes */
+<a name="206"><span class="lineNum">     206 </span>            : int _HIDDEN LookupStringInFixedSet(const unsigned char*, size_t,const char*, size_t);</a>
+<span class="lineNum">     207 </span>            : 
+<span class="lineNum">     208 </span><span class="lineCov">    1875073 : int _HIDDEN LookupStringInFixedSet(const unsigned char* graph,</span>
+<span class="lineNum">     209 </span>            :         size_t length,
+<span class="lineNum">     210 </span>            :         const char* key,
+<span class="lineNum">     211 </span>            :         size_t key_length)
+<span class="lineNum">     212 </span>            : {
+<span class="lineNum">     213 </span><span class="lineCov">    1875073 :         const unsigned char* pos = graph;</span>
+<span class="lineNum">     214 </span><span class="lineCov">    1875073 :         const unsigned char* end = graph + length;</span>
+<span class="lineNum">     215 </span><span class="lineCov">    1875073 :         const unsigned char* offset = pos;</span>
+<span class="lineNum">     216 </span><span class="lineCov">    1875073 :         const char* key_end = key + key_length;</span>
+<span class="lineNum">     217 </span><span class="lineCov">    1875073 :         const char* multibyte_start = 0;</span>
+<span class="lineNum">     218 </span>            : 
+<span class="lineNum">     219 </span><span class="lineCov">   67007490 :         while (GetNextOffset(&amp;pos, end, &amp;offset)) {</span>
+<span class="lineNum">     220 </span>            :                 /*char &lt;char&gt;+ end_char offsets
+<span class="lineNum">     221 </span>            :                  * char &lt;char&gt;+ return value
+<span class="lineNum">     222 </span>            :                  * char end_char offsets
+<span class="lineNum">     223 </span>            :                  * char return value
+<span class="lineNum">     224 </span>            :                  * end_char offsets
+<span class="lineNum">     225 </span>            :                  * return_value
+<span class="lineNum">     226 </span>            :                  */
+<span class="lineNum">     227 </span><span class="lineCov">   63479007 :                 int did_consume = 0;</span>
+<span class="lineNum">     228 </span>            : 
+<span class="lineNum">     229 </span><span class="lineCov">   63479007 :                 if (key != key_end &amp;&amp; !IsEOL(offset, end)) {</span>
+<span class="lineNum">     230 </span>            :                         /* Leading &lt;char&gt; is not a match. Don't dive into this child */
+<span class="lineNum">     231 </span><span class="lineCov">    3338999 :                         if (!IsMatch(offset, end, key, multibyte_start))</span>
+<span class="lineNum">     232 </span><span class="lineCov">    3070055 :                                 continue;</span>
+<span class="lineNum">     233 </span><span class="lineCov">     268944 :                         did_consume = 1;</span>
+<span class="lineNum">     234 </span><span class="lineCov">     268944 :                         NextPos(&amp;offset, &amp;key, &amp;multibyte_start);</span>
+<span class="lineNum">     235 </span>            :                         /* Possible matches at this point:
+<span class="lineNum">     236 </span>            :                          * &lt;char&gt;+ end_char offsets
+<span class="lineNum">     237 </span>            :                          * &lt;char&gt;+ return value
+<span class="lineNum">     238 </span>            :                          * end_char offsets
+<span class="lineNum">     239 </span>            :                          * return value
+<span class="lineNum">     240 </span>            :                          */
+<span class="lineNum">     241 </span>            : 
+<span class="lineNum">     242 </span>            :                         /* Remove all remaining &lt;char&gt; nodes possible */
+<span class="lineNum">     243 </span><span class="lineCov">     777017 :                         while (!IsEOL(offset, end) &amp;&amp; key != key_end) {</span>
+<span class="lineNum">     244 </span><span class="lineCov">     339273 :                                 if (!IsMatch(offset, end, key, multibyte_start))</span>
+<span class="lineNum">     245 </span><span class="lineCov">     100144 :                                         return -1;</span>
+<span class="lineNum">     246 </span><span class="lineCov">     239129 :                                 NextPos(&amp;offset, &amp;key, &amp;multibyte_start);</span>
+<span class="lineNum">     247 </span>            :                         }
+<span class="lineNum">     248 </span>            :                 }
+<span class="lineNum">     249 </span>            :                 /* Possible matches at this point:
+<span class="lineNum">     250 </span>            :                  * end_char offsets
+<span class="lineNum">     251 </span>            :                  * return_value
+<span class="lineNum">     252 </span>            :                  * If one or more &lt;char&gt; elements were consumed, a failure
+<span class="lineNum">     253 </span>            :                  * to match is terminal. Otherwise, try the next node.
+<span class="lineNum">     254 </span>            :                  */
+<span class="lineNum">     255 </span><span class="lineCov">   60308808 :                 if (key == key_end) {</span>
+<span class="lineNum">     256 </span>            :                         int return_value;
+<span class="lineNum">     257 </span>            : 
+<span class="lineNum">     258 </span><span class="lineCov">     547480 :                         if (GetReturnValue(offset, end, multibyte_start, &amp;return_value))</span>
+<span class="lineNum">     259 </span><span class="lineCov">     124531 :                                 return return_value;</span>
+<span class="lineNum">     260 </span>            :                         /* The DAFSA guarantees that if the first char is a match, all
+<span class="lineNum">     261 </span>            :                          * remaining char elements MUST match if the key is truly present.
+<span class="lineNum">     262 </span>            :                          */
+<span class="lineNum">     263 </span><span class="lineCov">     497202 :                         if (did_consume)</span>
+<span class="lineNum">     264 </span><span class="lineCov">      23975 :                                 return -1;</span>
+<span class="lineNum">     265 </span><span class="lineCov">     473227 :                         continue;</span>
+<span class="lineNum">     266 </span>            :                 }
+<span class="lineNum">     267 </span><span class="lineCov">   59761328 :                 if (!IsEndCharMatch(offset, end, key, multibyte_start)) {</span>
+<span class="lineNum">     268 </span><span class="lineCov">   58577953 :                         if (did_consume)</span>
+<span class="lineNum">     269 </span><span class="lineCov">      47266 :                                 return -1; /* Unexpected */</span>
+<span class="lineNum">     270 </span><span class="lineCov">   58530687 :                         continue;</span>
+<span class="lineNum">     271 </span>            :                 }
+<span class="lineNum">     272 </span><span class="lineCov">    1183375 :                 NextPos(&amp;offset, &amp;key, &amp;multibyte_start);</span>
+<span class="lineNum">     273 </span><span class="lineCov">    1183375 :                 pos = offset; /* Dive into child */</span>
+<span class="lineNum">     274 </span>            :         }
+<span class="lineNum">     275 </span>            : 
+<span class="lineNum">     276 </span><span class="lineCov">    1653410 :         return -1; /* No match */</span>
+<span class="lineNum">     277 </span>            : }
+<span class="lineNum">     278 </span>            : 
+<span class="lineNum">     279 </span>            : /* prototype to skip warning with -Wmissing-prototypes */
+<a name="280"><span class="lineNum">     280 </span>            : int _HIDDEN GetUtfMode(const unsigned char *graph, size_t length);</a>
+<span class="lineNum">     281 </span>            : 
+<span class="lineNum">     282 </span><span class="lineCov">      31846 : int _HIDDEN GetUtfMode(const unsigned char *graph, size_t length)</span>
+<span class="lineNum">     283 </span>            : {
+<span class="lineNum">     284 </span><span class="lineCov">      31846 :         return length &gt; 0 &amp;&amp; graph[length - 1] &lt; 0x80;</span>
+<span class="lineNum">     285 </span>            : }
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

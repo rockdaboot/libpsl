@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - libpsl-fuzz - /usr/oms/src/libpsl/fuzz/libpsl_load_dafsa_fuzzer.c</title>
+  <link rel="stylesheet" type="text/css" href="../../../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../../../index.html">top level</a> - <a href="index.html">usr/oms/src/libpsl/fuzz</a> - libpsl_load_dafsa_fuzzer.c<span style="font-size: 80%;"> (source / <a href="libpsl_load_dafsa_fuzzer.c.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">libpsl-fuzz</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">19</td>
+            <td class="headerCovTableEntry">19</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2017-07-20 15:57:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            :  * Copyright(c) 2017 Tim Ruehsen
+<span class="lineNum">       3 </span>            :  *
+<span class="lineNum">       4 </span>            :  * Permission is hereby granted, free of charge, to any person obtaining a
+<span class="lineNum">       5 </span>            :  * copy of this software and associated documentation files (the &quot;Software&quot;),
+<span class="lineNum">       6 </span>            :  * to deal in the Software without restriction, including without limitation
+<span class="lineNum">       7 </span>            :  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+<span class="lineNum">       8 </span>            :  * and/or sell copies of the Software, and to permit persons to whom the
+<span class="lineNum">       9 </span>            :  * Software is furnished to do so, subject to the following conditions:
+<span class="lineNum">      10 </span>            :  *
+<span class="lineNum">      11 </span>            :  * The above copyright notice and this permission notice shall be included in
+<span class="lineNum">      12 </span>            :  * all copies or substantial portions of the Software.
+<span class="lineNum">      13 </span>            :  *
+<span class="lineNum">      14 </span>            :  * THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+<span class="lineNum">      15 </span>            :  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+<span class="lineNum">      16 </span>            :  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+<span class="lineNum">      17 </span>            :  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+<span class="lineNum">      18 </span>            :  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+<span class="lineNum">      19 </span>            :  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+<span class="lineNum">      20 </span>            :  * DEALINGS IN THE SOFTWARE.
+<span class="lineNum">      21 </span>            :  *
+<span class="lineNum">      22 </span>            :  * This file is part of libpsl.
+<span class="lineNum">      23 </span>            :  */
+<span class="lineNum">      24 </span>            : 
+<span class="lineNum">      25 </span>            : #include &lt;config.h&gt;
+<span class="lineNum">      26 </span>            : 
+<span class="lineNum">      27 </span>            : #include &lt;assert.h&gt; /* assert */
+<span class="lineNum">      28 </span>            : #include &lt;stdint.h&gt; /* uint8_t */
+<span class="lineNum">      29 </span>            : #include &lt;stdlib.h&gt; /* malloc, free */
+<span class="lineNum">      30 </span>            : #include &lt;string.h&gt; /* memcpy */
+<span class="lineNum">      31 </span>            : 
+<span class="lineNum">      32 </span>            : #include &quot;libpsl.h&quot;
+<a name="33"><span class="lineNum">      33 </span>            : #include &quot;fuzzer.h&quot;</a>
+<span class="lineNum">      34 </span>            : 
+<span class="lineNum">      35 </span><span class="lineCov">       5476 : int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)</span>
+<span class="lineNum">      36 </span>            : {
+<span class="lineNum">      37 </span>            :         FILE *fp;
+<span class="lineNum">      38 </span>            :         psl_ctx_t *psl;
+<span class="lineNum">      39 </span><span class="lineCov">       5476 :         char *in = (char *) malloc(size + 16);</span>
+<span class="lineNum">      40 </span>            : 
+<span class="lineNum">      41 </span><span class="lineCov">       5476 :         assert(in != NULL);</span>
+<span class="lineNum">      42 </span>            : 
+<span class="lineNum">      43 </span>            :         /* create a valid DAFSA input file */
+<span class="lineNum">      44 </span><span class="lineCov">       5476 :         memcpy(in, &quot;.DAFSA@PSL_0   \n&quot;, 16);</span>
+<span class="lineNum">      45 </span><span class="lineCov">       5476 :         memcpy(in + 16, data, size);</span>
+<span class="lineNum">      46 </span>            : 
+<span class="lineNum">      47 </span><span class="lineCov">       5476 :         fp = fmemopen(in, size + 16, &quot;r&quot;);</span>
+<span class="lineNum">      48 </span><span class="lineCov">       5476 :         assert(fp != NULL);</span>
+<span class="lineNum">      49 </span>            : 
+<span class="lineNum">      50 </span><span class="lineCov">       5476 :         psl = psl_load_fp(fp);</span>
+<span class="lineNum">      51 </span>            : 
+<span class="lineNum">      52 </span><span class="lineCov">       5476 :         psl_is_public_suffix(NULL, NULL);</span>
+<span class="lineNum">      53 </span><span class="lineCov">       5476 :         psl_is_public_suffix(psl, &quot;.ü.com&quot;);</span>
+<span class="lineNum">      54 </span><span class="lineCov">       5476 :         psl_suffix_wildcard_count(psl);</span>
+<span class="lineNum">      55 </span><span class="lineCov">       5476 :         psl_suffix_exception_count(psl);</span>
+<span class="lineNum">      56 </span><span class="lineCov">       5476 :         psl_suffix_count(psl);</span>
+<span class="lineNum">      57 </span>            : 
+<span class="lineNum">      58 </span><span class="lineCov">       5476 :         psl_free(psl);</span>
+<span class="lineNum">      59 </span><span class="lineCov">       5476 :         fclose(fp);</span>
+<span class="lineNum">      60 </span>            : 
+<span class="lineNum">      61 </span><span class="lineCov">       5476 :         psl = psl_latest(NULL);</span>
+<span class="lineNum">      62 </span><span class="lineCov">       5476 :         psl_free(psl);</span>
+<span class="lineNum">      63 </span>            : 
+<span class="lineNum">      64 </span><span class="lineCov">       5476 :         free(in);</span>
+<span class="lineNum">      65 </span>            : 
+<span class="lineNum">      66 </span><span class="lineCov">       5476 :         return 0;</span>
+<span class="lineNum">      67 </span>            : }
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>
