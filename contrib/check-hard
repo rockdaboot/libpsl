@@ -6,15 +6,14 @@
 set -e
 set -u
 
-CORES=$(grep -c ^processor /proc/cpuinfo 2> /dev/null || echo 0)
-if [ $CORES -lt 1 ]; then CORES=1; fi
+CORES=$(nproc)
 
 echo "Running: make distclean"
 make distclean > /dev/null || true
 
 # We define _GNU_SOURCE to avoid warnings with missing prototypes.
 # C89 does not know snprintf, strdup, strndup, popen, pclose
-CFLAGS="-std=gnu89 -pedantic -O2 -g -Wall -Wextra -Wstrict-prototypes -Wold-style-definition -Wwrite-strings -Wshadow -Wformat -Wformat-security -Wunreachable-code -Wstrict-prototypes -Wmissing-prototypes -Wold-style-definition"
+CFLAGS="-std=gnu89 -pedantic -g -Wall -Wextra -Wstrict-prototypes -Wold-style-definition -Wwrite-strings -Wshadow -Wformat -Wformat-security -Wunreachable-code -Wstrict-prototypes -Wmissing-prototypes -Wold-style-definition"
 
 CACHEFILE=$PWD/config_check.cache
 
@@ -42,14 +41,31 @@ for CC in gcc clang; do
   "--enable-runtime=libidn2 --enable-builtin=libidn2" \
   "--enable-runtime=libidn --enable-builtin=libidn" \
   "--disable-runtime --enable-builtin=libicu"; do
-    export DISTCHECK_CONFIGURE_FLAGS="-C --cache-file=$CACHEFILE $options --enable-asan --enable-ubsan"
+    export DISTCHECK_CONFIGURE_FLAGS="-q -C --cache-file=$CACHEFILE $options"
     if test "$CC" = "clang"; then
-      export "DISTCHECK_CONFIGURE_FLAGS=$DISTCHECK_CONFIGURE_FLAGS --enable-cfi"
+      echo
+      echo "  *** CC=$CC ./configure $DISTCHECK_CONFIGURE_FLAGS --enable-cfi"
+      ./configure $DISTCHECK_CONFIGURE_FLAGS --enable-cfi CFLAGS="$CFLAGS"
+      for xLCALL in C tr_TR.utf8; do
+        make -s clean
+        make -s check -j$CORES
+      done
     fi
-    echo
-    echo "  *** ./configure $DISTCHECK_CONFIGURE_FLAGS"
-    ./configure -q $DISTCHECK_CONFIGURE_FLAGS CFLAGS="$CFLAGS"
 
+    for flags in --enable-ubsan --enable-asan; do
+#      case "$flags" in *-asan) case $options in *libicu*) continue;; esac;; esac
+      echo
+      echo "  *** CC=$CC ./configure $DISTCHECK_CONFIGURE_FLAGS $flags"
+      ./configure $DISTCHECK_CONFIGURE_FLAGS $flags CFLAGS="$CFLAGS"
+      for xLCALL in C tr_TR.utf8; do
+        make -s clean
+        make -s check -j$CORES
+      done
+    done
+
+    echo
+    echo "  *** CC=$CC ./configure $DISTCHECK_CONFIGURE_FLAGS"
+    ./configure $DISTCHECK_CONFIGURE_FLAGS CFLAGS="$CFLAGS"
     for xVALGRIND in 0 1; do
       for xLCALL in C tr_TR.utf8; do
         export TESTS_ENVIRONMENT="LC_ALL=$xLCALL VALGRIND_TESTS=$xVALGRIND"
@@ -62,7 +78,10 @@ for CC in gcc clang; do
     unset TESTS_ENVIRONMENT
     export TESTS_ENVIRONMENT
     echo
-    echo "  *** make distcheck CFLAGS=$CFLAGS -j$CORES"
+    echo "  *** $CC: make distcheck CFLAGS=$CFLAGS -j$CORES"
+    ./configure $DISTCHECK_CONFIGURE_FLAGS CFLAGS="$CFLAGS"
+    make -s clean
+    make -s check -j$CORES
     make -s distcheck CFLAGS="$CFLAGS" -j$CORES
   done
 done
