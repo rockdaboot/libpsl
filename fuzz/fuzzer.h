@@ -22,8 +22,8 @@
  * This file is part of libpsl.
  */
 
-#include <stddef.h> // size_t
-#include <stdint.h> // uint8_t
+#include <stddef.h> /* size_t */
+#include <stdint.h> /* uint8_t */
 
 #ifdef __cplusplus
 extern "C"

@@ -40,7 +40,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
 	assert(in != NULL);
 
-	// create a valid DAFSA input file
+	/* create a valid DAFSA input file */
 	memcpy(in, ".DAFSA@PSL_0   \n", 16);
 	memcpy(in + 16, data, size);
 

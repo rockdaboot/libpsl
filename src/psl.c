@@ -689,7 +689,7 @@ static int _psl_idna_toASCII(_psl_idna_t *idna _UNUSED, const char *utf8, char *
 		u_strFromUTF8(utf16_src, countof(utf16_src_buf), &utf16_src_length, utf8, -1, &status);
 		if (!U_SUCCESS(status)) goto cleanup; /* UTF-8 to UTF-16 conversion failed */
 
-		if (utf16_src_length >= countof(utf16_src_buf)) {
+		if (utf16_src_length >= (int) countof(utf16_src_buf)) {
 			utf16_src = malloc((utf16_src_length + 1) * sizeof(UChar));
 			if (!utf16_src) goto cleanup;
 
@@ -705,7 +705,7 @@ static int _psl_idna_toASCII(_psl_idna_t *idna _UNUSED, const char *utf8, char *
 		u_strToUTF8(lookupname, sizeof(lookupname_buf), &bytes_written, utf16_dst, utf16_dst_length, &status);
 		if (!U_SUCCESS(status)) goto cleanup; /* UTF-16 to UTF-8 conversion failed */
 
-		if (bytes_written >= sizeof(lookupname_buf)) {
+		if (bytes_written >= (int) sizeof(lookupname_buf)) {
 			lookupname = malloc(bytes_written + 1);
 			if (!lookupname) goto cleanup;
 
@@ -1194,7 +1194,7 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 		if ((m = realloc(psl->dafsa, len)))
 			psl->dafsa = m;
 		else if (!len)
-			psl->dafsa = NULL; // realloc() just free'd psl->dafsa
+			psl->dafsa = NULL; /* realloc() just free'd psl->dafsa */
 
 		psl->dafsa_size = len;
 		psl->utf8 = !!GetUtfMode(psl->dafsa, len);
