@@ -10,7 +10,7 @@ compiler:
 branches:
   only:
     - master
-    - tmp-default-libidn2
+    - coveralls-text
 
 env:
   - RUNTIME=libicu
