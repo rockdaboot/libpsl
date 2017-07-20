@@ -1,5 +1,18 @@
 Copyright (C) 2014-2017 Tim Rühsen
 
+20.07.2017 Release V0.18.0
+  * Fix order of files in psl_latest()
+  * Add fuzzing architecture
+  * Fix memleak in _psl_is_public_suffix()
+  * Add configure option --enable-asan (Address sanitizer)
+  * Add configure option --enable-usan (Undefined sanitizer)
+  * Add configure option --enable-cfi (Control Flow Integrity)
+  * Fix finding libidn2 for static builds
+  * Fix use of uninitialized stack value
+  * Fix buffer overflow in libicu build
+  * Use libidn2 as default for builds (former libicu)
+  * Add pkg-config support for libidn and libidn2
+
 16.01.2017 Release V0.17.0
   * Use TR46 non-transitional for IDNA (libicu, libidn2 >= 0.14)
   * Fix coverage upload from TravisCI to Coveralls
