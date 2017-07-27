@@ -109,6 +109,7 @@ AC_ARG_ENABLE([asan],
     if test "$enableval" = yes; then
       asan=yes
       CFLAGS=$CFLAGS" -fsanitize=address -fno-omit-frame-pointer"
+      AX_CHECK_COMPILE_FLAG([-fsanitize-address-use-after-scope], [CFLAGS="$CFLAGS -fsanitize-address-use-after-scope"])
     fi
   ])
 
