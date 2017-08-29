@@ -79,6 +79,10 @@ typedef struct _psl_ctx_st psl_ctx_t;
 void
 	psl_free(psl_ctx_t *psl);
 
+/* frees memory allocated by libpsl routines */
+void
+	psl_free_string(char *str);
+
 /* loads PSL data from file */
 psl_ctx_t *
 	psl_load_file(const char *fname);
