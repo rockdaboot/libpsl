@@ -182,7 +182,7 @@ int main(int argc, const char *const *argv)
 				}
 
 				if (rc == PSL_SUCCESS)
-					free(lower);
+					psl_free_string(lower);
 			}
 
 			psl_free(psl);

@@ -1614,6 +1614,21 @@ int psl_is_cookie_domain_acceptable(const psl_ctx_t *psl, const char *hostname, 
 }
 
 /**
+ * psl_free_string:
+ * @str: pointer to lowercase string returned by psl_str_to_utf8lower()
+ *
+ * This function free()'s the memory allocated by psl_str_to_utf8lower() when
+ * returning a lowercase string
+ *
+ * Since: 0.19
+ */
+void psl_free_string(char *str)
+{
+	if (str)
+		free(str);
+}
+
+/**
  * psl_str_to_utf8lower:
  * @str: string to convert
  * @encoding: charset encoding of @str, e.g. 'iso-8859-1' or %NULL

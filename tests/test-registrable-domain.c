@@ -81,7 +81,7 @@ static void testx(const psl_ctx_t *psl, const char *domain, const char *encoding
 			   domain ? domain : "NULL", result ? result : "NULL", expected_result ? expected_result : "NULL");
 	}
 
-	free(lower);
+	psl_free_string(lower);
 }
 
 static void test(const psl_ctx_t *psl, const char *domain, const char *expected_result)

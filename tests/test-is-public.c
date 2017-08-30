@@ -133,16 +133,16 @@ static void test_psl(void)
 		char *lower = NULL;
 
 		psl_str_to_utf8lower("www.example.com", NULL, "de", &lower);
-		free(lower); lower = NULL;
+		psl_free_string(lower); lower = NULL;
 
 		psl_str_to_utf8lower("\374bel.de", NULL, "de", &lower);
-		free(lower); lower = NULL;
+		psl_free_string(lower); lower = NULL;
 
 		psl_str_to_utf8lower("\374bel.de", "iso-8859-1", NULL, &lower);
-		free(lower); lower = NULL;
+		psl_free_string(lower); lower = NULL;
 
 		psl_str_to_utf8lower(NULL, "utf-8", "en", &lower);
-		free(lower); lower = NULL;
+		psl_free_string(lower); lower = NULL;
 	}
 
 	psl_get_version();
