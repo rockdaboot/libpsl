@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE.chromium file.
@@ -685,7 +685,7 @@ def main():
     psl_nexceptions = 0
     psl_nwildcards = 0
 
-    with open(sys.argv[-2], 'r') as infile, open(sys.argv[-1], 'wb') as outfile:
+    with open(sys.argv[-2], 'r', encoding="utf-8") as infile, open(sys.argv[-1], 'wb') as outfile:
       outfile.write(converter(parser(infile, utf_mode, codecs), utf_mode, codecs))
 
   return 0
