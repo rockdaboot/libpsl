@@ -685,7 +685,7 @@ def main():
     psl_nexceptions = 0
     psl_nwildcards = 0
 
-    with open(sys.argv[-2], 'r') as infile, open(sys.argv[-1], 'wb') as outfile:
+    with open(sys.argv[-2], 'r', **codecs) as infile, open(sys.argv[-1], 'wb') as outfile:
       outfile.write(converter(parser(infile, utf_mode, codecs), utf_mode, codecs))
 
   return 0
