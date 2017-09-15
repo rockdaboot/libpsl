@@ -32,4 +32,5 @@ psl_dist_filename
 psl_get_version
 psl_check_version_number
 psl_str_to_utf8lower
+psl_free_string
 </SECTION>
