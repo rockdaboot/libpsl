@@ -1346,7 +1346,10 @@ const psl_ctx_t *psl_builtin(void)
  * This function returns number of public suffixes maintained by @psl.
  * The number of exceptions within the Public Suffix List are not included.
  *
- * Returns: Number of public suffixes entries in PSL context.
+ * If the information is not available, the return value is -1 (since 0.19).
+ * This is the case with DAFSA blobs or if @psl is NULL.
+ *
+ * Returns: Number of public suffixes entries in PSL context or -1 if this information is not available.
  *
  * Since: 0.1
  */
@@ -1355,9 +1358,9 @@ int psl_suffix_count(const psl_ctx_t *psl)
 	if (psl == &_builtin_psl)
 		return _psl_nsuffixes;
 	else if (psl)
-		return psl->nsuffixes;
+		return psl->dafsa ? -1 : psl->nsuffixes;
 	else
-		return 0;
+		return -1;
 }
 
 /**
@@ -1366,7 +1369,10 @@ int psl_suffix_count(const psl_ctx_t *psl)
  *
  * This function returns number of public suffix exceptions maintained by @psl.
  *
- * Returns: Number of public suffix exceptions in PSL context.
+ * If the information is not available, the return value is -1 (since 0.19).
+ * This is the case with DAFSA blobs or if @psl is NULL.
+ *
+ * Returns: Number of public suffix exceptions in PSL context or -1 if this information is not available.
  *
  * Since: 0.1
  */
@@ -1375,9 +1381,9 @@ int psl_suffix_exception_count(const psl_ctx_t *psl)
 	if (psl == &_builtin_psl)
 		return _psl_nexceptions;
 	else if (psl)
-		return psl->nexceptions;
+		return psl->dafsa ? -1 : psl->nexceptions;
 	else
-		return 0;
+		return -1;
 }
 
 /**
@@ -1386,7 +1392,10 @@ int psl_suffix_exception_count(const psl_ctx_t *psl)
  *
  * This function returns number of public suffix wildcards maintained by @psl.
  *
- * Returns: Number of public suffix wildcards in PSL context.
+ * If the information is not available, the return value is -1 (since 0.19).
+ * This is the case with DAFSA blobs or if @psl is NULL.
+ *
+ * Returns: Number of public suffix wildcards in PSL context or -1 if this information is not available.
  *
  * Since: 0.10.0
  */
@@ -1395,9 +1404,9 @@ int psl_suffix_wildcard_count(const psl_ctx_t *psl)
 	if (psl == &_builtin_psl)
 		return _psl_nwildcards;
 	else if (psl)
-		return psl->nwildcards;
+		return psl->dafsa ? -1 : psl->nwildcards;
 	else
-		return 0;
+		return -1;
 }
 
 /**
