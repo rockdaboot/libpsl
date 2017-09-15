@@ -210,9 +210,23 @@ int main(int argc, const char *const *argv)
 		printf("dist filename: %s\n", psl_dist_filename());
 
 		if (psl && psl != psl_builtin()) {
-			printf("suffixes: %d\n", psl_suffix_count(psl));
-			printf("exceptions: %d\n", psl_suffix_exception_count(psl));
-			printf("wildcards: %d\n", psl_suffix_wildcard_count(psl));
+			static char not_avail[] = "- information not available -";
+			int n;
+
+			if ((n = psl_suffix_count(psl)) >= 0)
+				printf("suffixes: %d\n", n);
+			else
+				printf("suffixes: %s\n", not_avail);
+
+			if ((n = psl_suffix_exception_count(psl)) >= 0)
+				printf("exceptions: %d\n", n);
+			else
+				printf("exceptions: %s\n", not_avail);
+
+			if ((n = psl_suffix_wildcard_count(psl)) >= 0)
+				printf("wildcards: %d\n", n);
+			else
+				printf("wildcards: %s\n", not_avail);
 		}
 
 		psl_free(psl);
