@@ -29,7 +29,7 @@ static const char multibyte_length_table[16] = {
 };
 
 
-/**
+/*
  * Get length of multibyte character sequence starting at a given byte.
  * Returns zero if the byte is not a valid leading byte in UTF-8.
  */
@@ -37,7 +37,7 @@ static int GetMultibyteLength(char c) {
 	return multibyte_length_table[((unsigned char)c) >> 4];
 }
 
-/**
+/*
  * Moves pointers one byte forward.
  */
 static void NextPos(const unsigned char** pos,
