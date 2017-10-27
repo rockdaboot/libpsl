@@ -514,12 +514,12 @@ def sha1_file(name):
 def to_cxx_plus(data, codecs):
   """Generates C++ code from a word list plus some variable assignments as needed by libpsl"""
   text = to_cxx(data, codecs)
-  text += b'static time_t _psl_file_time = %d;\n' % os.stat(psl_input_file).st_mtime
-  text += b'static int _psl_nsuffixes = %d;\n' % psl_nsuffixes
-  text += b'static int _psl_nexceptions = %d;\n' % psl_nexceptions
-  text += b'static int _psl_nwildcards = %d;\n' % psl_nwildcards
-  text += b'static const char _psl_sha1_checksum[] = "%s";\n' % bytes(sha1_file(psl_input_file), **codecs)
-  text += b'static const char _psl_filename[] = "%s";\n' % bytes(psl_input_file, **codecs)
+  text += b'static time_t psl_file_time = %d;\n' % os.stat(psl_input_file).st_mtime
+  text += b'static int psl_nsuffixes = %d;\n' % psl_nsuffixes
+  text += b'static int psl_nexceptions = %d;\n' % psl_nexceptions
+  text += b'static int psl_nwildcards = %d;\n' % psl_nwildcards
+  text += b'static const char psl_sha1_checksum[] = "%s";\n' % bytes(sha1_file(psl_input_file), **codecs)
+  text += b'static const char psl_filename[] = "%s";\n' % bytes(psl_input_file, **codecs)
   return text
 
 def words_to_whatever(words, converter, utf_mode, codecs):
