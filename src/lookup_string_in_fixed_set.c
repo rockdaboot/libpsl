@@ -8,15 +8,15 @@
 #include <stddef.h>
 
 #if defined(__GNUC__) && defined(__GNUC_MINOR__)
-#       define _GCC_VERSION_AT_LEAST(major, minor) ((__GNUC__ > (major)) || (__GNUC__ == (major) && __GNUC_MINOR__ >= (minor)))
+#       define GCC_VERSION_AT_LEAST(major, minor) ((__GNUC__ > (major)) || (__GNUC__ == (major) && __GNUC_MINOR__ >= (minor)))
 #else
-#       define _GCC_VERSION_AT_LEAST(major, minor) 0
+#       define GCC_VERSION_AT_LEAST(major, minor) 0
 #endif
 
-#if _GCC_VERSION_AT_LEAST(4,0)
-#  define _HIDDEN __attribute__ ((visibility ("hidden")))
+#if GCC_VERSION_AT_LEAST(4,0)
+#  define HIDDEN __attribute__ ((visibility ("hidden")))
 #else
-#  define _HIDDEN
+#  define HIDDEN
 #endif
 
 #define CHECK_LT(a, b) if ((a) >= b) return 0
@@ -203,9 +203,9 @@ static int GetReturnValue(const unsigned char* offset,
  */
 
 /* prototype to skip warning with -Wmissing-prototypes */
-int _HIDDEN LookupStringInFixedSet(const unsigned char*, size_t,const char*, size_t);
+int HIDDEN LookupStringInFixedSet(const unsigned char*, size_t,const char*, size_t);
 
-int _HIDDEN LookupStringInFixedSet(const unsigned char* graph,
+int HIDDEN LookupStringInFixedSet(const unsigned char* graph,
 	size_t length,
 	const char* key,
 	size_t key_length)
@@ -277,9 +277,9 @@ int _HIDDEN LookupStringInFixedSet(const unsigned char* graph,
 }
 
 /* prototype to skip warning with -Wmissing-prototypes */
-int _HIDDEN GetUtfMode(const unsigned char *graph, size_t length);
+int HIDDEN GetUtfMode(const unsigned char *graph, size_t length);
 
-int _HIDDEN GetUtfMode(const unsigned char *graph, size_t length)
+int HIDDEN GetUtfMode(const unsigned char *graph, size_t length)
 {
 	return length > 0 && graph[length - 1] < 0x80;
 }
