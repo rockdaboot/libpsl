@@ -39,7 +39,7 @@
 #endif
 
 #if GCC_VERSION_AT_LEAST(2,95)
-#  define UNUSED _attribute__ ((unused))
+#  define UNUSED __attribute__ ((unused))
 #else
 #  define UNUSED
 #endif
@@ -64,11 +64,18 @@
 #include <time.h>
 #include <errno.h>
 #include <limits.h> /* for UINT_MAX */
+#include <stdint.h> 
 #include <langinfo.h>
 #include <arpa/inet.h>
 #ifdef HAVE_ALLOCA_H
 #	include <alloca.h>
 #endif
+
+/* stat, fstat */
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 
 #ifdef WITH_LIBICU
 #	include <unicode/uversion.h>
@@ -177,9 +184,9 @@ static const psl_ctx_t
 	builtin_psl;
 
 #ifdef PSL_DISTFILE
-static const char psl_dist_filename[] = PSL_DISTFILE;
+static const char psl_dist_filename_string[] = PSL_DISTFILE;
 #else
-static const char psl_dist_filename[] = "";
+static const char psl_dist_filename_string[] = "";
 #endif
 
 static psl_vector_t *vector_alloc(int max, int (*cmp)(const psl_entry_t **, const psl_entry_t **))
@@ -818,7 +825,7 @@ static void add_punycode_if_needed(psl_idna_t *idna, psl_vector_t *v, psl_entry_
 int LookupStringInFixedSet(const unsigned char* graph, size_t length, const char* key, size_t key_length);
 int GetUtfMode(const unsigned char *graph, size_t length);
 
-static int psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int type)
+static int psl_is_public_suffix_internal(const psl_ctx_t *psl, const char *domain, int type)
 {
 	psl_entry_t suffix;
 	const char *p;
@@ -989,7 +996,7 @@ int psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
 	if (!psl || !domain)
 		return 1;
 
-	return psl_is_public_suffix(psl, domain, PSL_TYPE_ANY);
+	return psl_is_public_suffix_internal(psl, domain, PSL_TYPE_ANY);
 }
 
 /**
@@ -1020,7 +1027,7 @@ int psl_is_public_suffix2(const psl_ctx_t *psl, const char *domain, int type)
 	if (!psl || !domain)
 		return 1;
 
-	return psl_is_public_suffix(psl, domain, type);
+	return psl_is_public_suffix_internal(psl, domain, type);
 }
 
 /**
@@ -1053,7 +1060,7 @@ const char *psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain)
 	 *   'forgot.his.name' and 'name' are in the PSL while 'his.name' is not.
 	 */
 
-	while (!psl_is_public_suffix(psl, domain, 0)) {
+	while (!psl_is_public_suffix_internal(psl, domain, 0)) {
 		if ((domain = strchr(domain, '.')))
 			domain++;
 		else
@@ -1095,12 +1102,12 @@ const char *psl_registrable_domain(const psl_ctx_t *psl, const char *domain)
 	 *   'forgot.his.name' and 'name' are in the PSL while 'his.name' is not.
 	 */
 
-	while (!psl_is_public_suffix(psl, domain, 0)) {
+	while (!psl_is_public_suffix_internal(psl, domain, 0)) {
 		if ((p = strchr(domain, '.'))) {
 			regdom = domain;
 			domain = p + 1;
 		} else
-			break; /* prevent endless loop if psl_is_public_suffix() is broken. */
+			break; /* prevent endless loop if psl_is_public_suffix_internal() is broken. */
 	}
 
 	return regdom;
@@ -1170,35 +1177,19 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 
 	if (is_dafsa) {
 		void *m;
-		size_t size = 65536, n, len = 0;
 		int version = atoi(buf + 11);
+		struct stat st;
 
 		if (version != 0)
 			goto fail;
 
-		if (!(psl->dafsa = malloc(size)))
-			goto fail;
+		if (fstat(fileno(fp), &st) != 0 ||
+			(uintmax_t)st.st_size >= (uintmax_t)SIZE_MAX ||
+			(psl->dafsa = malloc(st.st_size)) == NULL ||
+			fread(psl->dafsa, psl->dafsa_size = st.st_size - 16, 1, fp) != 1)
+				goto fail;
 
-		memcpy(psl->dafsa, buf, len);
-
-		while ((n = fread(psl->dafsa + len, 1, size - len, fp)) > 0) {
-			len += n;
-			if (len >= size) {
-				if (!(m = realloc(psl->dafsa, size *= 2)))
-					goto fail;
-				psl->dafsa = m;
-			}
-		}
-
-		/* release unused memory */
-		if ((m = realloc(psl->dafsa, len)))
-			psl->dafsa = m;
-		else if (!len)
-			psl->dafsa = NULL; /* realloc() just free'd psl->dafsa */
-
-		psl->dafsa_size = len;
-		psl->utf8 = !!GetUtfMode(psl->dafsa, len);
-
+		psl->utf8 = !!GetUtfMode(psl->dafsa, psl->dafsa_size);
 		return psl;
 	}
 
@@ -1495,7 +1486,7 @@ int psl_builtin_outdated(void)
  */
 const char *psl_dist_filename(void)
 {
-	return psl_dist_filename;
+	return psl_dist_filename_string;
 }
 
 /**
@@ -1886,7 +1877,7 @@ psl_ctx_t *psl_latest(const char *fname)
 
 	/* create array of PSL files reverse sorted by mtime (latest first) */
 	ntimes = insert_file(fname, psl_fname, psl_mtime, 0);
-	ntimes = insert_file(psl_dist_filename, psl_fname, psl_mtime, ntimes);
+	ntimes = insert_file(psl_dist_filename_string, psl_fname, psl_mtime, ntimes);
 	ntimes = insert_file(psl_filename, psl_fname, psl_mtime, ntimes);
 
 	/* load PSL data from the latest file, falling back to the second recent, ... */
