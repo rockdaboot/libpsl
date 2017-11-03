@@ -549,7 +549,7 @@ static ssize_t _utf8_to_utf32(const char *in, size_t inlen, punycode_uint *out, 
 
 static int _mem_is_ascii(const char *s, size_t n)
 {
-	while (n--)
+	for (; n; n--) /* 'while(n--)' generates unsigned integer overflow on n = 0 */
 		if (*((unsigned char *)s++) >= 128)
 			return 0;
 
