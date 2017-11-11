@@ -67,10 +67,10 @@ static void test_all_from(const char *dirname)
 			uint8_t *data = malloc(st.st_size);
 			ssize_t n;
 			if ((n = read(fd, data, st.st_size)) == st.st_size) {
-				printf("testing %zu bytes from '%s'\n", st.st_size, fname);
+				printf("testing %llu bytes from '%s'\n", (unsigned long long) st.st_size, fname);
 				LLVMFuzzerTestOneInput(data, st.st_size);
 			} else
-				fprintf(stderr, "Failed to read %zu bytes from %s (%d), got %zd\n", st.st_size, fname, errno, n);
+				fprintf(stderr, "Failed to read %llu bytes from %s (%d), got %zd\n", (unsigned long long) st.st_size, fname, errno, n);
 
 			free(data);
 			close(fd);
