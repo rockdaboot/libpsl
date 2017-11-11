@@ -38,6 +38,9 @@
 #ifdef TEST_RUN
 
 #include <dirent.h>
+#ifdef HAVE_ALLOCA_H
+#  include <alloca.h>
+#endif
 
 static void test_all_from(const char *dirname)
 {
