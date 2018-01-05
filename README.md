@@ -11,7 +11,7 @@ Solaris OpenCSW [![Build Status Solaris amd64](https://buildfarm.opencsw.org/bui
 libpsl - C library to handle the Public Suffix List
 ===================================================
 
-A *Public Suffix List* is a collection of *[Brand Top Level Domains](https://icannwiki.org/Brand_TLD)* which allows users to register their own top level domain. The brand domains exist at the same level as ICANN's *Global Top Level Domains (gTLDs)*. Brand TLDs are sometimes referred to as Vanity Domains.
+A *Public Suffix List* is a collection of Top Level Domains (TLDs) suffixes. TLDs include *Global Top Level Domains* (gTLDs) like `.com` and `.net`; *Country Top Level Domains* (ccTLDs) like `.de` and `.cn`; and *[Brand Top Level Domains](https://icannwiki.org/Brand_TLD)* like `.apple` and `.google`. Brand TLDs allows users to register their own top level domain that exist at the same level as ICANN's gTLDs. Brand TLDs are sometimes referred to as Vanity Domains.
 
 Browsers, web clients and other user agents can use a public suffix list to:
 
