@@ -11,9 +11,14 @@ Solaris OpenCSW [![Build Status Solaris amd64](https://buildfarm.opencsw.org/bui
 libpsl - C library to handle the Public Suffix List
 ===================================================
 
-A "public suffix" is a domain name under which Internet users can directly register own names.
+A *Public Suffix List* is a collection of Top Level Domains (TLDs) suffixes.
+TLDs include *Global Top Level Domains* (gTLDs) like `.com` and `.net`;
+*Country Top Level Domains* (ccTLDs) like `.de` and `.cn`;
+and *[Brand Top Level Domains](https://icannwiki.org/Brand_TLD)* like `.apple` and `.google`.
+Brand TLDs allows users to register their own top level domain that exist at the same level as ICANN's gTLDs.
+Brand TLDs are sometimes referred to as Vanity Domains.
 
-Browsers and other web clients can use it to
+Browsers, web clients and other user agents can use a public suffix list to:
 
 - avoid privacy-leaking "supercookies"
 - avoid privacy-leaking "super domain" certificates ([see post from Jeffry Walton](https://lists.gnu.org/archive/html/bug-wget/2014-03/msg00093.html))
