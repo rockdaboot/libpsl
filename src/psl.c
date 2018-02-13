@@ -1049,6 +1049,19 @@ const char *psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain)
 		return NULL;
 
 	/*
+	 * In the main loop we introduce a O(N^2) behavior to avoid code duplication.
+	 * To avoid nasty CPU hogging, we limit the lookup to max. 8 domain labels to the right.
+	 */
+
+	int nlabels = 0;
+	for (const char *p = domain + strlen(domain) - 1; p >= domain; p--) {
+		if (*p == '.' && ++nlabels > 8) {
+			domain = p + 1;
+			break;
+		}
+	}
+
+	/*
 	 *  We check from left to right to catch special PSL entries like 'forgot.his.name':
 	 *   'forgot.his.name' and 'name' are in the PSL while 'his.name' is not.
 	 */
@@ -1089,6 +1102,19 @@ const char *psl_registrable_domain(const psl_ctx_t *psl, const char *domain)
 
 	if (!psl || !domain || *domain == '.')
 		return NULL;
+
+	/*
+	 * In the main loop we introduce a O(N^2) behavior to avoid code duplication.
+	 * To avoid nasty CPU hogging, we limit the lookup to max. 8 domain labels to the right.
+	 */
+
+	int nlabels = 0;
+	for (p = domain + strlen(domain) - 1; p >= domain; p--) {
+		if (*p == '.' && ++nlabels > 8) {
+			domain = p + 1;
+			break;
+		}
+	}
 
 	/*
 	 *  We check from left to right to catch special PSL entries like 'forgot.his.name':

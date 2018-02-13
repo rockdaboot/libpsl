@@ -40,9 +40,13 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
 	static int first_run = 1;
 	psl_ctx_t *psl;
-	char *domain = (char *) malloc(size + 1), *res;
+	char *domain, *res;
 	int rc;
 
+	if (size > 64 * 1024 - 1)
+		return 0;
+
+	domain = (char *) malloc(size + 1);
 	assert(domain != NULL);
 
 	/* 0 terminate */
