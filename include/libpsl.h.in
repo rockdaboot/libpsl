@@ -45,9 +45,10 @@ extern "C" {
 #endif
 
 /* types for psl_is_public_suffix2() */
-#define PSL_TYPE_ICANN   (1<<0)
-#define PSL_TYPE_PRIVATE (1<<1)
-#define PSL_TYPE_ANY     (PSL_TYPE_ICANN | PSL_TYPE_PRIVATE)
+#define PSL_TYPE_ICANN        (1<<0)
+#define PSL_TYPE_PRIVATE      (1<<1)
+#define PSL_TYPE_NO_STAR_RULE (1<<2)
+#define PSL_TYPE_ANY          (PSL_TYPE_ICANN | PSL_TYPE_PRIVATE)
 
 /**
  * psl_error_t:
