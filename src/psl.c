@@ -839,10 +839,12 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int t
 	}
 
 	if (suffix.nlabels == 1) {
-		/* TLD, this is the prevailing '*' match.
-		 * We don't currently support exception TLDs (TLDs that are not a public suffix)
+		/* TLD, this is the prevailing '*' match. If type excludes the '*' rule, continue.
 		 */
-		return 1;
+		if (type & PSL_TYPE_NO_STAR_RULE)
+			type &= ~PSL_TYPE_NO_STAR_RULE;
+		else
+			return 1;
 	}
 
 	if (psl->utf8 || psl == &_builtin_psl)
@@ -1002,7 +1004,7 @@ int psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
  * [Mozilla Public Suffix List](https://publicsuffix.org).
  *
  * @type specifies the PSL section where to perform the lookup. Valid values are
- * %PSL_TYPE_PRIVATE, %PSL_TYPE_ICANN and %PSL_TYPE_ANY.
+ * %PSL_TYPE_PRIVATE, %PSL_TYPE_ICANN, %PSL_TYPE_NO_STAR_RULE, and %PSL_TYPE_ANY.
  *
  * International @domain names have to be either in UTF-8 (lowercase + NFKC) or in ASCII/ACE format (punycode).
  * Other encodings likely result in incorrect return values.
