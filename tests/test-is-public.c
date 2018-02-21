@@ -56,32 +56,34 @@ static void test_psl(void)
 			*domain;
 		int
 			result;
+		int
+		    no_star_result;
 	} test_data[] = {
-		{ "www.example.com", 0 },
-		{ "com.ar", 1 },
-		{ "www.com.ar", 0 },
-		{ "cc.ar.us", 1 },
-		{ ".cc.ar.us", 1 },
-		{ "www.cc.ar.us", 0 },
-		{ "www.ck", 0 }, /* exception from *.ck */
-		{ "abc.www.ck", 0 },
-		{ "xxx.ck", 1 },
-		{ "www.xxx.ck", 0 },
-		{ "\345\225\206\346\240\207", 1 }, /* xn--czr694b or ?? */
-		{ "www.\345\225\206\346\240\207", 0 },
+		{ "www.example.com", 0, 0 },
+		{ "com.ar", 1 , 1},
+		{ "www.com.ar", 0, 0 },
+		{ "cc.ar.us", 1, 1 },
+		{ ".cc.ar.us", 1, 1 },
+		{ "www.cc.ar.us", 0, 0 },
+		{ "www.ck", 0, 0 }, /* exception from *.ck */
+		{ "abc.www.ck", 0, 0 },
+		{ "xxx.ck", 1, 1 },
+		{ "www.xxx.ck", 0, 0 },
+		{ "\345\225\206\346\240\207", 1, 1 }, /* xn--czr694b or ?? */
+		{ "www.\345\225\206\346\240\207", 0, 0 },
 		/* some special test follow ('name' and 'forgot.his.name' are public, but e.g. his.name is not) */
-		{ "name", 1 },
-		{ ".name", 1 },
-		{ "his.name", 0 },
-		{ ".his.name", 0 },
-		{ "forgot.his.name", 1 },
-		{ ".forgot.his.name", 1 },
-		{ "whoever.his.name", 0 },
-		{ "whoever.forgot.his.name", 0 },
-		{ ".", 1 }, /* special case */
-		{ "", 1 },  /* special case */
-		{ NULL, 1 },  /* special case */
-		{ "adfhoweirh", 1 }, /* unknown TLD */
+		{ "name", 1, 1 },
+		{ ".name", 1, 1 },
+		{ "his.name", 0, 0 },
+		{ ".his.name", 0, 0 },
+		{ "forgot.his.name", 1, 1 },
+		{ ".forgot.his.name", 1, 1 },
+		{ "whoever.his.name", 0, 0 },
+		{ "whoever.forgot.his.name", 0, 0},
+		{ ".", 1, 0 }, /* special case */
+		{ "", 1, 0 },  /* special case */
+		{ NULL, 1, 1 },  /* special case */
+		{ "adfhoweirh", 1, 0 }, /* unknown TLD */
 	};
 	unsigned it;
 	int result, ver;
@@ -100,6 +102,18 @@ static void test_psl(void)
 		} else {
 			failed++;
 			printf("psl_is_public_suffix(%s)=%d (expected %d)\n", t->domain, result, t->result);
+		}
+	}
+
+	for (it = 0; it < countof(test_data); it++) {
+		const struct test_data *t = &test_data[it];
+		result = psl_is_public_suffix2(psl, t->domain, PSL_TYPE_ANY|PSL_TYPE_NO_STAR_RULE);
+
+		if (result == t->no_star_result) {
+			ok++;
+		} else {
+			failed++;
+			printf("psl_is_public_suffix2(%s, NO_STAR_RULE)=%d (expected %d)\n", t->domain, result, t->no_star_result);
 		}
 	}
 
