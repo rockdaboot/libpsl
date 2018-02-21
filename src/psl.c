@@ -1054,7 +1054,8 @@ const char *psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain)
 	 */
 
 	int nlabels = 0;
-	for (const char *p = domain + strlen(domain) - 1; p >= domain; p--) {
+	const char *p;
+	for (p = domain + strlen(domain) - 1; p >= domain; p--) {
 		if (*p == '.' && ++nlabels > 8) {
 			domain = p + 1;
 			break;
