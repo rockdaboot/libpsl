@@ -1278,8 +1278,6 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 			psl->nwildcards++;
 			psl->nsuffixes++;
 		} else {
-			if (!strchr(p, '.'))
-				continue; /* we do not need an explicit plain TLD rule, already covered by implicit '*' rule */
 			suffix.flags = _PSL_FLAG_PLAIN | type;
 			psl->nsuffixes++;
 		}
@@ -1895,7 +1893,7 @@ static int _insert_file(const char *fname, const char **psl_fname, time_t *psl_m
  * - location specified during built-time (filename from ./configure --with-psl-distfile)
  * - built-in PSL data (generated from ./configure --with-psl-file)
  * - location of built-in data (filename from ./configure --with-psl-file)
- * 
+ *
  * If none of the above is available, the function returns %NULL.
  *
  * To free the allocated resources, call psl_free().

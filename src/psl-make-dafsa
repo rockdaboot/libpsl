@@ -586,8 +586,6 @@ def parse_psl(infile, utf_mode, codecs):
       flags = PSL_FLAG_WILDCARD | PSL_FLAG_PLAIN | section
       line = line[2:]
     else:
-      if not b'.' in line:
-        continue # we do not need an explicit plain TLD rule, already covered by implicit '*' rule
       psl_nsuffixes += 1
       flags = PSL_FLAG_PLAIN | section
 
