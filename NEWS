@@ -1,4 +1,9 @@
-Copyright (C) 2014-2017 Tim Rühsen
+Copyright (C) 2014-2018 Tim Rühsen
+
+22.02.2018 Release V0.20.0
+  * Remove hard-coded gcc flag in Makefile.am
+  * Prevent excessive CPU cycles on large inputs
+  * New flag PSL_TYPE_NO_STAR_RULE to skip star rule
 
 09.11.2017 Release V0.19.1
   * Add the forgotten commit with NEWS and configure.ac
