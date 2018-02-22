@@ -58,6 +58,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	psl_is_public_suffix(psl, domain);
 	psl_is_public_suffix2(psl, domain, PSL_TYPE_PRIVATE);
 	psl_is_public_suffix2(psl, domain, PSL_TYPE_ICANN);
+	psl_is_public_suffix2(psl, domain, PSL_TYPE_NO_STAR_RULE);
+	psl_is_public_suffix2(psl, domain, PSL_TYPE_NO_STAR_RULE|PSL_TYPE_ANY);
 	psl_unregistrable_domain(psl, domain);
 	psl_registrable_domain(psl, domain);
 
