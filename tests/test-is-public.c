@@ -84,6 +84,9 @@ static void test_psl(void)
 		{ "", 1, 0 },  /* special case */
 		{ NULL, 1, 1 },  /* special case */
 		{ "adfhoweirh", 1, 0 }, /* unknown TLD */
+		{ "compute.amazonaws.com", 1, 1 }, /* special rule *.compute.amazonaws.com */
+		{ "y.compute.amazonaws.com", 1, 1 },
+		{ "x.y.compute.amazonaws.com", 0, 0 },
 	};
 	unsigned it;
 	int result, ver;

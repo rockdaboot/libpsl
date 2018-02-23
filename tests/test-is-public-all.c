@@ -54,77 +54,84 @@ static int _isspace_ascii(const char c)
 	return c == ' ' || c == '\t' || c == '\r' || c == '\n';
 }
 
+static const char *_type_string(int type)
+{
+	switch (type) {
+	case PSL_TYPE_ANY: return "PSL_TYPE_ANY";
+	case PSL_TYPE_PRIVATE: return "PSL_TYPE_PRIVATE";
+	case PSL_TYPE_ICANN: return "PSL_TYPE_ICANN";
+	case PSL_TYPE_ANY|PSL_TYPE_NO_STAR_RULE: return "PSL_TYPE_ANY|PSL_TYPE_NO_STAR_RULE";
+	case PSL_TYPE_PRIVATE|PSL_TYPE_NO_STAR_RULE: return "PSL_TYPE_PRIVATE|PSL_TYPE_NO_STAR_RULE";
+	case PSL_TYPE_ICANN|PSL_TYPE_NO_STAR_RULE: return "PSL_TYPE_ICANN|PSL_TYPE_NO_STAR_RULE";
+	default: return "Unsupported type";
+	}
+}
+
+static void test_ps(const psl_ctx_t *psl, const char *domain, int type, int expected)
+{
+	int result;
+
+	if ((result = psl_is_public_suffix2(psl, domain, type)) != expected) {
+		failed++;
+		printf("psl_is_public_suffix2(%s, %s)=%d (expected %d)\n", domain, _type_string(type), result, expected);
+	} else ok++;
+}
+
+/* section: either PSL_TYPE_PRIVATE or PSL_TYPE_ICANN */
+static void test_type_any(const psl_ctx_t *psl, const char *domain, int type, int expected)
+{
+	int result;
+	int wildcard = (*domain == '.');
+	int tld = !(strchr(domain + wildcard, '.'));
+
+	test_ps(psl, domain, type, expected);
+	test_ps(psl, domain, type|PSL_TYPE_NO_STAR_RULE, expected);
+	test_ps(psl, domain, PSL_TYPE_ANY, expected);
+	test_ps(psl, domain, PSL_TYPE_ANY|PSL_TYPE_NO_STAR_RULE, expected);
+
+	if (type == PSL_TYPE_PRIVATE) {
+		if (tld) {
+			test_ps(psl, domain, PSL_TYPE_ICANN, 1);
+			test_ps(psl, domain, PSL_TYPE_ICANN|PSL_TYPE_NO_STAR_RULE, 0);
+		} else {
+			test_ps(psl, domain, PSL_TYPE_ICANN, 0);
+			test_ps(psl, domain, PSL_TYPE_ICANN|PSL_TYPE_NO_STAR_RULE, 0);
+		}
+	} else if (type == PSL_TYPE_ICANN) {
+		if (tld) {
+			test_ps(psl, domain, PSL_TYPE_PRIVATE, 1);
+			test_ps(psl, domain, PSL_TYPE_PRIVATE|PSL_TYPE_NO_STAR_RULE, 0);
+		} else {
+			test_ps(psl, domain, PSL_TYPE_PRIVATE, 0);
+			test_ps(psl, domain, PSL_TYPE_PRIVATE|PSL_TYPE_NO_STAR_RULE, 0);
+		}
+	}
+}
+
 static void test_psl_entry(const psl_ctx_t *psl, const char *domain, int type)
 {
 	int result;
 
 	if (*domain == '!') { /* an exception to a wildcard, e.g. !www.ck (wildcard is *.ck) */
-		if ((result = psl_is_public_suffix(psl, domain + 1))) {
-			failed++;
-			printf("psl_is_public_suffix(%s)=%d (expected 0)\n", domain, result);
-		} else ok++;
+		test_type_any(psl, domain + 1, type, 0); /* the exception itself is not a PS */
 
-		if ((domain = strchr(domain, '.'))) {
-			if (!(result = psl_is_public_suffix(psl, domain + 1))) {
-				failed++;
-				printf("psl_is_public_suffix(%s)=%d (expected 1)\n", domain + 1, result);
-			} else ok++;
-		}
+		if ((domain = strchr(domain, '.')))
+			test_type_any(psl, domain, type, 1); /* the related wildcard domain is a PS */
+
 	} else if (*domain == '*') { /* a wildcard, e.g. *.ck or *.platform.sh */
-		char *xdomain;
-		size_t len;
+		/* '*.platform.sh' -> 'y.x.platform.sh' */
+		size_t len = strlen(domain);
+		char *xdomain = alloca(len + 3);
 
-		if (!(result = psl_is_public_suffix(psl, domain + 1))) {
-			failed++;
-			printf("psl_is_public_suffix(%s)=%d (expected 1)\n", domain + 1, result);
-		} else ok++;
+		memcpy(xdomain, "y.x", 3);
+		memcpy(xdomain + 3, domain + 1, len);
 
-		len = strlen(domain);
-		xdomain = alloca(len + 1);
-		memcpy(xdomain, domain, len + 1);
-		*xdomain = 'x';
-		if (!(result = psl_is_public_suffix(psl, domain))) {
-			failed++;
-			printf("psl_is_public_suffix(%s)=%d (expected 1)\n", domain, result);
-		} else ok++;
+		test_type_any(psl, domain + 1, type, 1); /* the domain without wildcard is a PS */
+		test_type_any(psl, xdomain + 2, type, 1); /* random wildcard-matching domain is a PS... */
+		test_type_any(psl, xdomain, type, 0); /* ... but sub domain is not */
+
 	} else {
-		if (!(result = psl_is_public_suffix(psl, domain))) {
-			failed++;
-			printf("psl_is_public_suffix(%s)=%d (expected 1)\n", domain, result);
-		} else ok++;
-
-		if (!(strchr(domain, '.'))) {
-			/* TLDs are always expected to be Public Suffixes */
-			if (!(result = psl_is_public_suffix2(psl, domain, PSL_TYPE_PRIVATE))) {
-				failed++;
-				printf("psl_is_public_suffix2(%s, PSL_TYPE_PRIVATE)=%d (expected 1)\n", domain, result);
-			} else ok++;
-
-			if (!(result = psl_is_public_suffix2(psl, domain, PSL_TYPE_ICANN))) {
-				failed++;
-				printf("psl_is_public_suffix2(%s, PSL_TYPE_ICANN)=%d (expected 0)\n", domain, result);
-			} else ok++;
-		} else if (type == PSL_TYPE_PRIVATE) {
-			if (!(result = psl_is_public_suffix2(psl, domain, PSL_TYPE_PRIVATE))) {
-				failed++;
-				printf("psl_is_public_suffix2(%s, PSL_TYPE_PRIVATE)=%d (expected 1)\n", domain, result);
-			} else ok++;
-
-			if ((result = psl_is_public_suffix2(psl, domain, PSL_TYPE_ICANN))) {
-				failed++;
-				printf("psl_is_public_suffix2(%s, PSL_TYPE_ICANN)=%d (expected 0)\n", domain, result);
-			} else ok++;
-		} else if (type == PSL_TYPE_ICANN) {
-			if (!(result = psl_is_public_suffix2(psl, domain, PSL_TYPE_ICANN))) {
-				failed++;
-				printf("psl_is_public_suffix2(%s, PSL_TYPE_ICANN)=%d (expected 1)\n", domain, result);
-			} else ok++;
-
-			if ((result = psl_is_public_suffix2(psl, domain, PSL_TYPE_PRIVATE))) {
-				failed++;
-				printf("psl_is_public_suffix2(%s, PSL_TYPE_PRIVATE)=%d (expected 0)\n", domain, result);
-			} else ok++;
-		}
+		test_type_any(psl, domain, type, 1); /* Any normal PSL entry */
 	}
 }
 

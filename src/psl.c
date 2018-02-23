@@ -841,11 +841,11 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int t
 	if (suffix.nlabels == 1) {
 		/* TLD, this is the prevailing '*' match. If type excludes the '*' rule, continue.
 		 */
-		if (type & PSL_TYPE_NO_STAR_RULE)
-			type &= ~PSL_TYPE_NO_STAR_RULE;
-		else
+		if (!(type & PSL_TYPE_NO_STAR_RULE))
 			return 1;
 	}
+
+	type &= ~PSL_TYPE_NO_STAR_RULE;
 
 	if (psl->utf8 || psl == &_builtin_psl)
 		need_conversion = 0;
