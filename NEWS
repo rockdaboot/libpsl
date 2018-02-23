@@ -1,5 +1,10 @@
 Copyright (C) 2014-2018 Tim Rühsen
 
+23.02.2018 Release V0.20.1
+  * Fix issue introduced with PSL_TYPE_NO_STAR_RULE in V0.20.0
+  * Fix SO_VERSION to 8:0:3
+  * Improve unit tests
+
 22.02.2018 Release V0.20.0
   * Remove hard-coded gcc flag in Makefile.am
   * Prevent excessive CPU cycles on large inputs
