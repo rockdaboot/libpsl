@@ -1006,6 +1006,10 @@ int psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
  * @type specifies the PSL section where to perform the lookup. Valid values are
  * %PSL_TYPE_PRIVATE, %PSL_TYPE_ICANN, %PSL_TYPE_NO_STAR_RULE, and %PSL_TYPE_ANY.
  *
+ * %PSL_TYPE_NO_STAR_RULE switches of the 'prevailing star rule' (see
+ * [List](https://publicsuffix.org/list) under 'Algorithm' 2.).
+ * Applying the flag means that TLDs not explicitly listed in the PSL are *not* treated as public suffixes.
+ *
  * International @domain names have to be either in UTF-8 (lowercase + NFKC) or in ASCII/ACE format (punycode).
  * Other encodings likely result in incorrect return values.
  * Use helper function psl_str_to_utf8lower() for normalization @domain.
