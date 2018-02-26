@@ -1,6 +1,6 @@
 Copyright (C) 2014-2018 Tim Rühsen
 
-23.02.2018 Release V0.20.1
+26.02.2018 Release V0.20.1
   * Fix issue introduced with PSL_TYPE_NO_STAR_RULE in V0.20.0
   * Fix SO_VERSION to 8:0:3
   * Improve unit tests
