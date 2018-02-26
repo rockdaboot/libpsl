@@ -47,6 +47,8 @@ static void usage(int err, FILE* f)
 	fprintf(f, "  --version                    show library version information\n");
 	fprintf(f, "  --use-latest-data            use the latest PSL data available [default]\n");
 	fprintf(f, "  --use-builtin-data           use the builtin PSL data\n");
+	fprintf(f, "  --no-star-rule               do not apply the prevailing star rule\n");
+	fprintf(f, "                                 (only applies to --is-public-suffix)\n");
 	fprintf(f, "  --load-psl-file <filename>   load PSL data from file\n");
 	fprintf(f, "  --is-public-suffix           check if domains are public suffixes [default]\n");
 	fprintf(f, "  --is-cookie-domain-acceptable <cookie-domain>\n");
@@ -71,7 +73,7 @@ static const char *time2str(time_t t)
 
 int main(int argc, const char *const *argv)
 {
-	int mode = 1;
+	int mode = 1, no_star_rule = 0;
 	const char *const *arg, *psl_file = NULL, *cookie_domain = NULL;
 	psl_ctx_t *psl = (psl_ctx_t *) psl_latest(NULL);
 
@@ -111,6 +113,9 @@ int main(int argc, const char *const *argv)
 				if (!(psl = (psl_ctx_t *) psl_builtin()))
 					printf("No builtin PSL data available\n");
 			}
+			else if (!strcmp(*arg, "--no-star-rule")) {
+				no_star_rule = 1;
+			}
 			else if (!strcmp(*arg, "--load-psl-file") && arg < argv + argc - 1) {
 				psl_free(psl);
 				if (psl_file) {
@@ -147,6 +152,10 @@ int main(int argc, const char *const *argv)
 	}
 
 	if (mode != 99) {
+		if (mode != 1 && no_star_rule) {
+			fprintf(stderr, "--no-star-rule only combines with --is-public-suffix\n");
+			usage(1, stderr);
+		}
 		if (!psl) {
 			fprintf(stderr, "No PSL data available - aborting\n");
 			exit(2);
@@ -165,8 +174,12 @@ int main(int argc, const char *const *argv)
 
 				if ((rc = psl_str_to_utf8lower(domain, NULL, NULL, &lower)) != PSL_SUCCESS)
 					fprintf(stderr, "%s: Failed to convert to lowercase UTF-8 (%d)\n", domain, rc);
-				else if (mode == 1)
-					printf("%s: %d (%s)\n", domain, psl_is_public_suffix(psl, lower), lower);
+				else if (mode == 1) {
+					if (no_star_rule)
+						printf("%s: %d (%s)\n", domain, psl_is_public_suffix2(psl, lower, PSL_TYPE_ANY|PSL_TYPE_NO_STAR_RULE), lower);
+					else
+						printf("%s: %d (%s)\n", domain, psl_is_public_suffix(psl, lower), lower);
+				}
 				else if (mode == 2)
 					printf("%s: %s\n", domain, psl_unregistrable_domain(psl, lower));
 				else if (mode == 3)
@@ -191,8 +204,12 @@ int main(int argc, const char *const *argv)
 	}
 
 	if (mode == 1) {
-		for (; arg < argv + argc; arg++)
-			printf("%s: %d\n", *arg, psl_is_public_suffix(psl, *arg));
+		for (; arg < argv + argc; arg++) {
+			if (no_star_rule)
+				printf("%s: %d\n", *arg, psl_is_public_suffix2(psl, *arg, PSL_TYPE_ANY|PSL_TYPE_NO_STAR_RULE));
+			else
+				printf("%s: %d\n", *arg, psl_is_public_suffix(psl, *arg));
+		}
 	}
 	else if (mode == 2) {
 		for (; arg < argv + argc; arg++)
