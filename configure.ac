@@ -53,24 +53,20 @@ fi
 #
 # enable creation of man pages
 #
-AC_ARG_ENABLE(man,[AC_HELP_STRING([--enable-man],
-                                  [generate man pages [default=auto]])],enable_man=yes,enable_man=no)
-AS_IF([test "$enable_man" != no], [
-  AC_PATH_PROG([XSLTPROC], [xsltproc])
-  AS_IF([test -z "$XSLTPROC"], [
-    AS_IF([test "$enable_man" = yes], [
-      AC_MSG_ERROR([xsltproc is required for --enable-man])
-    ])
-    enable_man=no
+enable_man=no
+AC_ARG_ENABLE([man],
+  [AC_HELP_STRING([--enable-man], [generate man pages [default=auto]])],
+  [
+    if test "$enableval" = yes; then
+      enable_man=yes
+      AC_PATH_PROG([XSLTPROC], [xsltproc])
+      AS_IF([test -z "$XSLTPROC"], [
+        AC_MSG_ERROR([xsltproc is required for --enable-man])
+        enable_man="no (xsltproc not found)"
+      ])
+    fi
   ])
-])
-AM_CONDITIONAL(ENABLE_MAN, test x$enable_man != xno)
-AC_MSG_CHECKING([whether to generate man pages])
-AS_IF([ test "$enable_man" != no ], [
-  AC_MSG_RESULT([yes])
-], [
-  AC_MSG_RESULT([no])
-])
+AM_CONDITIONAL(ENABLE_MAN, test x$enable_man = xyes)
 
 # src/psl-make-dafsa needs python 2.7+
 AM_PATH_PYTHON([2.7])
@@ -343,5 +339,7 @@ AC_MSG_NOTICE([Summary of build options:
   PSL File:          ${PSL_FILE}
   PSL Test File:     ${PSL_TESTFILE}
   Sanitizers:        UBSan $ubsan, ASan $asan, CFI $cfi
+  Docs:              $enable_gtk_doc
+  Man pages:         $enable_man
   Tests:             ${TESTS_INFO}
 ])
