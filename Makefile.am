@@ -1,6 +1,14 @@
 # got some hints from https://gitorious.org/openismus-playground/examplelib/source
 
-SUBDIRS = po include src tools $(LIBPSL_DOCS) fuzz tests
+SUBDIRS = po include src tools
+if ENABLE_GTK_DOC
+  SUBDIRS += docs/libpsl
+else
+if ENABLE_MAN
+  SUBDIRS += docs/libpsl
+endif
+endif
+SUBDIRS += fuzz tests
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
