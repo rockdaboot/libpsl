@@ -46,7 +46,6 @@ AM_CONDITIONAL([GTK_DOC_USE_LIBTOOL], false)
 ])
 
 if test x"$have_gtk_doc" = xyes -a x"$enable_gtk_doc" = xyes; then
-  AC_CONFIG_FILES([docs/libpsl/Makefile docs/libpsl/version.xml])
   AC_SUBST([LIBPSL_DOCS], [docs/libpsl])
 fi
 
@@ -321,6 +320,7 @@ AC_CONFIG_FILES([Makefile
                  po/Makefile.in
                  fuzz/Makefile
                  tests/Makefile
+                 docs/libpsl/Makefile docs/libpsl/version.xml
                  libpsl.pc:libpsl.pc.in])
 AC_OUTPUT
 
