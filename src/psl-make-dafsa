@@ -448,7 +448,7 @@ def encode_prefix(label):
   """Encodes a node label as a list of bytes without a trailing high byte.
 
   This method encodes a node if there is exactly one child  and the
-  child follows immidiately after so that no jump is needed. This label
+  child follows immediately after so that no jump is needed. This label
   will then be a prefix to the label in the child node.
   """
   assert label
