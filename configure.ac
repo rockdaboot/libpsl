@@ -122,25 +122,48 @@ AC_ARG_ENABLE([asan],
 AC_SUBST([LIBPSL_SO_VERSION], [8:0:3])
 AC_SUBST([LIBPSL_VERSION], $VERSION)
 
+#
+# Check for Win32
+#
+
+AC_MSG_CHECKING([for Win32])
+case "$host" in
+  *-*-mingw*)
+    os_win32=yes
+    ;;
+  *)
+    os_win32=no
+    ;;
+esac
+AC_MSG_RESULT([$os_win32])
+AM_CONDITIONAL(OS_WIN32, [test $os_win32 = yes])
+
+# Windows does not have langinfo.h, which the libidn/libidn2
+# builtin and runtime need, so default to ICU
+if test "x$os_win32" = "xyes" ; then
+  default_runtime=libicu
+  default_builtin=libicu
+else
+  default_runtime=libidn2
+  default_builtin=libidn2
+fi
+
 # Check for enable/disable builtin PSL data
 AC_ARG_ENABLE(runtime,
   [
   --enable-runtime[[=IDNA library]]
       Specify the IDNA library used for libpsl run-time conversions:
-        libidn2 [[default]]: IDNA2008 library (also needs libunistring)
-        libicu:            IDNA2008 UTS#46 library
-        libidn:            IDNA2003 library (also needs libunistring)
+        libidn2 [[default on non-Windows]]: IDNA2008 library (also needs libunistring)
+        libicu [[default on Windows]]:      IDNA2008 UTS#46 library
+        libidn:                           IDNA2003 library (also needs libunistring)
   --disable-runtime        Do not link runtime IDNA functionality
   ], [
     if test "$enableval" = "libidn2" -o "$enableval" = "yes"; then
       enable_runtime=libidn2
-      AC_DEFINE([WITH_LIBIDN2], [1], [generate PSL data using libidn2])
     elif test "$enableval" = "libicu"; then
       enable_runtime=libicu
-      AC_DEFINE([WITH_LIBICU], [1], [generate PSL data using libicu])
     elif test "$enableval" = "libidn"; then
       enable_runtime=libidn
-      AC_DEFINE([WITH_LIBIDN], [1], [generate PSL data using libidn])
     elif test "$enableval" = "no"; then
       enable_runtime=no
     else
@@ -148,8 +171,7 @@ AC_ARG_ENABLE(runtime,
     fi
   ], [
     # this is the default if neither --enable-runtime nor --disable-runtime were specified
-    enable_runtime=libidn2
-    AC_DEFINE([WITH_LIBIDN2], [1], [generate PSL data using libidn2])
+    enable_runtime=$default_runtime
   ])
 
 # Check for enable/disable builtin PSL data
@@ -157,20 +179,17 @@ AC_ARG_ENABLE(builtin,
   [
   --enable-builtin[[=IDNA library]]
       Specify the IDNA library used for built-in data generation:
-        libidn2 [[default]]: IDNA2008 library (also needs libunistring)
-        libicu: IDNA2008   UTS#46 library
-        libidn:            IDNA2003 library (also needs libunistring)
+        libidn2 [[default on non-Windows]]: IDNA2008 library (also needs libunistring)
+        libicu: [[default on Windows]]:     IDNA2008 UTS#46 library
+        libidn:                           IDNA2003 library (also needs libunistring)
   --disable-builtin        Do not generate built-in PSL data
   ], [
     if test "$enableval" = "libidn2" -o "$enableval" = "yes"; then
       enable_builtin=libidn2
-      AC_DEFINE([BUILTIN_GENERATOR_LIBIDN2], [1], [generate PSL data using libidn2])
     elif test "$enableval" = "libicu"; then
       enable_builtin=libicu
-      AC_DEFINE([BUILTIN_GENERATOR_LIBICU], [1], [generate PSL data using libicu])
     elif test "$enableval" = "libidn"; then
       enable_builtin=libidn
-      AC_DEFINE([BUILTIN_GENERATOR_LIBIDN], [1], [generate PSL data using libidn])
     elif test "$enableval" = "no"; then
       enable_builtin=no
     else
@@ -178,8 +197,7 @@ AC_ARG_ENABLE(builtin,
     fi
   ], [
     # this is the default if neither --enable-builtin nor --disable-builtin were specified
-    enable_builtin=libidn2
-    AC_DEFINE([BUILTIN_GENERATOR_LIBIDN2], [1], [generate PSL data using libidn2])
+    enable_builtin=$default_builtin
   ])
 
 if test "$enable_runtime" = "libicu" -o "$enable_builtin" = "libicu"; then
@@ -205,6 +223,15 @@ if test "$enable_runtime" = "libicu" -o "$enable_builtin" = "libicu"; then
   ])
 fi
 
+if test "x$HAVE_LIBICU" = "xyes" ; then
+  if test "$enable_runtime" = "libicu" ; then
+    AC_DEFINE([WITH_LIBICU], [1], [generate PSL data using libicu])
+  fi
+  if test "$enable_builtin" = "libicu" ; then
+    AC_DEFINE([BUILTIN_GENERATOR_LIBICU], [1], [generate PSL data using libicu])
+  fi
+fi
+
 if test "$enable_runtime" = "libidn2" -o "$enable_builtin" = "libidn2"; then
   # Check for libidn2
   PKG_CHECK_MODULES([LIBIDN2], [libidn2], [
@@ -219,6 +246,15 @@ if test "$enable_runtime" = "libidn2" -o "$enable_builtin" = "libidn2"; then
   ])
 fi
 
+if test "x$HAVE_LIBIDN2" = "xyes" ; then
+  if test "$enable_runtime" = "libidn2" ; then
+    AC_DEFINE([WITH_LIBIDN2], [1], [generate PSL data using libidn2])
+  fi
+  if test "$enable_builtin" = "libidn2" ; then
+    AC_DEFINE([BUILTIN_GENERATOR_LIBIDN2], [1], [generate PSL data using libidn2])
+  fi
+fi
+
 if test "$enable_runtime" = "libidn" -o "$enable_builtin" = "libidn"; then
   # Check for libidn
   PKG_CHECK_MODULES([LIBIDN], [libidn], [
@@ -231,6 +267,15 @@ if test "$enable_runtime" = "libidn" -o "$enable_builtin" = "libidn"; then
     AC_SEARCH_LIBS(idna_to_ascii_8z, idn, HAVE_LIBIDN=yes, AC_MSG_ERROR(You requested libidn but it is not installed.))
     LIBS=$OLDLIBS
   ])
+fi
+
+if test "x$HAVE_LIBIDN2" = "xyes" ; then
+  if test "$enable_runtime" = "libidn" ; then
+    AC_DEFINE([WITH_LIBIDN], [1], [generate PSL data using libidn])
+  fi
+  if test "$enable_builtin" = "libidn" ; then
+    AC_DEFINE([BUILTIN_GENERATOR_LIBIDN], [1], [generate PSL data using libidn])
+  fi
 fi
 
 if test "x$HAVE_LIBIDN2" = "xyes" -o "x$HAVE_LIBIDN" = "xyes"; then
@@ -263,6 +308,11 @@ elif test -n "$NEEDS_SOCKET" ; then
   LIBS="$LIBS -lsocket"
 elif test -n "$NEEDS_NSL" ; then
   LIBS="$LIBS -lnsl"
+fi
+
+# Windows has the networking functions in -lws2_32
+if test "x$os_win32" = "xyes" ; then
+  LIBS="$LIBS -lws2_32"
 fi
 
 # Check for clock_gettime() used for performance measurement

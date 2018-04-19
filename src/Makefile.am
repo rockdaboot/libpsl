@@ -24,6 +24,10 @@ if WITH_LIBIDN
   libpsl_la_LDFLAGS += -lidn -lunistring
 endif
 
+if OS_WIN32
+  libpsl_la_LDFLAGS += -no-undefined
+endif
+
 # Build rule for suffix_dafsa.c
 # PSL_FILE can be set by ./configure --with-psl-file=[PATH]
 suffixes_dafsa.c: $(PSL_FILE) $(srcdir)/psl-make-dafsa
