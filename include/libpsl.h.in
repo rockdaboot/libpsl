@@ -28,8 +28,8 @@
  *
  */
 
-#ifndef _LIBPSL_LIBPSL_H
-#define _LIBPSL_LIBPSL_H
+#ifndef LIBPSL_LIBPSL_H
+#define LIBPSL_LIBPSL_H
 
 #include <stdio.h>
 #include <time.h>
@@ -202,4 +202,4 @@ int
 }
 #endif
 
-#endif /* _LIBPSL_LIBPSL_H */
+#endif /* LIBPSL_LIBPSL_H */
