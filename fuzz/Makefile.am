@@ -50,7 +50,15 @@ endif
 endif
 endif
 
-check_PROGRAMS = $(PSL_TESTS)
+# We don't have fmemopen() on Windows, so we can't run these tests
+# on Windows, at least for now
+
+check_PROGRAMS =
+TESTS =
+
+if !OS_WIN32
+  check_PROGRAMS += $(PSL_TESTS)
+endif
 
 dist-hook:
 	find . -name '*.options' -exec cp -v '{}' $(distdir) ';'
@@ -59,7 +67,10 @@ dist-hook:
 	find . -name '*.repro' -exec cp -vr '{}' $(distdir) ';'
 
 TESTS_ENVIRONMENT = TESTS_VALGRIND="@VALGRIND_ENVIRONMENT@"
-TESTS = $(PSL_TESTS)
+
+if !OS_WIN32
+  TESTS += $(PSL_TESTS)
+endif
 
 clean-local:
 	rm -rf *.gc?? *.log lcov coverage.info *_fuzzer *.o
