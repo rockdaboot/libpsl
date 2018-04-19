@@ -46,7 +46,7 @@ static int
 	ok,
 	failed;
 #ifdef HAVE_CLOCK_GETTIME
-	struct timespec ts1, ts2;
+	static struct timespec ts1, ts2;
 #endif
 
 static int _isspace_ascii(const char c)
