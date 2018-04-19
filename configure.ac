@@ -17,6 +17,9 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 dnl Check that compiler understands inline
 AC_C_INLINE
 
+dnl Check for visibility support
+gl_VISIBILITY
+
 #
 # Generate version defines for include file
 #
