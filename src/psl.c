@@ -54,9 +54,19 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
+
+#ifdef _WIN32
+/* This is for Windows Vista and later, for inet_pton() */
+# define _WIN32_WINNT 0x0600
+
+# include <winsock2.h>
+# include <ws2tcpip.h>
+#else
+# include <sys/socket.h>
+# include <netinet/in.h>
+# include <unistd.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -64,8 +74,12 @@
 #include <time.h>
 #include <errno.h>
 #include <limits.h> /* for UINT_MAX */
-#include <langinfo.h>
-#include <arpa/inet.h>
+
+#ifndef _WIN32
+# include <langinfo.h>
+# include <arpa/inet.h>
+#endif
+
 #ifdef HAVE_ALLOCA_H
 #	include <alloca.h>
 #endif
@@ -173,7 +187,7 @@ struct _psl_ctx_st {
 #if defined(BUILTIN_GENERATOR_LIBICU) || defined(BUILTIN_GENERATOR_LIBIDN2) || defined(BUILTIN_GENERATOR_LIBIDN)
 #include "suffixes_dafsa.c"
 #else
-static const unsigned char kDafsa[0];
+static const unsigned char kDafsa[] = "";
 static time_t _psl_file_time = 0;
 static int _psl_nsuffixes = 0;
 static int _psl_nexceptions = 0;
@@ -1061,6 +1075,9 @@ int psl_is_public_suffix2(const psl_ctx_t *psl, const char *domain, int type)
  */
 const char *psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain)
 {
+	int nlabels = 0;
+	const char *p;
+
 	if (!psl || !domain)
 		return NULL;
 
@@ -1068,9 +1085,6 @@ const char *psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain)
 	 * In the main loop we introduce a O(N^2) behavior to avoid code duplication.
 	 * To avoid nasty CPU hogging, we limit the lookup to max. 8 domain labels to the right.
 	 */
-
-	int nlabels = 0;
-	const char *p;
 	for (p = domain + strlen(domain) - 1; p >= domain; p--) {
 		if (*p == '.' && ++nlabels > 8) {
 			domain = p + 1;
@@ -1116,6 +1130,7 @@ const char *psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain)
 const char *psl_registrable_domain(const psl_ctx_t *psl, const char *domain)
 {
 	const char *p, *regdom = NULL;
+	int nlabels = 0;
 
 	if (!psl || !domain || *domain == '.')
 		return NULL;
@@ -1124,8 +1139,6 @@ const char *psl_registrable_domain(const psl_ctx_t *psl, const char *domain)
 	 * In the main loop we introduce a O(N^2) behavior to avoid code duplication.
 	 * To avoid nasty CPU hogging, we limit the lookup to max. 8 domain labels to the right.
 	 */
-
-	int nlabels = 0;
 	for (p = domain + strlen(domain) - 1; p >= domain; p--) {
 		if (*p == '.' && ++nlabels > 8) {
 			domain = p + 1;

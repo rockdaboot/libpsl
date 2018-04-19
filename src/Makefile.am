@@ -7,7 +7,11 @@ CLEANFILES = suffixes_dafsa.c
 lib_LTLIBRARIES = libpsl.la
 
 libpsl_la_SOURCES = psl.c lookup_string_in_fixed_set.c
-libpsl_la_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include -DPSL_DISTFILE=\"$(PSL_DISTFILE)\"
+libpsl_la_CPPFLAGS =	\
+	-I$(top_srcdir)/include	\
+	-I$(top_builddir)/include	\
+	-DPSL_DISTFILE=\"$(PSL_DISTFILE)\"	\
+	-DBUILDING_PSL
 # include ABI version information
 libpsl_la_LDFLAGS = -version-info $(LIBPSL_SO_VERSION)
 if WITH_LIBICU
@@ -18,6 +22,10 @@ if WITH_LIBIDN2
 endif
 if WITH_LIBIDN
   libpsl_la_LDFLAGS += -lidn -lunistring
+endif
+
+if OS_WIN32
+  libpsl_la_LDFLAGS += -no-undefined
 endif
 
 # Build rule for suffix_dafsa.c
