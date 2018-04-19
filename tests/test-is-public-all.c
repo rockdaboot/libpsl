@@ -80,7 +80,6 @@ static void test_ps(const psl_ctx_t *psl, const char *domain, int type, int expe
 /* section: either PSL_TYPE_PRIVATE or PSL_TYPE_ICANN */
 static void test_type_any(const psl_ctx_t *psl, const char *domain, int type, int expected)
 {
-	int result;
 	int wildcard = (*domain == '.');
 	int tld = !(strchr(domain + wildcard, '.'));
 
@@ -110,8 +109,6 @@ static void test_type_any(const psl_ctx_t *psl, const char *domain, int type, in
 
 static void test_psl_entry(const psl_ctx_t *psl, const char *domain, int type)
 {
-	int result;
-
 	if (*domain == '!') { /* an exception to a wildcard, e.g. !www.ck (wildcard is *.ck) */
 		test_type_any(psl, domain + 1, type, 0); /* the exception itself is not a PS */
 
