@@ -25,7 +25,13 @@
 #include <config.h>
 
 #include <assert.h> /* assert */
+
+#ifdef HAVE_STDINT_H
 #include <stdint.h> /* uint8_t */
+#elif defined (_MSC_VER)
+typedef unsigned __int8 uint8_t;
+#endif
+
 #include <stdlib.h> /* malloc, free */
 #include <string.h> /* memcpy */
 
