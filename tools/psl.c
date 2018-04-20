@@ -32,10 +32,14 @@
 # include <config.h>
 #endif
 
-#include <unistd.h>
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <locale.h>
 
 #include <libpsl.h>
 
@@ -78,7 +82,6 @@ int main(int argc, const char *const *argv)
 	psl_ctx_t *psl = (psl_ctx_t *) psl_latest(NULL);
 
 	/* set current locale according to the environment variables */
-	#include <locale.h>
 	setlocale(LC_ALL, "");
 
 	for (arg = argv + 1; arg < argv + argc; arg++) {
