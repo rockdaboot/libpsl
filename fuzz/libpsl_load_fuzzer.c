@@ -25,7 +25,13 @@
 #include <config.h>
 
 #include <assert.h> /* assert */
+
+#ifdef HAVE_STDINT_H
 #include <stdint.h> /* uint8_t */
+#elif defined (_MSC_VER)
+typedef unsigned __int8 uint8_t;
+#endif
+
 #include <stdlib.h> /* malloc, free */
 #include <string.h> /* memcpy */
 
@@ -34,6 +40,7 @@
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
+#ifdef HAVE_FMEMOPEN
 	FILE *fp;
 	psl_ctx_t *psl;
 
@@ -50,6 +57,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 		fclose(fp);
 
 	psl_load_file("/dev/null");
+#endif
 
 	return 0;
 }

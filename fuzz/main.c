@@ -25,9 +25,17 @@
 #include "../config.h"
 
 #include <stdio.h>
+
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+
 #include <stdlib.h>
+
+#ifdef HAVE_STDINT_H
 #include <stdint.h>
+#endif
+
 #include <string.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -35,7 +43,7 @@
 
 #include "fuzzer.h"
 
-#ifdef TEST_RUN
+#if defined (TEST_RUN) && defined (HAVE_FMEMOPEN)
 
 #include <dirent.h>
 #ifdef HAVE_ALLOCA_H
@@ -114,7 +122,7 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-#else
+#else /* TEST_RUN && HAVE_FMEMOPEN */
 
 #ifndef __AFL_LOOP
 static int __AFL_LOOP(int n)
@@ -132,6 +140,7 @@ static int __AFL_LOOP(int n)
 
 int main(int argc, char **argv)
 {
+#ifdef HAVE_FMEMOPEN
 	int ret;
 	unsigned char buf[64 * 1024];
 
@@ -144,6 +153,9 @@ int main(int argc, char **argv)
 	}
 
 	return 0;
+#else
+	exit (77);
+#endif
 }
 
-#endif /* TEST_RUN */
+#endif /* TEST_RUN && HAVE_FMEMOPEN*/
