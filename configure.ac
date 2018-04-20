@@ -151,8 +151,7 @@ AC_ARG_ENABLE(runtime,
     fi
   ], [
     # this is the default if neither --enable-runtime nor --disable-runtime were specified
-    enable_runtime=libidn2
-    AC_DEFINE([WITH_LIBIDN2], [1], [generate PSL data using libidn2])
+    enable_runtime=auto
   ])
 
 # Check for enable/disable builtin PSL data
@@ -181,11 +180,38 @@ AC_ARG_ENABLE(builtin,
     fi
   ], [
     # this is the default if neither --enable-builtin nor --disable-builtin were specified
-    enable_builtin=libidn2
-    AC_DEFINE([BUILTIN_GENERATOR_LIBIDN2], [1], [generate PSL data using libidn2])
+    enable_builtin=auto
   ])
 
-if test "$enable_runtime" = "libicu" -o "$enable_builtin" = "libicu"; then
+if test "$enable_runtime" = "libidn2" -o "$enable_builtin" = "libidn2" -o "$enable_runtime" = "auto" -o "$enable_builtin" = "auto"; then
+  # Check for libidn2
+  PKG_CHECK_MODULES([LIBIDN2], [libidn2], [
+    HAVE_LIBIDN2=yes
+    if test "$enable_runtime" = "libidn2"; then
+      CFLAGS="$LIBIDN2_CFLAGS $CFLAGS"
+    fi
+  ], [
+    OLDLIBS=$LIBS
+    AC_SEARCH_LIBS(idn2_lookup_u8, idn2, HAVE_LIBIDN2=yes,
+    [
+       if test "$enable_runtime" = "libidn2" -o "$enable_builtin" = "libidn2"; then
+          AC_MSG_ERROR(You requested libidn2 but it is not installed.)
+       fi
+    ], -lunistring)
+    LIBS=$OLDLIBS
+  ])
+
+  if test "x$HAVE_LIBIDN2" = "xyes"; then
+    if test "$enable_runtime" = "auto"; then
+      enable_runtime=libidn2
+    fi
+    if test "$enable_builtin" = "auto"; then
+      enable_builtin=libidn2
+    fi
+  fi
+fi
+
+if test "$enable_runtime" = "libicu" -o "$enable_builtin" = "libicu" -o "$enable_runtime" = "auto" -o "$enable_builtin" = "auto"; then
   # Check for libicu
   # using pkg-config won't work on older systems like Ubuntu 12.04 LTS Server Edition 64bit
   # using AC_SEARCH_LIBS also don't work since functions have the library version appended
@@ -203,37 +229,58 @@ if test "$enable_runtime" = "libicu" -o "$enable_builtin" = "libicu"; then
         [[#include <unicode/ustring.h>]],
         [[u_strToUTF8(NULL, 0, NULL, NULL, 0, NULL);]])],
       [HAVE_LIBICU=yes; LIBICU_LIBS="-licuuc"; AC_MSG_RESULT([yes])],
-      [AC_MSG_RESULT([no]); AC_MSG_ERROR(You requested libicu but it is not installed.)])
+      [ AC_MSG_RESULT([no]);
+        if test "$enable_runtime" = "libicu" -o "$enable_builtin" = "libicu"; then
+          AC_MSG_ERROR(You requested libicu but it is not installed.)
+        fi
+      ])
     LIBS=$OLDLIBS
   ])
-fi
 
-if test "$enable_runtime" = "libidn2" -o "$enable_builtin" = "libidn2"; then
-  # Check for libidn2
-  PKG_CHECK_MODULES([LIBIDN2], [libidn2], [
-    HAVE_LIBIDN2=yes
-    if test "$enable_runtime" = "libidn2"; then
-      CFLAGS="$LIBIDN2_CFLAGS $CFLAGS"
+  if test "x$HAVE_LIBICU" = "xyes"; then
+    if test "$enable_runtime" = "auto"; then
+      enable_runtime=libicu
     fi
-  ], [
-    OLDLIBS=$LIBS
-    AC_SEARCH_LIBS(idn2_lookup_u8, idn2, HAVE_LIBIDN2=yes, AC_MSG_ERROR(You requested libidn2 but it is not installed.), -lunistring)
-    LIBS=$OLDLIBS
-  ])
+    if test "$enable_builtin" = "auto"; then
+      enable_builtin=libicu
+    fi
+  fi
 fi
 
-if test "$enable_runtime" = "libidn" -o "$enable_builtin" = "libidn"; then
+if test "$enable_runtime" = "libidn" -o "$enable_builtin" = "libidn" -o "$enable_runtime" = "auto" -o "$enable_builtin" = "auto"; then
   # Check for libidn
   PKG_CHECK_MODULES([LIBIDN], [libidn], [
-    HAVE_LIBIDN2=yes
+    HAVE_LIBIDN=yes
     if test "$enable_runtime" = "libidn"; then
       CFLAGS="$LIBIDN_CFLAGS $CFLAGS"
     fi
   ], [
     OLDLIBS=$LIBS
-    AC_SEARCH_LIBS(idna_to_ascii_8z, idn, HAVE_LIBIDN=yes, AC_MSG_ERROR(You requested libidn but it is not installed.))
+    AC_SEARCH_LIBS(idna_to_ascii_8z, idn, HAVE_LIBIDN=yes,
+    [
+      if test "$enable_runtime" = "libidn" -o "$enable_builtin" = "libidn"; then
+        AC_MSG_ERROR(You requested libidn but it is not installed.)
+      fi
+    ])
     LIBS=$OLDLIBS
   ])
+
+  if test "x$HAVE_LIBIDN" = "xyes"; then
+    if test "$enable_runtime" = "auto"; then
+      enable_runtime=libidn
+    fi
+    if test "$enable_builtin" = "auto"; then
+      enable_builtin=libidn
+    fi
+  fi
+fi
+
+# last fallback is noruntime/nobuiltin
+if test "$enable_runtime" = "auto"; then
+  enable_runtime=no
+fi
+if test "$enable_builtin" = "auto"; then
+  enable_builtin=no
 fi
 
 if test "x$HAVE_LIBIDN2" = "xyes" -o "x$HAVE_LIBIDN" = "xyes"; then
