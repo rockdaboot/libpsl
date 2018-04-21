@@ -319,6 +319,9 @@ elif test -n "$NEEDS_SOCKET" ; then
   LIBS="$LIBS -lsocket"
 elif test -n "$NEEDS_NSL" ; then
   LIBS="$LIBS -lnsl"
+else
+  # Needed for MinGW / Windows
+  AC_SEARCH_LIBS(inet_pton, ws2_32)
 fi
 
 # Check for clock_gettime() used for performance measurement
@@ -365,7 +368,7 @@ AC_SUBST(PSL_TESTFILE)
 
 # check for alloca / alloca.h
 AC_FUNC_ALLOCA
-AC_CHECK_FUNCS([strndup clock_gettime fmemopen])
+AC_CHECK_FUNCS([strndup clock_gettime fmemopen nl_langinfo])
 
 # Override the template file name of the generated .pc file, so that there
 # is no need to rename the template file when the API version changes.
