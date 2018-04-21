@@ -204,9 +204,11 @@ if test "$enable_runtime" = "libidn2" -o "$enable_builtin" = "libidn2" -o "$enab
   if test "x$HAVE_LIBIDN2" = "xyes"; then
     if test "$enable_runtime" = "auto"; then
       enable_runtime=libidn2
+      AC_DEFINE([WITH_LIBIDN2], [1], [generate PSL data using libidn2])
     fi
     if test "$enable_builtin" = "auto"; then
       enable_builtin=libidn2
+      AC_DEFINE([BUILTIN_GENERATOR_LIBIDN2], [1], [generate PSL data using libidn2])
     fi
   fi
 fi
@@ -240,9 +242,11 @@ if test "$enable_runtime" = "libicu" -o "$enable_builtin" = "libicu" -o "$enable
   if test "x$HAVE_LIBICU" = "xyes"; then
     if test "$enable_runtime" = "auto"; then
       enable_runtime=libicu
+      AC_DEFINE([BUILTIN_GENERATOR_LIBICU], [1], [generate PSL data using libicu])
     fi
     if test "$enable_builtin" = "auto"; then
       enable_builtin=libicu
+      AC_DEFINE([BUILTIN_GENERATOR_LIBICU], [1], [generate PSL data using libicu])
     fi
   fi
 fi
@@ -268,9 +272,11 @@ if test "$enable_runtime" = "libidn" -o "$enable_builtin" = "libidn" -o "$enable
   if test "x$HAVE_LIBIDN" = "xyes"; then
     if test "$enable_runtime" = "auto"; then
       enable_runtime=libidn
+      AC_DEFINE([WITH_LIBIDN], [1], [generate PSL data using libidn])
     fi
     if test "$enable_builtin" = "auto"; then
       enable_builtin=libidn
+      AC_DEFINE([WITH_LIBIDN], [1], [generate PSL data using libidn])
     fi
   fi
 fi
