@@ -102,29 +102,11 @@
 #	include <unistr.h>
 #endif
 
-#include <libpsl.h>
-
-#ifndef HAVE_STRNDUP
-/* I found no strndup on my old SUSE 7.3 test system (gcc 2.95) */
-
-static char *strndup(const char *s, size_t n)
-{
-	char *dst;
-	size_t s_len = strlen(s);
-
-	if (s_len > n)
-		n = s_len;
-
-	dst = malloc(n + 1);
-
-	if (dst) {
-		memcpy(dst, s, n);
-		dst[n] = 0;
-	}
-
-	return dst;
-}
+#ifndef WINICONV_CONST
+#  define WINICONV_CONST
 #endif
+
+#include <libpsl.h>
 
 /**
  * SECTION:libpsl
@@ -1812,8 +1794,13 @@ out:
 	do {
 		/* find out local charset encoding */
 		if (!encoding) {
+#ifdef HAVE_NL_LANGINFO
 			encoding = nl_langinfo(CODESET);
-
+#elif defined _WIN32
+			static char buf[16];
+			snprintf(buf, sizeof(buf), "CP%u", GetACP());
+			encoding = buf;
+#endif
 			if (!encoding || !*encoding)
 				encoding = "ASCII";
 		}
@@ -1831,7 +1818,7 @@ out:
 				if (!dst) {
 					ret = PSL_ERR_NO_MEM;
 				}
-				else if (iconv(cd, &tmp, &tmp_len, &dst_tmp, &dst_len_tmp) != (size_t)-1
+				else if (iconv(cd, (WINICONV_CONST char **)&tmp, &tmp_len, &dst_tmp, &dst_len_tmp) != (size_t)-1
 					&& iconv(cd, NULL, NULL, &dst_tmp, &dst_len_tmp) != (size_t)-1)
 				{
 					/* start size for u8_tolower internal memory allocation.
