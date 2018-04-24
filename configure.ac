@@ -381,7 +381,10 @@ AC_CONFIG_FILES([Makefile
                  fuzz/Makefile
                  tests/Makefile
                  docs/libpsl/Makefile docs/libpsl/version.xml
-                 libpsl.pc:libpsl.pc.in])
+                 libpsl.pc:libpsl.pc.in
+                 msvc/Makefile
+                 msvc/config.h.win32
+                 msvc/config-msvc.mak])
 AC_OUTPUT
 
 AC_MSG_NOTICE([Summary of build options:

@@ -8,7 +8,7 @@ if ENABLE_MAN
   SUBDIRS += docs/libpsl
 endif
 endif
-SUBDIRS += fuzz tests
+SUBDIRS += fuzz tests msvc
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
