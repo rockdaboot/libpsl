@@ -9,6 +9,7 @@ lib_LTLIBRARIES = libpsl.la
 libpsl_la_SOURCES = psl.c lookup_string_in_fixed_set.c
 libpsl_la_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include -DPSL_DISTFILE=\"$(PSL_DISTFILE)\" \
   $(CFLAG_VISIBILITY) -DBUILDING_PSL
+libpsl_la_LIBADD = $(LTLIBICONV) $(LTLIBINTL) @INTL_MACOSX_LIBS@
 
 # include ABI version information
 libpsl_la_LDFLAGS = -no-undefined -version-info $(LIBPSL_SO_VERSION)
