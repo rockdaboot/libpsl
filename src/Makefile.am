@@ -11,7 +11,7 @@ libpsl_la_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include -DPSL_DIS
   $(CFLAG_VISIBILITY) -DBUILDING_PSL
 
 # include ABI version information
-libpsl_la_LDFLAGS = -version-info $(LIBPSL_SO_VERSION)
+libpsl_la_LDFLAGS = -no-undefined -version-info $(LIBPSL_SO_VERSION)
 if WITH_LIBICU
   libpsl_la_LDFLAGS += $(LIBICU_LIBS)
 endif
