@@ -1,6 +1,7 @@
 
 AC_INIT([libpsl], [0.20.1], [tim.ruehsen@gmx.de], [libpsl], [https://github.com/rockdaboot/libpsl])
 AC_PREREQ([2.59])
+AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([1.10 no-define foreign])
 
 # Generate two configuration headers; one for building the library itself with
