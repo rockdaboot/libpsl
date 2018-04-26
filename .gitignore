@@ -57,6 +57,8 @@ libpsl.pc
 libtool
 ltmain.sh
 m4/
+msvc/config-msvc.mak
+msvc/config.h.win32
 Makefile
 Makefile.in
 missing
