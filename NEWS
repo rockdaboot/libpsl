@@ -1,5 +1,13 @@
 Copyright (C) 2014-2018 Tim Rühsen
 
+26.04.2018 Release V0.20.2
+  * Fix non srcdir builds
+  * Add API decoration
+  * Fix for MSVC/Win32 builds
+  * Detection fallback from libidn2 to libcu, libidn
+  * Fix MinGW cross builds on Linux
+  * Add NMake Makefiles for Visual Studio builds
+
 26.02.2018 Release V0.20.1
   * Fix issue introduced with PSL_TYPE_NO_STAR_RULE in V0.20.0
   * Fix SO_VERSION to 8:0:3
