@@ -56,19 +56,17 @@ fi
 #
 # enable creation of man pages
 #
-enable_man=no
 AC_ARG_ENABLE([man],
   [AC_HELP_STRING([--enable-man], [generate man pages [default=auto]])],
   [
-    if test "$enableval" = yes; then
-      enable_man=yes
+    if test "$enable_man" = yes; then
       AC_PATH_PROG([XSLTPROC], [xsltproc])
       AS_IF([test -z "$XSLTPROC"], [
         AC_MSG_ERROR([xsltproc is required for --enable-man])
         enable_man="no (xsltproc not found)"
       ])
     fi
-  ])
+  ], [ enable_man=no ])
 AM_CONDITIONAL(ENABLE_MAN, test x$enable_man = xyes)
 
 # src/psl-make-dafsa needs python 2.7+
@@ -76,12 +74,10 @@ AM_PATH_PYTHON([2.7])
 
 PKG_PROG_PKG_CONFIG
 
-cfi=no
 AC_ARG_ENABLE([cfi],
   [AS_HELP_STRING([--enable-cfi], [Turn on clang's Control Flow Integrity (CFI)])],
   [
-    if test "$enableval" = yes; then
-      cfi=yes
+    if test "$enable_cfi" = yes; then
       CFLAGS=$CFLAGS" -B/usr/bin/gold -fsanitize=cfi -flto -fvisibility=default -fno-sanitize-trap=all"
       AC_LINK_IFELSE([
         AC_LANG_PROGRAM([], [])
@@ -89,28 +85,24 @@ AC_ARG_ENABLE([cfi],
         AC_MSG_ERROR([clang 3.7+ and the 'gold' linker are required for --enable-cfi])
       ])
     fi
-  ])
+  ], [ enable_cfi=no ])
 
-ubsan=no
 AC_ARG_ENABLE([ubsan],
   [AS_HELP_STRING([--enable-ubsan], [Turn on Undefined Behavior Sanitizer (UBSan)])],
   [
-    if test "$enableval" = yes; then
-      ubsan=yes
+    if test "$enable_ubsan" = yes; then
       CFLAGS=$CFLAGS" -fsanitize=undefined -fno-sanitize-recover=undefined"
     fi
-  ])
+  ], [ enable_ubsan=no ])
 
-asan=no
 AC_ARG_ENABLE([asan],
   [AS_HELP_STRING([--enable-asan], [Turn on Address Sanitizer (ASan)])],
   [
-    if test "$enableval" = yes; then
-      asan=yes
+    if test "$enable_asan" = yes; then
       CFLAGS=$CFLAGS" -fsanitize=address -fno-omit-frame-pointer"
       AX_CHECK_COMPILE_FLAG([-fsanitize-address-use-after-scope], [CFLAGS="$CFLAGS -fsanitize-address-use-after-scope"])
     fi
-  ])
+  ], [ enable_asan=no ])
 
 # Define these substitions here to keep all version information in one place.
 # For information on how to properly maintain the library version information,
@@ -401,7 +393,7 @@ AC_MSG_NOTICE([Summary of build options:
   PSL Dist File:     ${PSL_DISTFILE}
   PSL File:          ${PSL_FILE}
   PSL Test File:     ${PSL_TESTFILE}
-  Sanitizers:        UBSan $ubsan, ASan $asan, CFI $cfi
+  Sanitizers:        UBSan $enable_ubsan, ASan $enable_asan, CFI $enable_cfi
   Docs:              $enable_gtk_doc
   Man pages:         $enable_man
   Tests:             ${TESTS_INFO}
