@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Tim Ruehsen
+ * Copyright(c) 2017-2018 Tim Ruehsen
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -25,7 +25,13 @@
 #include <config.h>
 
 #include <assert.h> /* assert */
+
+#ifdef HAVE_STDINT_H
 #include <stdint.h> /* uint8_t */
+#elif defined (_MSC_VER)
+typedef unsigned __int8 uint8_t;
+#endif
+
 #include <stdlib.h> /* malloc, free */
 #include <string.h> /* memcpy */
 
@@ -40,9 +46,13 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
 	static int first_run = 1;
 	psl_ctx_t *psl;
-	char *domain = (char *) malloc(size + 1), *res;
+	char *domain, *res;
 	int rc;
 
+	if (size > 64 * 1024 - 1)
+		return 0;
+
+	domain = (char *) malloc(size + 1);
 	assert(domain != NULL);
 
 	/* 0 terminate */
@@ -54,6 +64,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	psl_is_public_suffix(psl, domain);
 	psl_is_public_suffix2(psl, domain, PSL_TYPE_PRIVATE);
 	psl_is_public_suffix2(psl, domain, PSL_TYPE_ICANN);
+	psl_is_public_suffix2(psl, domain, PSL_TYPE_NO_STAR_RULE);
+	psl_is_public_suffix2(psl, domain, PSL_TYPE_NO_STAR_RULE|PSL_TYPE_ANY);
 	psl_unregistrable_domain(psl, domain);
 	psl_registrable_domain(psl, domain);
 

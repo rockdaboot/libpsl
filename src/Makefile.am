@@ -1,3 +1,5 @@
+include libpsl-srcs.mk
+
 # suffixes.c must be created before psl.c is compiled
 BUILT_SOURCES = suffixes_dafsa.c
 
@@ -6,10 +8,13 @@ CLEANFILES = suffixes_dafsa.c
 
 lib_LTLIBRARIES = libpsl.la
 
-libpsl_la_SOURCES = psl.c lookup_string_in_fixed_set.c
-libpsl_la_CPPFLAGS = -I$(top_srcdir)/include -DPSL_DISTFILE=\"$(PSL_DISTFILE)\"
+libpsl_la_SOURCES = $(LIBPSL_SRCS)
+libpsl_la_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include -DPSL_DISTFILE=\"$(PSL_DISTFILE)\" \
+  $(CFLAG_VISIBILITY) -DBUILDING_PSL
+libpsl_la_LIBADD = $(LTLIBICONV) $(LTLIBINTL) @INTL_MACOSX_LIBS@
+
 # include ABI version information
-libpsl_la_LDFLAGS = -version-info $(LIBPSL_SO_VERSION)
+libpsl_la_LDFLAGS = -no-undefined -version-info $(LIBPSL_SO_VERSION)
 if WITH_LIBICU
   libpsl_la_LDFLAGS += $(LIBICU_LIBS)
 endif

@@ -1,6 +1,7 @@
 
-AC_INIT([libpsl], [0.19.1], [tim.ruehsen@gmx.de], [libpsl], [https://github.com/rockdaboot/libpsl])
+AC_INIT([libpsl], [0.20.2], [tim.ruehsen@gmx.de], [libpsl], [https://github.com/rockdaboot/libpsl])
 AC_PREREQ([2.59])
+AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([1.10 no-define foreign])
 
 # Generate two configuration headers; one for building the library itself with
@@ -10,12 +11,15 @@ AC_CONFIG_HEADERS([config.h])
 AC_PROG_CC
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 #LT_INIT([disable-static])
-LT_INIT
+LT_INIT([win32-dll])
 AC_CONFIG_MACRO_DIR([m4])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 dnl Check that compiler understands inline
 AC_C_INLINE
+
+dnl Check for visibility support
+gl_VISIBILITY
 
 #
 # Generate version defines for include file
@@ -46,43 +50,34 @@ AM_CONDITIONAL([GTK_DOC_USE_LIBTOOL], false)
 ])
 
 if test x"$have_gtk_doc" = xyes -a x"$enable_gtk_doc" = xyes; then
-  AC_CONFIG_FILES([docs/libpsl/Makefile docs/libpsl/version.xml])
   AC_SUBST([LIBPSL_DOCS], [docs/libpsl])
 fi
 
 #
 # enable creation of man pages
 #
-AC_ARG_ENABLE(man,[AC_HELP_STRING([--enable-man],
-                                  [generate man pages [default=auto]])],enable_man=yes,enable_man=no)
-AS_IF([test "$enable_man" != no], [
-  AC_PATH_PROG([XSLTPROC], [xsltproc])
-  AS_IF([test -z "$XSLTPROC"], [
-    AS_IF([test "$enable_man" = yes], [
-      AC_MSG_ERROR([xsltproc is required for --enable-man])
-    ])
-    enable_man=no
-  ])
-])
-AM_CONDITIONAL(ENABLE_MAN, test x$enable_man != xno)
-AC_MSG_CHECKING([whether to generate man pages])
-AS_IF([ test "$enable_man" != no ], [
-  AC_MSG_RESULT([yes])
-], [
-  AC_MSG_RESULT([no])
-])
+AC_ARG_ENABLE([man],
+  [AC_HELP_STRING([--enable-man], [generate man pages [default=auto]])],
+  [
+    if test "$enable_man" = yes; then
+      AC_PATH_PROG([XSLTPROC], [xsltproc])
+      AS_IF([test -z "$XSLTPROC"], [
+        AC_MSG_ERROR([xsltproc is required for --enable-man])
+        enable_man="no (xsltproc not found)"
+      ])
+    fi
+  ], [ enable_man=no ])
+AM_CONDITIONAL(ENABLE_MAN, test x$enable_man = xyes)
 
 # src/psl-make-dafsa needs python 2.7+
 AM_PATH_PYTHON([2.7])
 
 PKG_PROG_PKG_CONFIG
 
-cfi=no
 AC_ARG_ENABLE([cfi],
   [AS_HELP_STRING([--enable-cfi], [Turn on clang's Control Flow Integrity (CFI)])],
   [
-    if test "$enableval" = yes; then
-      cfi=yes
+    if test "$enable_cfi" = yes; then
       CFLAGS=$CFLAGS" -B/usr/bin/gold -fsanitize=cfi -flto -fvisibility=default -fno-sanitize-trap=all"
       AC_LINK_IFELSE([
         AC_LANG_PROGRAM([], [])
@@ -90,28 +85,24 @@ AC_ARG_ENABLE([cfi],
         AC_MSG_ERROR([clang 3.7+ and the 'gold' linker are required for --enable-cfi])
       ])
     fi
-  ])
+  ], [ enable_cfi=no ])
 
-ubsan=no
 AC_ARG_ENABLE([ubsan],
   [AS_HELP_STRING([--enable-ubsan], [Turn on Undefined Behavior Sanitizer (UBSan)])],
   [
-    if test "$enableval" = yes; then
-      ubsan=yes
+    if test "$enable_ubsan" = yes; then
       CFLAGS=$CFLAGS" -fsanitize=undefined -fno-sanitize-recover=undefined"
     fi
-  ])
+  ], [ enable_ubsan=no ])
 
-asan=no
 AC_ARG_ENABLE([asan],
   [AS_HELP_STRING([--enable-asan], [Turn on Address Sanitizer (ASan)])],
   [
-    if test "$enableval" = yes; then
-      asan=yes
+    if test "$enable_asan" = yes; then
       CFLAGS=$CFLAGS" -fsanitize=address -fno-omit-frame-pointer"
       AX_CHECK_COMPILE_FLAG([-fsanitize-address-use-after-scope], [CFLAGS="$CFLAGS -fsanitize-address-use-after-scope"])
     fi
-  ])
+  ], [ enable_asan=no ])
 
 # Define these substitions here to keep all version information in one place.
 # For information on how to properly maintain the library version information,
@@ -124,7 +115,7 @@ AC_ARG_ENABLE([asan],
 # 4. If any interfaces have been added, removed, or changed since the last update, increment current, and set revision to 0.
 # 5. If any interfaces have been added since the last public release, then increment age.
 # 6. If any existing interfaces have been removed or changed since the last public release, then set age to 0. 
-AC_SUBST([LIBPSL_SO_VERSION], [7:0:2])
+AC_SUBST([LIBPSL_SO_VERSION], [8:1:3])
 AC_SUBST([LIBPSL_VERSION], $VERSION)
 
 # Check for enable/disable builtin PSL data
@@ -153,8 +144,7 @@ AC_ARG_ENABLE(runtime,
     fi
   ], [
     # this is the default if neither --enable-runtime nor --disable-runtime were specified
-    enable_runtime=libidn2
-    AC_DEFINE([WITH_LIBIDN2], [1], [generate PSL data using libidn2])
+    enable_runtime=auto
   ])
 
 # Check for enable/disable builtin PSL data
@@ -183,11 +173,40 @@ AC_ARG_ENABLE(builtin,
     fi
   ], [
     # this is the default if neither --enable-builtin nor --disable-builtin were specified
-    enable_builtin=libidn2
-    AC_DEFINE([BUILTIN_GENERATOR_LIBIDN2], [1], [generate PSL data using libidn2])
+    enable_builtin=auto
   ])
 
-if test "$enable_runtime" = "libicu" -o "$enable_builtin" = "libicu"; then
+if test "$enable_runtime" = "libidn2" -o "$enable_builtin" = "libidn2" -o "$enable_runtime" = "auto" -o "$enable_builtin" = "auto"; then
+  # Check for libidn2
+  PKG_CHECK_MODULES([LIBIDN2], [libidn2], [
+    HAVE_LIBIDN2=yes
+    if test "$enable_runtime" = "libidn2"; then
+      CFLAGS="$LIBIDN2_CFLAGS $CFLAGS"
+    fi
+  ], [
+    OLDLIBS=$LIBS
+    AC_SEARCH_LIBS(idn2_lookup_u8, idn2, HAVE_LIBIDN2=yes,
+    [
+       if test "$enable_runtime" = "libidn2" -o "$enable_builtin" = "libidn2"; then
+          AC_MSG_ERROR(You requested libidn2 but it is not installed.)
+       fi
+    ], -lunistring)
+    LIBS=$OLDLIBS
+  ])
+
+  if test "x$HAVE_LIBIDN2" = "xyes"; then
+    if test "$enable_runtime" = "auto"; then
+      enable_runtime=libidn2
+      AC_DEFINE([WITH_LIBIDN2], [1], [generate PSL data using libidn2])
+    fi
+    if test "$enable_builtin" = "auto"; then
+      enable_builtin=libidn2
+      AC_DEFINE([BUILTIN_GENERATOR_LIBIDN2], [1], [generate PSL data using libidn2])
+    fi
+  fi
+fi
+
+if test "$enable_runtime" = "libicu" -o "$enable_builtin" = "libicu" -o "$enable_runtime" = "auto" -o "$enable_builtin" = "auto"; then
   # Check for libicu
   # using pkg-config won't work on older systems like Ubuntu 12.04 LTS Server Edition 64bit
   # using AC_SEARCH_LIBS also don't work since functions have the library version appended
@@ -205,37 +224,62 @@ if test "$enable_runtime" = "libicu" -o "$enable_builtin" = "libicu"; then
         [[#include <unicode/ustring.h>]],
         [[u_strToUTF8(NULL, 0, NULL, NULL, 0, NULL);]])],
       [HAVE_LIBICU=yes; LIBICU_LIBS="-licuuc"; AC_MSG_RESULT([yes])],
-      [AC_MSG_RESULT([no]); AC_MSG_ERROR(You requested libicu but it is not installed.)])
+      [ AC_MSG_RESULT([no]);
+        if test "$enable_runtime" = "libicu" -o "$enable_builtin" = "libicu"; then
+          AC_MSG_ERROR(You requested libicu but it is not installed.)
+        fi
+      ])
     LIBS=$OLDLIBS
   ])
-fi
 
-if test "$enable_runtime" = "libidn2" -o "$enable_builtin" = "libidn2"; then
-  # Check for libidn2
-  PKG_CHECK_MODULES([LIBIDN2], [libidn2], [
-    HAVE_LIBIDN2=yes
-    if test "$enable_runtime" = "libidn2"; then
-      CFLAGS="$LIBIDN2_CFLAGS $CFLAGS"
+  if test "x$HAVE_LIBICU" = "xyes"; then
+    if test "$enable_runtime" = "auto"; then
+      enable_runtime=libicu
+      AC_DEFINE([BUILTIN_GENERATOR_LIBICU], [1], [generate PSL data using libicu])
     fi
-  ], [
-    OLDLIBS=$LIBS
-    AC_SEARCH_LIBS(idn2_lookup_u8, idn2, HAVE_LIBIDN2=yes, AC_MSG_ERROR(You requested libidn2 but it is not installed.), -lunistring)
-    LIBS=$OLDLIBS
-  ])
+    if test "$enable_builtin" = "auto"; then
+      enable_builtin=libicu
+      AC_DEFINE([BUILTIN_GENERATOR_LIBICU], [1], [generate PSL data using libicu])
+    fi
+  fi
 fi
 
-if test "$enable_runtime" = "libidn" -o "$enable_builtin" = "libidn"; then
+if test "$enable_runtime" = "libidn" -o "$enable_builtin" = "libidn" -o "$enable_runtime" = "auto" -o "$enable_builtin" = "auto"; then
   # Check for libidn
   PKG_CHECK_MODULES([LIBIDN], [libidn], [
-    HAVE_LIBIDN2=yes
+    HAVE_LIBIDN=yes
     if test "$enable_runtime" = "libidn"; then
       CFLAGS="$LIBIDN_CFLAGS $CFLAGS"
     fi
   ], [
     OLDLIBS=$LIBS
-    AC_SEARCH_LIBS(idna_to_ascii_8z, idn, HAVE_LIBIDN=yes, AC_MSG_ERROR(You requested libidn but it is not installed.))
+    AC_SEARCH_LIBS(idna_to_ascii_8z, idn, HAVE_LIBIDN=yes,
+    [
+      if test "$enable_runtime" = "libidn" -o "$enable_builtin" = "libidn"; then
+        AC_MSG_ERROR(You requested libidn but it is not installed.)
+      fi
+    ])
     LIBS=$OLDLIBS
   ])
+
+  if test "x$HAVE_LIBIDN" = "xyes"; then
+    if test "$enable_runtime" = "auto"; then
+      enable_runtime=libidn
+      AC_DEFINE([WITH_LIBIDN], [1], [generate PSL data using libidn])
+    fi
+    if test "$enable_builtin" = "auto"; then
+      enable_builtin=libidn
+      AC_DEFINE([WITH_LIBIDN], [1], [generate PSL data using libidn])
+    fi
+  fi
+fi
+
+# last fallback is noruntime/nobuiltin
+if test "$enable_runtime" = "auto"; then
+  enable_runtime=no
+fi
+if test "$enable_builtin" = "auto"; then
+  enable_builtin=no
 fi
 
 if test "x$HAVE_LIBIDN2" = "xyes" -o "x$HAVE_LIBIDN" = "xyes"; then
@@ -268,6 +312,9 @@ elif test -n "$NEEDS_SOCKET" ; then
   LIBS="$LIBS -lsocket"
 elif test -n "$NEEDS_NSL" ; then
   LIBS="$LIBS -lnsl"
+else
+  # Needed for MinGW / Windows
+  AC_SEARCH_LIBS(inet_pton, ws2_32)
 fi
 
 # Check for clock_gettime() used for performance measurement
@@ -314,7 +361,7 @@ AC_SUBST(PSL_TESTFILE)
 
 # check for alloca / alloca.h
 AC_FUNC_ALLOCA
-AC_CHECK_FUNCS([strndup clock_gettime])
+AC_CHECK_FUNCS([strndup clock_gettime fmemopen nl_langinfo])
 
 # Override the template file name of the generated .pc file, so that there
 # is no need to rename the template file when the API version changes.
@@ -325,7 +372,11 @@ AC_CONFIG_FILES([Makefile
                  po/Makefile.in
                  fuzz/Makefile
                  tests/Makefile
-                 libpsl.pc:libpsl.pc.in])
+                 docs/libpsl/Makefile docs/libpsl/version.xml
+                 libpsl.pc:libpsl.pc.in
+                 msvc/Makefile
+                 msvc/config.h.win32
+                 msvc/config-msvc.mak])
 AC_OUTPUT
 
 AC_MSG_NOTICE([Summary of build options:
@@ -342,6 +393,8 @@ AC_MSG_NOTICE([Summary of build options:
   PSL Dist File:     ${PSL_DISTFILE}
   PSL File:          ${PSL_FILE}
   PSL Test File:     ${PSL_TESTFILE}
-  Sanitizers:        UBSan $ubsan, ASan $asan, CFI $cfi
+  Sanitizers:        UBSan $enable_ubsan, ASan $enable_asan, CFI $enable_cfi
+  Docs:              $enable_gtk_doc
+  Man pages:         $enable_man
   Tests:             ${TESTS_INFO}
 ])

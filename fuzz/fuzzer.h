@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Tim Ruehsen
+ * Copyright(c) 2017-2018 Tim Ruehsen
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -22,8 +22,15 @@
  * This file is part of libpsl.
  */
 
+#include <config.h>
+
 #include <stddef.h> /* size_t */
+
+#ifdef HAVE_STDINT_H
 #include <stdint.h> /* uint8_t */
+#elif defined (_MSC_VER)
+typedef unsigned __int8 uint8_t;
+#endif
 
 #ifdef __cplusplus
 extern "C"

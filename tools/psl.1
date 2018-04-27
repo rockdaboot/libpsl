@@ -16,10 +16,13 @@ The information printed per domain changes based on the selected mode.
 Available modes are:
 .TP
 \fB\-\-is\-public\-suffix\fR
-check if domains are public suffixes.
+check if domains are public suffixes. [default]
 .br
 Returned data: 1 if the \fIdomain\fR is a public suffix, 0 otherwise.
-[default]
+.br
+This option can be combined with \fB\-\-no\-star\-rule\fR.  It's use will
+switch off the PSL 'prevailing star rule' so that all TLDs not
+explicitly listed in the PSL will return 0 (not a public suffix).
 .TP
 \fB\-\-is\-cookie\-domain\-acceptable\fR <cookie\-domain>
 check if cookie\-domain is acceptable for domains.

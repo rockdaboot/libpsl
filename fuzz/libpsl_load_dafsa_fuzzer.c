@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Tim Ruehsen
+ * Copyright(c) 2017-2018 Tim Ruehsen
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -25,7 +25,13 @@
 #include <config.h>
 
 #include <assert.h> /* assert */
+
+#ifdef HAVE_STDINT_H
 #include <stdint.h> /* uint8_t */
+#elif defined (_MSC_VER)
+typedef unsigned __int8 uint8_t;
+#endif
+
 #include <stdlib.h> /* malloc, free */
 #include <string.h> /* memcpy */
 
@@ -34,6 +40,7 @@
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
+#ifdef HAVE_FMEMOPEN
 	FILE *fp;
 	psl_ctx_t *psl;
 	char *in = (char *) malloc(size + 16);
@@ -62,6 +69,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	psl_free(psl);
 
 	free(in);
+#endif
 
 	return 0;
 }
