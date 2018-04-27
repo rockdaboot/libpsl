@@ -19,10 +19,10 @@ if WITH_LIBICU
   libpsl_la_LDFLAGS += $(LIBICU_LIBS)
 endif
 if WITH_LIBIDN2
-  libpsl_la_LDFLAGS += -lidn2 -lunistring
+  libpsl_la_LDFLAGS += $(LIBIDN2_LIBS) -lunistring
 endif
 if WITH_LIBIDN
-  libpsl_la_LDFLAGS += -lidn -lunistring
+  libpsl_la_LDFLAGS += $(LIBIDN_LIBS) -lunistring
 endif
 
 # Build rule for suffix_dafsa.c
