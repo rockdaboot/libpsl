@@ -15,15 +15,12 @@ libpsl_la_LIBADD = $(LTLIBICONV) $(LTLIBINTL) @INTL_MACOSX_LIBS@
 
 # include ABI version information
 libpsl_la_LDFLAGS = -no-undefined -version-info $(LIBPSL_SO_VERSION)
-if WITH_LIBICU
-  libpsl_la_LDFLAGS += $(LIBICU_LIBS)
-endif
-if WITH_LIBIDN2
-  libpsl_la_LDFLAGS += -lidn2 -lunistring
-endif
-if WITH_LIBIDN
-  libpsl_la_LDFLAGS += -lidn -lunistring
-endif
+#if WITH_LIBICU
+#  libpsl_la_LDFLAGS += $(LIBICU_LIBS)
+#endif
+#if WITH_LIBIDN
+#  libpsl_la_LDFLAGS += -lidn -lunistring
+#endif
 
 # Build rule for suffix_dafsa.c
 # PSL_FILE can be set by ./configure --with-psl-file=[PATH]
