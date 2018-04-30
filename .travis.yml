@@ -38,6 +38,7 @@ addons:
       - valgrind
 
 script:
+  - set -e
   - ./autogen.sh
 #  CFI doesn't work out on Ubuntu 14.04 (Trusty). They don't include LLVMgold.so for clang-3.8.
 #  clang-3.4 doesn't know CFI yet.

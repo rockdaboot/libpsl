@@ -180,18 +180,17 @@ if test "$enable_runtime" = "libidn2" -o "$enable_builtin" = "libidn2" -o "$enab
   # Check for libidn2
   PKG_CHECK_MODULES([LIBIDN2], [libidn2], [
     HAVE_LIBIDN2=yes
-    if test "$enable_runtime" = "libidn2"; then
+    if test "$enable_runtime" = "libidn2" -o "$enable_runtime" = "auto"; then
+      LIBS="$LIBIDN2_LIBS $LIBS"
       CFLAGS="$LIBIDN2_CFLAGS $CFLAGS"
     fi
   ], [
-    OLDLIBS=$LIBS
     AC_SEARCH_LIBS(idn2_lookup_u8, idn2, HAVE_LIBIDN2=yes,
     [
        if test "$enable_runtime" = "libidn2" -o "$enable_builtin" = "libidn2"; then
           AC_MSG_ERROR(You requested libidn2 but it is not installed.)
        fi
     ], -lunistring)
-    LIBS=$OLDLIBS
   ])
 
   if test "x$HAVE_LIBIDN2" = "xyes"; then
@@ -212,7 +211,8 @@ if test "$enable_runtime" = "libicu" -o "$enable_builtin" = "libicu" -o "$enable
   # using AC_SEARCH_LIBS also don't work since functions have the library version appended
   PKG_CHECK_MODULES([LIBICU], [icu-uc], [
     HAVE_LIBICU=yes
-    if test "$enable_runtime" = "libicu"; then
+    if test "$enable_runtime" = "libicu" -o "$enable_runtime" = "auto"; then
+      LIBS="$LIBICU_LIBS $LIBS"
       CFLAGS="$LIBICU_CFLAGS $CFLAGS"
     fi
   ], [
@@ -228,8 +228,8 @@ if test "$enable_runtime" = "libicu" -o "$enable_builtin" = "libicu" -o "$enable
         if test "$enable_runtime" = "libicu" -o "$enable_builtin" = "libicu"; then
           AC_MSG_ERROR(You requested libicu but it is not installed.)
         fi
+        LIBS=$OLDLIBS
       ])
-    LIBS=$OLDLIBS
   ])
 
   if test "x$HAVE_LIBICU" = "xyes"; then
@@ -248,18 +248,17 @@ if test "$enable_runtime" = "libidn" -o "$enable_builtin" = "libidn" -o "$enable
   # Check for libidn
   PKG_CHECK_MODULES([LIBIDN], [libidn], [
     HAVE_LIBIDN=yes
-    if test "$enable_runtime" = "libidn"; then
+    if test "$enable_runtime" = "libidn" -o "$enable_runtime" = "auto"; then
+      LIBS="$LIBIDN_LIBS $LIBS"
       CFLAGS="$LIBIDN_CFLAGS $CFLAGS"
     fi
   ], [
-    OLDLIBS=$LIBS
     AC_SEARCH_LIBS(idna_to_ascii_8z, idn, HAVE_LIBIDN=yes,
     [
       if test "$enable_runtime" = "libidn" -o "$enable_builtin" = "libidn"; then
         AC_MSG_ERROR(You requested libidn but it is not installed.)
       fi
     ])
-    LIBS=$OLDLIBS
   ])
 
   if test "x$HAVE_LIBIDN" = "xyes"; then
@@ -284,9 +283,7 @@ fi
 
 if test "x$HAVE_LIBIDN2" = "xyes" -o "x$HAVE_LIBIDN" = "xyes"; then
   # Check for libunistring, we need it for psl_str_to_utf8lower()
-  OLDLIBS=$LIBS
   AC_SEARCH_LIBS(u8_tolower, unistring, HAVE_UNISTRING=yes, AC_MSG_ERROR(You requested libidn2|libidn but libunistring is not installed.))
-  LIBS=$OLDLIBS
 fi
 
 # AM_ICONV sets @LIBICONV@ and @LTLIBICONV@ for use in Makefile.am
