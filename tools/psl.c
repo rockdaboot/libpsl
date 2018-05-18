@@ -60,6 +60,7 @@ static void usage(int err, FILE* f)
 	fprintf(f, "  --print-unreg-domain         print the longest public suffix part\n");
 	fprintf(f, "  --print-reg-domain           print the shortest private suffix part\n");
 	fprintf(f, "  --print-info                 print info about library builtin data\n");
+	fprintf(f, "  -b,  --batch                 don't print leading domain\n");
 	fprintf(f, "\n");
 
 	exit(err);
@@ -77,7 +78,7 @@ static const char *time2str(time_t t)
 
 int main(int argc, const char *const *argv)
 {
-	int mode = 1, no_star_rule = 0;
+	int mode = 1, no_star_rule = 0, batch_mode = 0;
 	const char *const *arg, *psl_file = NULL, *cookie_domain = NULL;
 	psl_ctx_t *psl = (psl_ctx_t *) psl_latest(NULL);
 
@@ -85,7 +86,7 @@ int main(int argc, const char *const *argv)
 	setlocale(LC_ALL, "");
 
 	for (arg = argv + 1; arg < argv + argc; arg++) {
-		if (!strncmp(*arg, "--", 2)) {
+		if (**arg == '-') {
 			if (!strcmp(*arg, "--is-public-suffix"))
 				mode = 1;
 			else if (!strcmp(*arg, "--print-unreg-domain"))
@@ -129,6 +130,9 @@ int main(int argc, const char *const *argv)
 					fprintf(stderr, "Failed to load PSL data from %s\n\n", psl_file);
 					psl_file = NULL;
 				}
+			}
+			else if (!strcmp(*arg, "--batch") || !strcmp(*arg, "-b")) {
+				batch_mode = 1;
 			}
 			else if (!strcmp(*arg, "--help")) {
 				fprintf(stdout, "`psl' explores the Public Suffix List\n\n");
@@ -175,30 +179,42 @@ int main(int argc, const char *const *argv)
 				for (len = strlen(domain); len && isspace(domain[len - 1]); len--); /* skip trailing spaces */
 				domain[len] = 0;
 
-				if ((rc = psl_str_to_utf8lower(domain, NULL, NULL, &lower)) != PSL_SUCCESS)
+				if ((rc = psl_str_to_utf8lower(domain, NULL, NULL, &lower)) != PSL_SUCCESS) {
 					fprintf(stderr, "%s: Failed to convert to lowercase UTF-8 (%d)\n", domain, rc);
-				else if (mode == 1) {
+					continue;
+				}
+
+				if (!batch_mode && mode != 4)
+					printf("%s: ", domain);
+
+				if (mode == 1) {
 					if (no_star_rule)
-						printf("%s: %d (%s)\n", domain, psl_is_public_suffix2(psl, lower, PSL_TYPE_ANY|PSL_TYPE_NO_STAR_RULE), lower);
+						printf("%d", psl_is_public_suffix2(psl, lower, PSL_TYPE_ANY|PSL_TYPE_NO_STAR_RULE));
 					else
-						printf("%s: %d (%s)\n", domain, psl_is_public_suffix(psl, lower), lower);
+						printf("%d", psl_is_public_suffix(psl, lower));
+
+					if (!batch_mode)
+						printf(" (%s)\n", lower);
+					else
+						putchar('\n');
 				}
 				else if (mode == 2)
-					printf("%s: %s\n", domain, psl_unregistrable_domain(psl, lower));
+					printf("%s\n", psl_unregistrable_domain(psl, lower));
 				else if (mode == 3)
-					printf("%s: %s\n", domain, psl_registrable_domain(psl, lower));
+					printf("%s\n", psl_registrable_domain(psl, lower));
 				else if (mode == 4) {
 					char *cookie_domain_lower;
 
 					if ((rc = psl_str_to_utf8lower(domain, NULL, NULL, &cookie_domain_lower)) == PSL_SUCCESS) {
-						printf("%s: %d\n", domain, psl_is_cookie_domain_acceptable(psl, lower, cookie_domain));
+						if (!batch_mode)
+							printf("%s: ", domain);
+						printf("%d\n", psl_is_cookie_domain_acceptable(psl, lower, cookie_domain));
 						free(cookie_domain_lower);
 					} else
 						fprintf(stderr, "%s: Failed to convert cookie domain '%s' to lowercase UTF-8 (%d)\n", domain, cookie_domain, rc);
 				}
 
-				if (rc == PSL_SUCCESS)
-					psl_free_string(lower);
+				psl_free_string(lower);
 			}
 
 			psl_free(psl);
@@ -208,23 +224,34 @@ int main(int argc, const char *const *argv)
 
 	if (mode == 1) {
 		for (; arg < argv + argc; arg++) {
+			if (!batch_mode)
+				printf("%s: ", *arg);
 			if (no_star_rule)
-				printf("%s: %d\n", *arg, psl_is_public_suffix2(psl, *arg, PSL_TYPE_ANY|PSL_TYPE_NO_STAR_RULE));
+				printf("%d\n", psl_is_public_suffix2(psl, *arg, PSL_TYPE_ANY|PSL_TYPE_NO_STAR_RULE));
 			else
-				printf("%s: %d\n", *arg, psl_is_public_suffix(psl, *arg));
+				printf("%d\n", psl_is_public_suffix(psl, *arg));
 		}
 	}
 	else if (mode == 2) {
-		for (; arg < argv + argc; arg++)
-			printf("%s: %s\n", *arg, psl_unregistrable_domain(psl, *arg));
+		for (; arg < argv + argc; arg++) {
+			if (!batch_mode)
+				printf("%s: ", *arg);
+			printf("%s\n", psl_unregistrable_domain(psl, *arg));
+		}
 	}
 	else if (mode == 3) {
-		for (; arg < argv + argc; arg++)
-			printf("%s: %s\n", *arg, psl_registrable_domain(psl, *arg));
+		for (; arg < argv + argc; arg++) {
+			if (!batch_mode)
+				printf("%s: ", *arg);
+			printf("%s\n", psl_registrable_domain(psl, *arg));
+		}
 	}
 	else if (mode == 4) {
-		for (; arg < argv + argc; arg++)
-			printf("%s: %d\n", *arg, psl_is_cookie_domain_acceptable(psl, *arg, cookie_domain));
+		for (; arg < argv + argc; arg++) {
+			if (!batch_mode)
+				printf("%s: ", *arg);
+			printf("%d\n", psl_is_cookie_domain_acceptable(psl, *arg, cookie_domain));
+		}
 	}
 	else if (mode == 99) {
 		printf("dist filename: %s\n", psl_dist_filename());
