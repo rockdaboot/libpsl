@@ -8,7 +8,7 @@
 <link rel="up" href="libpsl.html" title="Libpsl Overview">
 <link rel="prev" href="libpsl.html" title="Libpsl Overview">
 <link rel="next" href="object-tree.html" title="Object Hierarchy">
-<meta name="generator" content="GTK-Doc V1.25 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.28 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -204,6 +204,14 @@
 <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-str-to-utf8lower" title="psl_str_to_utf8lower ()">psl_str_to_utf8lower</a> <span class="c_punctuation">()</span>
 </td>
 </tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-free-string" title="psl_free_string ()">psl_free_string</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
 </tbody>
 </table></div>
 </div>
@@ -242,6 +250,10 @@
 <tr>
 <td class="define_keyword">#define</td>
 <td class="function_name"><a class="link" href="libpsl-Public-Suffix-List-functions.html#PSL-TYPE-PRIVATE:CAPS" title="PSL_TYPE_PRIVATE">PSL_TYPE_PRIVATE</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="libpsl-Public-Suffix-List-functions.html#PSL-TYPE-NO-STAR-RULE:CAPS" title="PSL_TYPE_NO_STAR_RULE">PSL_TYPE_NO_STAR_RULE</a></td>
 </tr>
 <tr>
 <td class="define_keyword">#define</td>
@@ -294,7 +306,7 @@ To free the allocated resources, call <a class="link" href="libpsl-Public-Suffix
 </div>
 <div class="refsect3">
 <a name="psl-load-file.returns"></a><h4>Returns</h4>
-<p> Pointer to a PSL context or <a href="/usr/share/gtk-doc/html/glibglib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on failure.</p>
+<p> Pointer to a PSL context or <a href="/usr/share/gtk-doc/html/glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on failure.</p>
 </div>
 <p class="since">Since: 0.1</p>
 </div>
@@ -323,7 +335,7 @@ To free the allocated resources, call <a class="link" href="libpsl-Public-Suffix
 </div>
 <div class="refsect3">
 <a name="psl-load-fp.returns"></a><h4>Returns</h4>
-<p> Pointer to a PSL context or <a href="/usr/share/gtk-doc/html/glibglib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on failure.</p>
+<p> Pointer to a PSL context or <a href="/usr/share/gtk-doc/html/glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on failure.</p>
 </div>
 <p class="since">Since: 0.1</p>
 </div>
@@ -335,12 +347,12 @@ psl_latest (<em class="parameter"><code>const <span class="type">char</span> *fn
 <p>This function loads the the latest available PSL data from either</p>
 <div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
 <li class="listitem"><p><em class="parameter"><code>fname</code></em>
- (application specific filename, may be <a href="/usr/share/gtk-doc/html/glibglib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>)</p></li>
+ (application specific filename, may be <a href="/usr/share/gtk-doc/html/glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>)</p></li>
 <li class="listitem"><p>location specified during built-time (filename from ./configure --with-psl-distfile)</p></li>
 <li class="listitem"><p>built-in PSL data (generated from ./configure --with-psl-file)</p></li>
 <li class="listitem"><p>location of built-in data (filename from ./configure --with-psl-file)</p></li>
 </ul></div>
-<p>If none of the above is available, the function returns <a href="/usr/share/gtk-doc/html/glibglib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.</p>
+<p>If none of the above is available, the function returns <a href="/usr/share/gtk-doc/html/glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.</p>
 <p>To free the allocated resources, call <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-free" title="psl_free ()"><code class="function">psl_free()</code></a>.</p>
 <div class="refsect3">
 <a name="psl-latest.parameters"></a><h4>Parameters</h4>
@@ -352,14 +364,14 @@ psl_latest (<em class="parameter"><code>const <span class="type">char</span> *fn
 </colgroup>
 <tbody><tr>
 <td class="parameter_name"><p>fname</p></td>
-<td class="parameter_description"><p>Name of PSL file or <a href="/usr/share/gtk-doc/html/glibglib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_description"><p>Name of PSL file or <a href="/usr/share/gtk-doc/html/glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
 <td class="parameter_annotations"> </td>
 </tr></tbody>
 </table></div>
 </div>
 <div class="refsect3">
 <a name="psl-latest.returns"></a><h4>Returns</h4>
-<p> Pointer to a PSL context or <a href="/usr/share/gtk-doc/html/glibglib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on failure.</p>
+<p> Pointer to a PSL context or <a href="/usr/share/gtk-doc/html/glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on failure.</p>
 </div>
 <p class="since">Since: 0.16</p>
 </div>
@@ -369,9 +381,9 @@ psl_latest (<em class="parameter"><code>const <span class="type">char</span> *fn
 <pre class="programlisting">const <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-ctx-t" title="psl_ctx_t"><span class="returnvalue">psl_ctx_t</span></a> *
 psl_builtin (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>This function returns the PSL context that has been generated and built in at compile-time.
-You don't have to free the returned context explicitely.</p>
+You don't have to free the returned context explicitly.</p>
 <p>The builtin data also contains punycode entries, one for each international domain name.</p>
-<p>If the generation of built-in data has been disabled during compilation, <a href="/usr/share/gtk-doc/html/glibglib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> will be returned.
+<p>If the generation of built-in data has been disabled during compilation, <a href="/usr/share/gtk-doc/html/glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> will be returned.
 When using the builtin psl context, you can provide UTF-8 (lowercase + NFKC) or ASCII/ACE (punycode)
 representations of domains to functions like <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-is-public-suffix" title="psl_is_public_suffix ()"><code class="function">psl_is_public_suffix()</code></a>.</p>
 <div class="refsect3">
@@ -462,7 +474,10 @@ psl_is_public_suffix2 (<em class="parameter"><code>const <a class="link" href="l
 <a class="ulink" href="https://publicsuffix.org" target="_top">Mozilla Public Suffix List</a>.</p>
 <p><em class="parameter"><code>type</code></em>
  specifies the PSL section where to perform the lookup. Valid values are
-<a class="link" href="libpsl-Public-Suffix-List-functions.html#PSL-TYPE-PRIVATE:CAPS" title="PSL_TYPE_PRIVATE"><code class="literal">PSL_TYPE_PRIVATE</code></a>, <a class="link" href="libpsl-Public-Suffix-List-functions.html#PSL-TYPE-ICANN:CAPS" title="PSL_TYPE_ICANN"><code class="literal">PSL_TYPE_ICANN</code></a> and <a class="link" href="libpsl-Public-Suffix-List-functions.html#PSL-TYPE-ANY:CAPS" title="PSL_TYPE_ANY"><code class="literal">PSL_TYPE_ANY</code></a>.</p>
+<a class="link" href="libpsl-Public-Suffix-List-functions.html#PSL-TYPE-PRIVATE:CAPS" title="PSL_TYPE_PRIVATE"><code class="literal">PSL_TYPE_PRIVATE</code></a>, <a class="link" href="libpsl-Public-Suffix-List-functions.html#PSL-TYPE-ICANN:CAPS" title="PSL_TYPE_ICANN"><code class="literal">PSL_TYPE_ICANN</code></a>, <a class="link" href="libpsl-Public-Suffix-List-functions.html#PSL-TYPE-NO-STAR-RULE:CAPS" title="PSL_TYPE_NO_STAR_RULE"><code class="literal">PSL_TYPE_NO_STAR_RULE</code></a>, and <a class="link" href="libpsl-Public-Suffix-List-functions.html#PSL-TYPE-ANY:CAPS" title="PSL_TYPE_ANY"><code class="literal">PSL_TYPE_ANY</code></a>.</p>
+<p><a class="link" href="libpsl-Public-Suffix-List-functions.html#PSL-TYPE-NO-STAR-RULE:CAPS" title="PSL_TYPE_NO_STAR_RULE"><code class="literal">PSL_TYPE_NO_STAR_RULE</code></a> switches of the 'prevailing star rule' (see
+<a class="ulink" href="https://publicsuffix.org/list" target="_top">List</a> under 'Algorithm' 2.).
+Applying the flag means that TLDs not explicitly listed in the PSL are *not* treated as public suffixes.</p>
 <p>International <em class="parameter"><code>domain</code></em>
  names have to be either in UTF-8 (lowercase + NFKC) or in ASCII/ACE format (punycode).
 Other encodings likely result in incorrect return values.
@@ -546,9 +561,9 @@ Use helper function <a class="link" href="libpsl-Public-Suffix-List-functions.ht
 <div class="refsect3">
 <a name="psl-unregistrable-domain.returns"></a><h4>Returns</h4>
 <p> Pointer to longest public suffix part of <em class="parameter"><code>domain</code></em>
-or <a href="/usr/share/gtk-doc/html/glibglib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if <em class="parameter"><code>domain</code></em>
+or <a href="/usr/share/gtk-doc/html/glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if <em class="parameter"><code>domain</code></em>
 does not contain a public suffix (or if <em class="parameter"><code>psl</code></em>
-is <a href="/usr/share/gtk-doc/html/glibglib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>).</p>
+is <a href="/usr/share/gtk-doc/html/glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>).</p>
 </div>
 <p class="since">Since: 0.1</p>
 </div>
@@ -594,9 +609,9 @@ Use helper function <a class="link" href="libpsl-Public-Suffix-List-functions.ht
 <div class="refsect3">
 <a name="psl-registrable-domain.returns"></a><h4>Returns</h4>
 <p> Pointer to shortest private suffix part of <em class="parameter"><code>domain</code></em>
-or <a href="/usr/share/gtk-doc/html/glibglib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if <em class="parameter"><code>domain</code></em>
+or <a href="/usr/share/gtk-doc/html/glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if <em class="parameter"><code>domain</code></em>
 does not contain a private suffix (or if <em class="parameter"><code>psl</code></em>
-is <a href="/usr/share/gtk-doc/html/glibglib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>).</p>
+is <a href="/usr/share/gtk-doc/html/glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>).</p>
 </div>
 <p class="since">Since: 0.1</p>
 </div>
@@ -608,6 +623,9 @@ psl_suffix_count (<em class="parameter"><code>const <a class="link" href="libpsl
 <p>This function returns number of public suffixes maintained by <em class="parameter"><code>psl</code></em>
 .
 The number of exceptions within the Public Suffix List are not included.</p>
+<p>If the information is not available, the return value is -1 (since 0.19).
+This is the case with DAFSA blobs or if <em class="parameter"><code>psl</code></em>
+ is NULL.</p>
 <div class="refsect3">
 <a name="psl-suffix-count.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table class="informaltable" width="100%" border="0">
@@ -625,7 +643,7 @@ The number of exceptions within the Public Suffix List are not included.</p>
 </div>
 <div class="refsect3">
 <a name="psl-suffix-count.returns"></a><h4>Returns</h4>
-<p> Number of public suffixes entries in PSL context.</p>
+<p> Number of public suffixes entries in PSL context or -1 if this information is not available.</p>
 </div>
 <p class="since">Since: 0.1</p>
 </div>
@@ -636,6 +654,9 @@ The number of exceptions within the Public Suffix List are not included.</p>
 psl_suffix_exception_count (<em class="parameter"><code>const <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-ctx-t" title="psl_ctx_t"><span class="type">psl_ctx_t</span></a> *psl</code></em>);</pre>
 <p>This function returns number of public suffix exceptions maintained by <em class="parameter"><code>psl</code></em>
 .</p>
+<p>If the information is not available, the return value is -1 (since 0.19).
+This is the case with DAFSA blobs or if <em class="parameter"><code>psl</code></em>
+ is NULL.</p>
 <div class="refsect3">
 <a name="psl-suffix-exception-count.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table class="informaltable" width="100%" border="0">
@@ -653,7 +674,7 @@ psl_suffix_exception_count (<em class="parameter"><code>const <a class="link" hr
 </div>
 <div class="refsect3">
 <a name="psl-suffix-exception-count.returns"></a><h4>Returns</h4>
-<p> Number of public suffix exceptions in PSL context.</p>
+<p> Number of public suffix exceptions in PSL context or -1 if this information is not available.</p>
 </div>
 <p class="since">Since: 0.1</p>
 </div>
@@ -664,6 +685,9 @@ psl_suffix_exception_count (<em class="parameter"><code>const <a class="link" hr
 psl_suffix_wildcard_count (<em class="parameter"><code>const <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-ctx-t" title="psl_ctx_t"><span class="type">psl_ctx_t</span></a> *psl</code></em>);</pre>
 <p>This function returns number of public suffix wildcards maintained by <em class="parameter"><code>psl</code></em>
 .</p>
+<p>If the information is not available, the return value is -1 (since 0.19).
+This is the case with DAFSA blobs or if <em class="parameter"><code>psl</code></em>
+ is NULL.</p>
 <div class="refsect3">
 <a name="psl-suffix-wildcard-count.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table class="informaltable" width="100%" border="0">
@@ -681,7 +705,7 @@ psl_suffix_wildcard_count (<em class="parameter"><code>const <a class="link" hre
 </div>
 <div class="refsect3">
 <a name="psl-suffix-wildcard-count.returns"></a><h4>Returns</h4>
-<p> Number of public suffix wildcards in PSL context.</p>
+<p> Number of public suffix wildcards in PSL context or -1 if this information is not available.</p>
 </div>
 <p class="since">Since: 0.10.0</p>
 </div>
@@ -865,8 +889,8 @@ psl_str_to_utf8lower (<em class="parameter"><code>const <span class="type">char<
 <p>This helper function converts a string to UTF-8 lowercase + NFKC representation.
 Lowercase + NFKC UTF-8 is needed as input to the domain checking functions.</p>
 <p><em class="parameter"><code>lower</code></em>
- is set to <a href="/usr/share/gtk-doc/html/glibglib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on error.</p>
-<p>The return value 'lower' must be freed after usage.</p>
+ stays unchanged on error.</p>
+<p>When returning PSL_SUCCESS, the return value 'lower' must be freed after usage.</p>
 <div class="refsect3">
 <a name="psl-str-to-utf8lower.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table class="informaltable" width="100%" border="0">
@@ -884,13 +908,13 @@ Lowercase + NFKC UTF-8 is needed as input to the domain checking functions.</p>
 <tr>
 <td class="parameter_name"><p>encoding</p></td>
 <td class="parameter_description"><p>charset encoding of <em class="parameter"><code>str</code></em>
-, e.g. 'iso-8859-1' or <a href="/usr/share/gtk-doc/html/glibglib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+, e.g. 'iso-8859-1' or <a href="/usr/share/gtk-doc/html/glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
 <td class="parameter_annotations"> </td>
 </tr>
 <tr>
 <td class="parameter_name"><p>locale</p></td>
 <td class="parameter_description"><p>locale of <em class="parameter"><code>str</code></em>
-for to lowercase conversion, e.g. 'de' or <a href="/usr/share/gtk-doc/html/glibglib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+for to lowercase conversion, e.g. 'de' or <a href="/usr/share/gtk-doc/html/glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
 <td class="parameter_annotations"> </td>
 </tr>
 <tr>
@@ -906,7 +930,7 @@ for to lowercase conversion, e.g. 'de' or <a href="/usr/share/gtk-doc/html/glibg
 <p> psl_error_t value.
 PSL_SUCCESS: Success
 PSL_ERR_INVALID_ARG: <em class="parameter"><code>str</code></em>
-is a <a href="/usr/share/gtk-doc/html/glibglib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> value.
+is a <a href="/usr/share/gtk-doc/html/glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> value.
 PSL_ERR_CONVERTER: Failed to open the unicode converter with name <em class="parameter"><code>encoding</code></em>
 PSL_ERR_TO_UTF16: Failed to convert <em class="parameter"><code>str</code></em>
 to unicode
@@ -916,12 +940,36 @@ PSL_ERR_NO_MEM: Failed to allocate memory</p>
 </div>
 <p class="since">Since: 0.4</p>
 </div>
+<hr>
+<div class="refsect2">
+<a name="psl-free-string"></a><h3>psl_free_string ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+psl_free_string (<em class="parameter"><code><span class="type">char</span> *str</code></em>);</pre>
+<p>This function <code class="function">free()</code>'s the memory allocated by <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-str-to-utf8lower" title="psl_str_to_utf8lower ()"><code class="function">psl_str_to_utf8lower()</code></a> when
+returning a lowercase string</p>
+<div class="refsect3">
+<a name="psl-free-string.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>str</p></td>
+<td class="parameter_description"><p>pointer to lowercase string returned by <a class="link" href="libpsl-Public-Suffix-List-functions.html#psl-str-to-utf8lower" title="psl_str_to_utf8lower ()"><code class="function">psl_str_to_utf8lower()</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: 0.19</p>
+</div>
 </div>
 <div class="refsect1">
 <a name="libpsl-Public-Suffix-List-functions.other_details"></a><h2>Types and Values</h2>
 <div class="refsect2">
 <a name="PSL-VERSION:CAPS"></a><h3>PSL_VERSION</h3>
-<pre class="programlisting">#define PSL_VERSION "0.17.0"
+<pre class="programlisting">#define PSL_VERSION "0.20.2"
 </pre>
 </div>
 <hr>
@@ -933,37 +981,43 @@ PSL_ERR_NO_MEM: Failed to allocate memory</p>
 <hr>
 <div class="refsect2">
 <a name="PSL-VERSION-MINOR:CAPS"></a><h3>PSL_VERSION_MINOR</h3>
-<pre class="programlisting">#define PSL_VERSION_MINOR 17
+<pre class="programlisting">#define PSL_VERSION_MINOR 20
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="PSL-VERSION-NUMBER:CAPS"></a><h3>PSL_VERSION_NUMBER</h3>
-<pre class="programlisting">#define PSL_VERSION_NUMBER 0x001100
+<pre class="programlisting">#define PSL_VERSION_NUMBER 0x001402
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="PSL-VERSION-PATCH:CAPS"></a><h3>PSL_VERSION_PATCH</h3>
-<pre class="programlisting">#define PSL_VERSION_PATCH 0
+<pre class="programlisting">#define PSL_VERSION_PATCH 2
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="PSL-TYPE-ICANN:CAPS"></a><h3>PSL_TYPE_ICANN</h3>
-<pre class="programlisting">#define PSL_TYPE_ICANN   (1&lt;&lt;0)
+<pre class="programlisting">#define PSL_TYPE_ICANN        (1&lt;&lt;0)
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="PSL-TYPE-PRIVATE:CAPS"></a><h3>PSL_TYPE_PRIVATE</h3>
-<pre class="programlisting">#define PSL_TYPE_PRIVATE (1&lt;&lt;1)
+<pre class="programlisting">#define PSL_TYPE_PRIVATE      (1&lt;&lt;1)
+</pre>
+</div>
+<hr>
+<div class="refsect2">
+<a name="PSL-TYPE-NO-STAR-RULE:CAPS"></a><h3>PSL_TYPE_NO_STAR_RULE</h3>
+<pre class="programlisting">#define PSL_TYPE_NO_STAR_RULE (1&lt;&lt;2)
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="PSL-TYPE-ANY:CAPS"></a><h3>PSL_TYPE_ANY</h3>
-<pre class="programlisting">#define PSL_TYPE_ANY     (PSL_TYPE_ICANN | PSL_TYPE_PRIVATE)
+<pre class="programlisting">#define PSL_TYPE_ANY          (PSL_TYPE_ICANN | PSL_TYPE_PRIVATE)
 </pre>
 </div>
 <hr>
@@ -1043,6 +1097,6 @@ Positive values are reserved for non-error return codes.</p>
 </div>
 </div>
 <div class="footer">
-<hr>Generated by GTK-Doc V1.25</div>
+<hr>Generated by GTK-Doc V1.28</div>
 </body>
 </html>

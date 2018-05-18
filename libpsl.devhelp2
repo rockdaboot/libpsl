@@ -30,6 +30,7 @@
     <keyword type="function" name="psl_get_version ()" link="libpsl-Public-Suffix-List-functions.html#psl-get-version" since="0.2.5"/>
     <keyword type="function" name="psl_check_version_number ()" link="libpsl-Public-Suffix-List-functions.html#psl-check-version-number" since="0.11.0"/>
     <keyword type="function" name="psl_str_to_utf8lower ()" link="libpsl-Public-Suffix-List-functions.html#psl-str-to-utf8lower" since="0.4"/>
+    <keyword type="function" name="psl_free_string ()" link="libpsl-Public-Suffix-List-functions.html#psl-free-string" since="0.19"/>
     <keyword type="macro" name="PSL_VERSION" link="libpsl-Public-Suffix-List-functions.html#PSL-VERSION:CAPS"/>
     <keyword type="macro" name="PSL_VERSION_MAJOR" link="libpsl-Public-Suffix-List-functions.html#PSL-VERSION-MAJOR:CAPS"/>
     <keyword type="macro" name="PSL_VERSION_MINOR" link="libpsl-Public-Suffix-List-functions.html#PSL-VERSION-MINOR:CAPS"/>
@@ -37,6 +38,7 @@
     <keyword type="macro" name="PSL_VERSION_PATCH" link="libpsl-Public-Suffix-List-functions.html#PSL-VERSION-PATCH:CAPS"/>
     <keyword type="macro" name="PSL_TYPE_ICANN" link="libpsl-Public-Suffix-List-functions.html#PSL-TYPE-ICANN:CAPS"/>
     <keyword type="macro" name="PSL_TYPE_PRIVATE" link="libpsl-Public-Suffix-List-functions.html#PSL-TYPE-PRIVATE:CAPS"/>
+    <keyword type="macro" name="PSL_TYPE_NO_STAR_RULE" link="libpsl-Public-Suffix-List-functions.html#PSL-TYPE-NO-STAR-RULE:CAPS"/>
     <keyword type="macro" name="PSL_TYPE_ANY" link="libpsl-Public-Suffix-List-functions.html#PSL-TYPE-ANY:CAPS"/>
     <keyword type="enum" name="enum psl_error_t" link="libpsl-Public-Suffix-List-functions.html#psl-error-t"/>
     <keyword type="typedef" name="psl_ctx_t" link="libpsl-Public-Suffix-List-functions.html#psl-ctx-t"/>
