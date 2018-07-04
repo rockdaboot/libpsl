@@ -198,10 +198,14 @@ int main(int argc, const char *const *argv)
 					else
 						putchar('\n');
 				}
-				else if (mode == 2)
-					printf("%s\n", psl_unregistrable_domain(psl, lower));
-				else if (mode == 3)
-					printf("%s\n", psl_registrable_domain(psl, lower));
+				else if (mode == 2) {
+					const char *dom = psl_unregistrable_domain(psl, lower);
+					printf("%s\n", dom ? dom : "(null)");
+				}
+				else if (mode == 3) {
+					const char *dom = psl_registrable_domain(psl, lower);
+					printf("%s\n", dom ? dom : "(null)");
+				}
 				else if (mode == 4) {
 					char *cookie_domain_lower;
 
@@ -234,16 +238,18 @@ int main(int argc, const char *const *argv)
 	}
 	else if (mode == 2) {
 		for (; arg < argv + argc; arg++) {
+			const char *dom = psl_unregistrable_domain(psl, *arg);
 			if (!batch_mode)
 				printf("%s: ", *arg);
-			printf("%s\n", psl_unregistrable_domain(psl, *arg));
+			printf("%s\n", dom ? dom : "(null)");
 		}
 	}
 	else if (mode == 3) {
 		for (; arg < argv + argc; arg++) {
+			const char *dom = psl_registrable_domain(psl, *arg);
 			if (!batch_mode)
 				printf("%s: ", *arg);
-			printf("%s\n", psl_registrable_domain(psl, *arg));
+			printf("%s\n", dom ? dom : "(null)");
 		}
 	}
 	else if (mode == 4) {
