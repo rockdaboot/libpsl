@@ -40,12 +40,17 @@
 #define PSL_VERSION_PATCH @LIBPSL_VERSION_PATCH@
 #define PSL_VERSION_NUMBER @LIBPSL_VERSION_NUMBER@
 
+// support clang's __has_declspec_attribute attribute
+#ifndef __has_declspec_attribute
+#  define __has_declspec_attribute(x) 0
+#endif
+
 #ifndef PSL_API
 #if defined BUILDING_PSL && HAVE_VISIBILITY
 #  define PSL_API __attribute__ ((__visibility__("default")))
-#elif defined BUILDING_PSL && defined _MSC_VER && !defined PSL_STATIC
+#elif defined BUILDING_PSL && (defined _MSC_VER || __has_declspec_attribute(dllexport)) && !defined PSL_STATIC
 #  define PSL_API __declspec(dllexport)
-#elif defined _MSC_VER && !defined PSL_STATIC
+#elif (defined _MSC_VER || __has_declspec_attribute(dllimport)) && !defined PSL_STATIC
 #  define PSL_API __declspec(dllimport)
 #else
 #  define PSL_API
