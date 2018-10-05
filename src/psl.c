@@ -1165,7 +1165,7 @@ psl_ctx_t *psl_load_file(const char *fname)
 	if (!fname)
 		return NULL;
 
-	if ((fp = fopen(fname, "r"))) {
+	if ((fp = fopen(fname, "rb"))) {
 		psl = psl_load_fp(fp);
 		fclose(fp);
 	}
