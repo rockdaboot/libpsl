@@ -1245,6 +1245,7 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 	/*
 	 *  as of 02.11.2012, the list at https://publicsuffix.org/list/ contains ~6000 rules and 40 exceptions.
 	 *  as of 19.02.2014, the list at https://publicsuffix.org/list/ contains ~6500 rules and 19 exceptions.
+	 *  as of 07.10.2018, the list at https://publicsuffix.org/list/ contains ~8600 rules and 8 exceptions.
 	 */
 	psl->suffixes = _vector_alloc(8*1024, _suffix_compare_array);
 	psl->utf8 = 1; /* we put UTF-8 and punycode rules in the lookup vector */
