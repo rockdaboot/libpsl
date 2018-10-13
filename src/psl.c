@@ -44,14 +44,6 @@
 #  define _UNUSED
 #endif
 
-#if ENABLE_NLS != 0
-#	include <libintl.h>
-#	define _(STRING) gettext(STRING)
-#else
-#	define _(STRING) STRING
-#	define ngettext(STRING1,STRING2,N) STRING2
-#endif
-
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -309,7 +301,7 @@ static int _suffix_init(_psl_entry_t *suffix, const char *rule, size_t length)
 
 	if (length >= sizeof(suffix->label_buf) - 1) {
 		suffix->nlabels = 0;
-		/* fprintf(stderr, _("Suffix rule too long (%zd, ignored): %s\n"), length, rule); */
+		/* fprintf(stderr, "Suffix rule too long (%zd, ignored): %s\n", length, rule); */
 		return -1;
 	}
 
@@ -774,7 +766,7 @@ cleanup:
 	int rc;
 
 	if (!_utf8_is_valid(utf8)) {
-		/* fprintf(_(stderr, "Invalid UTF-8 sequence not converted: '%s'\n"), utf8); */
+		/* fprintf(stderr, "Invalid UTF-8 sequence not converted: '%s'\n", utf8); */
 		return -1;
 	}
 
@@ -783,7 +775,7 @@ cleanup:
 	if ((rc = idna_to_ascii_8z(utf8, ascii, IDNA_USE_STD3_ASCII_RULES)) == IDNA_SUCCESS) {
 		ret = 0;
 	} /* else
-		fprintf(_(stderr, "toASCII failed (%d): %s\n"), rc, idna_strerror(rc)); */
+		fprintf(stderr, "toASCII failed (%d): %s\n", rc, idna_strerror(rc)); */
 #else
 	char lookupname[128];
 
@@ -1274,7 +1266,7 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 			psl->nexceptions++;
 		} else if (*p == '*') {
 			if (*++p != '.') {
-				/* fprintf(stderr, _("Unsupported kind of rule (ignored): %s\n"), p - 1); */
+				/* fprintf(stderr, "Unsupported kind of rule (ignored): %s\n", p - 1); */
 				continue;
 			}
 			p++;
