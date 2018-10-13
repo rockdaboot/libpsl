@@ -123,7 +123,7 @@ Download project and prepare sources with
 Mailing List
 ------------
 
-[Mailing List Archive](http://news.gmane.org/gmane.network.dns.libpsl.bugs)
+[Mailing List Archive](https://groups.google.com/forum/#!forum/libpsl-bugs)
 
 [Mailing List](https://groups.google.com/forum/#!forum/libpsl-bugs)
 
