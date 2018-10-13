@@ -856,11 +856,6 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int t
 	if (psl->utf8 || psl == &_builtin_psl)
 		need_conversion = 0;
 
-#if defined(WITH_LIBIDN) || defined(WITH_LIBIDN2) || defined(WITH_LIBICU)
-	if (psl == &_builtin_psl)
-		need_conversion = 0;
-#endif
-
 	if (need_conversion) {
 		_psl_idna_t *idna = _psl_idna_open();
 
