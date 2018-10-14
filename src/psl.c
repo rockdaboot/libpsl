@@ -113,11 +113,11 @@
 
 #define countof(a) (sizeof(a)/sizeof(*(a)))
 
-#define _PSL_FLAG_EXCEPTION (1<<0)
-#define _PSL_FLAG_WILDCARD  (1<<1)
-#define _PSL_FLAG_ICANN     (1<<2) /* entry of ICANN section */
-#define _PSL_FLAG_PRIVATE   (1<<3) /* entry of PRIVATE section */
-#define _PSL_FLAG_PLAIN     (1<<4) /* just used for PSL syntax checking */
+#define PRIV_PSL_FLAG_EXCEPTION (1<<0)
+#define PRIV_PSL_FLAG_WILDCARD  (1<<1)
+#define PRIV_PSL_FLAG_ICANN     (1<<2) /* entry of ICANN section */
+#define PRIV_PSL_FLAG_PRIVATE   (1<<3) /* entry of PRIVATE section */
+#define PRIV_PSL_FLAG_PLAIN     (1<<4) /* just used for PSL syntax checking */
 
 typedef struct {
 	char
@@ -873,12 +873,12 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int t
 		int rc = LookupStringInFixedSet(dafsa, dafsa_size, suffix.label, suffix.length);
 		if (rc != -1) {
 			/* check for correct rule type */
-			if (type == PSL_TYPE_ICANN && !(rc & _PSL_FLAG_ICANN))
+			if (type == PSL_TYPE_ICANN && !(rc & PRIV_PSL_FLAG_ICANN))
 				goto suffix_no;
-			else if (type == PSL_TYPE_PRIVATE && !(rc & _PSL_FLAG_PRIVATE))
+			else if (type == PSL_TYPE_PRIVATE && !(rc & PRIV_PSL_FLAG_PRIVATE))
 				goto suffix_no;
 
-			if (rc & _PSL_FLAG_EXCEPTION)
+			if (rc & PRIV_PSL_FLAG_EXCEPTION)
 				goto suffix_no;
 
 			/* wildcard *.foo.bar implicitly make foo.bar a public suffix */
@@ -893,12 +893,12 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int t
 			rc = LookupStringInFixedSet(dafsa, dafsa_size, suffix.label, suffix.length);
 			if (rc != -1) {
 				/* check for correct rule type */
-				if (type == PSL_TYPE_ICANN && !(rc & _PSL_FLAG_ICANN))
+				if (type == PSL_TYPE_ICANN && !(rc & PRIV_PSL_FLAG_ICANN))
 					goto suffix_no;
-				else if (type == PSL_TYPE_PRIVATE && !(rc & _PSL_FLAG_PRIVATE))
+				else if (type == PSL_TYPE_PRIVATE && !(rc & PRIV_PSL_FLAG_PRIVATE))
 					goto suffix_no;
 
-				if (rc & _PSL_FLAG_WILDCARD)
+				if (rc & PRIV_PSL_FLAG_WILDCARD)
 					goto suffix_yes;
 			}
 		}
@@ -912,12 +912,12 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int t
 
 		if (rule) {
 			/* check for correct rule type */
-			if (type == PSL_TYPE_ICANN && !(rule->flags & _PSL_FLAG_ICANN))
+			if (type == PSL_TYPE_ICANN && !(rule->flags & PRIV_PSL_FLAG_ICANN))
 				goto suffix_no;
-			else if (type == PSL_TYPE_PRIVATE && !(rule->flags & _PSL_FLAG_PRIVATE))
+			else if (type == PSL_TYPE_PRIVATE && !(rule->flags & PRIV_PSL_FLAG_PRIVATE))
 				goto suffix_no;
 
-			if (rule->flags & _PSL_FLAG_EXCEPTION)
+			if (rule->flags & PRIV_PSL_FLAG_EXCEPTION)
 				goto suffix_no;
 
 			/* wildcard *.foo.bar implicitly make foo.bar a public suffix */
@@ -936,12 +936,12 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int t
 
 			if (rule) {
 				/* check for correct rule type */
-				if (type == PSL_TYPE_ICANN && !(rule->flags & _PSL_FLAG_ICANN))
+				if (type == PSL_TYPE_ICANN && !(rule->flags & PRIV_PSL_FLAG_ICANN))
 					goto suffix_no;
-				else if (type == PSL_TYPE_PRIVATE && !(rule->flags & _PSL_FLAG_PRIVATE))
+				else if (type == PSL_TYPE_PRIVATE && !(rule->flags & PRIV_PSL_FLAG_PRIVATE))
 					goto suffix_no;
 
-				if (rule->flags & _PSL_FLAG_WILDCARD)
+				if (rule->flags & PRIV_PSL_FLAG_WILDCARD)
 					goto suffix_yes;
 			}
 		}
@@ -1244,13 +1244,13 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 		if (*linep == '/' && linep[1] == '/') {
 			if (!type) {
 				if (strstr(linep + 2, "===BEGIN ICANN DOMAINS==="))
-					type = _PSL_FLAG_ICANN;
+					type = PRIV_PSL_FLAG_ICANN;
 				else if (!type && strstr(linep + 2, "===BEGIN PRIVATE DOMAINS==="))
-					type = _PSL_FLAG_PRIVATE;
+					type = PRIV_PSL_FLAG_PRIVATE;
 			}
-			else if (type == _PSL_FLAG_ICANN && strstr(linep + 2, "===END ICANN DOMAINS==="))
+			else if (type == PRIV_PSL_FLAG_ICANN && strstr(linep + 2, "===END ICANN DOMAINS==="))
 				type = 0;
-			else if (type == _PSL_FLAG_PRIVATE && strstr(linep + 2, "===END PRIVATE DOMAINS==="))
+			else if (type == PRIV_PSL_FLAG_PRIVATE && strstr(linep + 2, "===END PRIVATE DOMAINS==="))
 				type = 0;
 
 			continue; /* skip comments */
@@ -1262,7 +1262,7 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 
 		if (*p == '!') {
 			p++;
-			suffix.flags = _PSL_FLAG_EXCEPTION | type;
+			suffix.flags = PRIV_PSL_FLAG_EXCEPTION | type;
 			psl->nexceptions++;
 		} else if (*p == '*') {
 			if (*++p != '.') {
@@ -1271,11 +1271,11 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 			}
 			p++;
 			/* wildcard *.foo.bar implicitly make foo.bar a public suffix */
-			suffix.flags = _PSL_FLAG_WILDCARD | _PSL_FLAG_PLAIN | type;
+			suffix.flags = PRIV_PSL_FLAG_WILDCARD | PRIV_PSL_FLAG_PLAIN | type;
 			psl->nwildcards++;
 			psl->nsuffixes++;
 		} else {
-			suffix.flags = _PSL_FLAG_PLAIN | type;
+			suffix.flags = PRIV_PSL_FLAG_PLAIN | type;
 			psl->nsuffixes++;
 		}
 
