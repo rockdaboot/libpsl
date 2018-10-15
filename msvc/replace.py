@@ -10,10 +10,8 @@
 # Author: Fan, Chun-wei
 # Date: September 03, 2014
 
-import os
 import sys
 import re
-import string
 import argparse
 
 valid_actions = ['remove-prefix',

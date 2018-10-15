@@ -12,7 +12,6 @@
 # Date: March 10, 2016
 
 import os
-import sys
 import argparse
 
 class BasePCItems:
@@ -55,7 +54,7 @@ class BasePCItems:
 
         # check and setup the exec_prefix
         if getattr(args, 'exec_prefix', None) is None:
-            exec_prefix_use_shorthand = True
+            # exec_prefix_use_shorthand = True
             self.exec_prefix = '${prefix}'
         else:
             if args.exec_prefix.startswith('${prefix}'):
