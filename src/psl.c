@@ -33,15 +33,15 @@
 #endif
 
 #if defined(__GNUC__) && defined(__GNUC_MINOR__)
-#       define _GCC_VERSION_AT_LEAST(major, minor) ((__GNUC__ > (major)) || (__GNUC__ == (major) && __GNUC_MINOR__ >= (minor)))
+#       define GCC_VERSION_AT_LEAST(major, minor) ((__GNUC__ > (major)) || (__GNUC__ == (major) && __GNUC_MINOR__ >= (minor)))
 #else
-#       define _GCC_VERSION_AT_LEAST(major, minor) 0
+#       define GCC_VERSION_AT_LEAST(major, minor) 0
 #endif
 
-#if _GCC_VERSION_AT_LEAST(2,95)
-#  define _UNUSED __attribute__ ((unused))
+#if GCC_VERSION_AT_LEAST(2,95)
+#  define PSL_UNUSED __attribute__ ((unused))
 #else
-#  define _UNUSED
+#  define PSL_UNUSED
 #endif
 
 #include <sys/types.h>
@@ -661,7 +661,7 @@ static psl_idna_t *psl_idna_open(void)
 	return NULL;
 }
 
-static void psl_idna_close(psl_idna_t *idna _UNUSED)
+static void psl_idna_close(psl_idna_t *idna PSL_UNUSED)
 {
 #if defined(WITH_LIBICU)
 	if (idna)
@@ -669,7 +669,7 @@ static void psl_idna_close(psl_idna_t *idna _UNUSED)
 #endif
 }
 
-static int psl_idna_toASCII(psl_idna_t *idna _UNUSED, const char *utf8, char **ascii)
+static int psl_idna_toASCII(psl_idna_t *idna PSL_UNUSED, const char *utf8, char **ascii)
 {
 	int ret = -1;
 
@@ -765,7 +765,7 @@ cleanup:
 #elif defined(WITH_LIBIDN)
 	int rc;
 
-	if (!_utf8_is_valid(utf8)) {
+	if (!utf8_is_valid(utf8)) {
 		/* fprintf(stderr, "Invalid UTF-8 sequence not converted: '%s'\n", utf8); */
 		return -1;
 	}
@@ -1686,7 +1686,7 @@ void psl_free_string(char *str)
  *
  * Since: 0.4
  */
-psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding _UNUSED, const char *locale _UNUSED, char **lower)
+psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding PSL_UNUSED, const char *locale PSL_UNUSED, char **lower)
 {
 	int ret = PSL_ERR_INVALID_ARG;
 
