@@ -129,21 +129,21 @@ typedef struct {
 	unsigned char
 		nlabels, /* number of labels */
 		flags;
-} _psl_entry_t;
+} psl_entry_t;
 
 /* stripped down version libmget vector routines */
 typedef struct {
 	int
-		(*cmp)(const _psl_entry_t **, const _psl_entry_t **); /* comparison function */
-	_psl_entry_t
+		(*cmp)(const psl_entry_t **, const psl_entry_t **); /* comparison function */
+	psl_entry_t
 		**entry; /* pointer to array of pointers to elements */
 	int
 		max,     /* allocated elements */
 		cur;     /* number of elements in use */
-} _psl_vector_t;
+} psl_vector_t;
 
-struct _psl_ctx_st {
-	_psl_vector_t
+struct psl_ctx_st {
+	psl_vector_t
 		*suffixes;
 	unsigned char
 		*dafsa;
@@ -172,7 +172,7 @@ static const char _psl_filename[] = "";
 
 /* references to these PSLs will result in lookups to built-in data */
 static const psl_ctx_t
-	_builtin_psl;
+	builtin_psl;
 
 #ifdef PSL_DISTFILE
 static const char _psl_dist_filename[] = PSL_DISTFILE;
@@ -180,14 +180,14 @@ static const char _psl_dist_filename[] = PSL_DISTFILE;
 static const char _psl_dist_filename[] = "";
 #endif
 
-static _psl_vector_t *_vector_alloc(int max, int (*cmp)(const _psl_entry_t **, const _psl_entry_t **))
+static psl_vector_t *vector_alloc(int max, int (*cmp)(const psl_entry_t **, const psl_entry_t **))
 {
-	_psl_vector_t *v;
+	psl_vector_t *v;
 
-	if (!(v = calloc(1, sizeof(_psl_vector_t))))
+	if (!(v = calloc(1, sizeof(psl_vector_t))))
 		return NULL;
 
-	if (!(v->entry = malloc(max * sizeof(_psl_entry_t *)))) {
+	if (!(v->entry = malloc(max * sizeof(psl_entry_t *)))) {
 		free(v);
 		return NULL;
 	}
@@ -197,7 +197,7 @@ static _psl_vector_t *_vector_alloc(int max, int (*cmp)(const _psl_entry_t **, c
 	return v;
 }
 
-static void _vector_free(_psl_vector_t **v)
+static void vector_free(psl_vector_t **v)
 {
 	if (v && *v) {
 		if ((*v)->entry) {
@@ -212,7 +212,7 @@ static void _vector_free(_psl_vector_t **v)
 	}
 }
 
-static _psl_entry_t *_vector_get(const _psl_vector_t *v, int pos)
+static psl_entry_t *vector_get(const psl_vector_t *v, int pos)
 {
 	if (pos < 0 || !v || pos >= v->cur) return NULL;
 
@@ -220,7 +220,7 @@ static _psl_entry_t *_vector_get(const _psl_vector_t *v, int pos)
 }
 
 /* the entries must be sorted by */
-static int _vector_find(const _psl_vector_t *v, const _psl_entry_t *elem)
+static int vector_find(const psl_vector_t *v, const psl_entry_t *elem)
 {
 	if (v) {
 		int l, r, m;
@@ -229,7 +229,7 @@ static int _vector_find(const _psl_vector_t *v, const _psl_entry_t *elem)
 		/* binary search for element (exact match) */
 		for (l = 0, r = v->cur - 1; l <= r;) {
 			m = (l + r) / 2;
-			if ((res = v->cmp(&elem, (const _psl_entry_t **)&(v->entry[m]))) > 0) l = m + 1;
+			if ((res = v->cmp(&elem, (const psl_entry_t **)&(v->entry[m]))) > 0) l = m + 1;
 			else if (res < 0) r = m - 1;
 			else return m;
 		}
@@ -238,18 +238,18 @@ static int _vector_find(const _psl_vector_t *v, const _psl_entry_t *elem)
 	return -1; /* not found */
 }
 
-static int _vector_add(_psl_vector_t *v, const _psl_entry_t *elem)
+static int vector_add(psl_vector_t *v, const psl_entry_t *elem)
 {
 	if (v) {
 		void *elemp;
 
-		if (!(elemp = malloc(sizeof(_psl_entry_t))))
+		if (!(elemp = malloc(sizeof(psl_entry_t))))
 			return -1;
 
-		memcpy(elemp, elem, sizeof(_psl_entry_t));
+		memcpy(elemp, elem, sizeof(psl_entry_t));
 
 		if (v->max == v->cur) {
-			void *m = realloc(v->entry, (v->max *= 2) * sizeof(_psl_entry_t *));
+			void *m = realloc(v->entry, (v->max *= 2) * sizeof(psl_entry_t *));
 
 			if (m)
 				v->entry = m;
@@ -266,14 +266,14 @@ static int _vector_add(_psl_vector_t *v, const _psl_entry_t *elem)
 	return -1;
 }
 
-static void _vector_sort(_psl_vector_t *v)
+static void vector_sort(psl_vector_t *v)
 {
 	if (v && v->cmp)
-		qsort(v->entry, v->cur, sizeof(_psl_vector_t **), (int(*)(const void *, const void *))v->cmp);
+		qsort(v->entry, v->cur, sizeof(psl_vector_t **), (int(*)(const void *, const void *))v->cmp);
 }
 
 /* by this kind of sorting, we can easily see if a domain matches or not */
-static int _suffix_compare(const _psl_entry_t *s1, const _psl_entry_t *s2)
+static int suffix_compare(const psl_entry_t *s1, const psl_entry_t *s2)
 {
 	int n;
 
@@ -287,12 +287,12 @@ static int _suffix_compare(const _psl_entry_t *s1, const _psl_entry_t *s2)
 }
 
 /* needed to sort array of pointers, given to qsort() */
-static int _suffix_compare_array(const _psl_entry_t **s1, const _psl_entry_t **s2)
+static int suffix_compare_array(const psl_entry_t **s1, const psl_entry_t **s2)
 {
-	return _suffix_compare(*s1, *s2);
+	return suffix_compare(*s1, *s2);
 }
 
-static int _suffix_init(_psl_entry_t *suffix, const char *rule, size_t length)
+static int suffix_init(psl_entry_t *suffix, const char *rule, size_t length)
 {
 	const char *src;
 	char *dst;
@@ -504,7 +504,7 @@ static enum punycode_status punycode_encode(
 	return punycode_success;
 }
 
-static ssize_t _utf8_to_utf32(const char *in, size_t inlen, punycode_uint *out, size_t outlen)
+static ssize_t utf8_to_utf32(const char *in, size_t inlen, punycode_uint *out, size_t outlen)
 {
 	size_t n = 0;
 	const unsigned char *s = (void *)in;
@@ -545,7 +545,7 @@ static ssize_t _utf8_to_utf32(const char *in, size_t inlen, punycode_uint *out, 
 	return n;
 }
 
-static int _mem_is_ascii(const char *s, size_t n)
+static int mem_is_ascii(const char *s, size_t n)
 {
 	for (; n; n--) /* 'while(n--)' generates unsigned integer overflow on n = 0 */
 		if (*((unsigned char *)s++) >= 128)
@@ -554,7 +554,7 @@ static int _mem_is_ascii(const char *s, size_t n)
 	return 1;
 }
 
-static int _domain_to_punycode(const char *domain, char *out, size_t outsize)
+static int domain_to_punycode(const char *domain, char *out, size_t outsize)
 {
 	size_t outlen = 0, labellen;
 	punycode_uint input[256];
@@ -565,7 +565,7 @@ static int _domain_to_punycode(const char *domain, char *out, size_t outsize)
 		labellen = e ? (size_t) (e - label) : strlen(label);
 		/* printf("s=%s inlen=%zd\n", label, labellen); */
 
-		if (_mem_is_ascii(label, labellen)) {
+		if (mem_is_ascii(label, labellen)) {
 			if (outlen + labellen + (e != NULL) >= outsize)
 				return 1;
 
@@ -578,7 +578,7 @@ static int _domain_to_punycode(const char *domain, char *out, size_t outsize)
 			if (outlen + labellen + (e != NULL) + 4 >= outsize)
 				return 1;
 
-			if ((inputlen = _utf8_to_utf32(label, labellen, input, countof(input))) < 0)
+			if ((inputlen = utf8_to_utf32(label, labellen, input, countof(input))) < 0)
 				return 1;
 
 			memcpy(out + outlen, "xn--", 4);
@@ -600,12 +600,12 @@ static int _domain_to_punycode(const char *domain, char *out, size_t outsize)
 }
 #endif
 
-static int _isspace_ascii(const char c)
+static int isspace_ascii(const char c)
 {
 	return c == ' ' || c == '\t' || c == '\r' || c == '\n';
 }
 
-static int _str_is_ascii(const char *s)
+static int str_is_ascii(const char *s)
 {
 	while (*s && *((unsigned char *)s) < 128) s++;
 
@@ -623,7 +623,7 @@ static int _str_is_ascii(const char *s)
  * [2] https://lists.gnu.org/archive/html/bug-wget/2015-06/msg00002.html
  * [3] https://curl.haxx.se/mail/lib-2015-06/0143.html
  */
-static int _utf8_is_valid(const char *utf8)
+static int utf8_is_valid(const char *utf8)
 {
 	const unsigned char *s = (const unsigned char *) utf8;
 
@@ -650,9 +650,9 @@ static int _utf8_is_valid(const char *utf8)
 }
 #endif
 
-typedef void *_psl_idna_t;
+typedef void *psl_idna_t;
 
-static _psl_idna_t *_psl_idna_open(void)
+static psl_idna_t *psl_idna_open(void)
 {
 #if defined(WITH_LIBICU)
 	UErrorCode status = 0;
@@ -661,7 +661,7 @@ static _psl_idna_t *_psl_idna_open(void)
 	return NULL;
 }
 
-static void _psl_idna_close(_psl_idna_t *idna _UNUSED)
+static void psl_idna_close(psl_idna_t *idna _UNUSED)
 {
 #if defined(WITH_LIBICU)
 	if (idna)
@@ -669,7 +669,7 @@ static void _psl_idna_close(_psl_idna_t *idna _UNUSED)
 #endif
 }
 
-static int _psl_idna_toASCII(_psl_idna_t *idna _UNUSED, const char *utf8, char **ascii)
+static int psl_idna_toASCII(psl_idna_t *idna _UNUSED, const char *utf8, char **ascii)
 {
 	int ret = -1;
 
@@ -779,7 +779,7 @@ cleanup:
 #else
 	char lookupname[128];
 
-	if (_domain_to_punycode(utf8, lookupname, sizeof(lookupname)) == 0) {
+	if (domain_to_punycode(utf8, lookupname, sizeof(lookupname)) == 0) {
 		if (ascii)
 			if ((*ascii = strdup(lookupname)))
 				ret = 0;
@@ -789,21 +789,21 @@ cleanup:
 	return ret;
 }
 
-static void _add_punycode_if_needed(_psl_idna_t *idna, _psl_vector_t *v, _psl_entry_t *e)
+static void add_punycode_if_needed(psl_idna_t *idna, psl_vector_t *v, psl_entry_t *e)
 {
 	char *lookupname;
 
-	if (_str_is_ascii(e->label_buf))
+	if (str_is_ascii(e->label_buf))
 		return;
 
-	if (_psl_idna_toASCII(idna, e->label_buf, &lookupname) == 0) {
+	if (psl_idna_toASCII(idna, e->label_buf, &lookupname) == 0) {
 		if (strcmp(e->label_buf, lookupname)) {
-			_psl_entry_t suffix, *suffixp;
+			psl_entry_t suffix, *suffixp;
 
 			/* fprintf(stderr, "toASCII '%s' -> '%s'\n", e->label_buf, lookupname); */
-			if (_suffix_init(&suffix, lookupname, strlen(lookupname)) == 0) {
+			if (suffix_init(&suffix, lookupname, strlen(lookupname)) == 0) {
 				suffix.flags = e->flags;
-				if ((suffixp = _vector_get(v, _vector_add(v, &suffix))))
+				if ((suffixp = vector_get(v, vector_add(v, &suffix))))
 					suffixp->label = suffixp->label_buf; /* set label to changed address */
 			}
 		} /* else ignore */
@@ -816,9 +816,9 @@ static void _add_punycode_if_needed(_psl_idna_t *idna, _psl_vector_t *v, _psl_en
 int LookupStringInFixedSet(const unsigned char* graph, size_t length, const char* key, size_t key_length);
 int GetUtfMode(const unsigned char *graph, size_t length);
 
-static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int type)
+static int is_public_suffix(const psl_ctx_t *psl, const char *domain, int type)
 {
-	_psl_entry_t suffix;
+	psl_entry_t suffix;
 	const char *p;
 	char *punycode = NULL;
 	int need_conversion = 0;
@@ -845,13 +845,13 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int t
 
 	type &= ~PSL_TYPE_NO_STAR_RULE;
 
-	if (psl->utf8 || psl == &_builtin_psl)
+	if (psl->utf8 || psl == &builtin_psl)
 		need_conversion = 0;
 
 	if (need_conversion) {
-		_psl_idna_t *idna = _psl_idna_open();
+		psl_idna_t *idna = psl_idna_open();
 
-		if (_psl_idna_toASCII(idna, domain, &punycode) == 0) {
+		if (psl_idna_toASCII(idna, domain, &punycode) == 0) {
 			suffix.label = punycode;
 			suffix.length = strlen(punycode);
 		} else {
@@ -861,15 +861,15 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int t
 			suffix.length = p - suffix.label;
 		}
 
-		_psl_idna_close(idna);
+		psl_idna_close(idna);
 	} else {
 		suffix.label = domain;
 		suffix.length = p - suffix.label;
 	}
 
-	if (psl == &_builtin_psl || psl->dafsa) {
-		size_t dafsa_size = psl == &_builtin_psl ? sizeof(kDafsa) : psl->dafsa_size;
-		const unsigned char *dafsa = psl == &_builtin_psl ? kDafsa : psl->dafsa;
+	if (psl == &builtin_psl || psl->dafsa) {
+		size_t dafsa_size = psl == &builtin_psl ? sizeof(kDafsa) : psl->dafsa_size;
+		const unsigned char *dafsa = psl == &builtin_psl ? kDafsa : psl->dafsa;
 		int rc = LookupStringInFixedSet(dafsa, dafsa_size, suffix.label, suffix.length);
 		if (rc != -1) {
 			/* check for correct rule type */
@@ -903,12 +903,12 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int t
 			}
 		}
 	} else {
-		_psl_entry_t *rule = _vector_get(psl->suffixes, 0);
+		psl_entry_t *rule = vector_get(psl->suffixes, 0);
 
 		if (!rule || rule->nlabels < suffix.nlabels - 1)
 			goto suffix_no;
 
-		rule = _vector_get(psl->suffixes, _vector_find(psl->suffixes, &suffix));
+		rule = vector_get(psl->suffixes, vector_find(psl->suffixes, &suffix));
 
 		if (rule) {
 			/* check for correct rule type */
@@ -932,7 +932,7 @@ static int _psl_is_public_suffix(const psl_ctx_t *psl, const char *domain, int t
 			suffix.length = strlen(suffix.label);
 			suffix.nlabels--;
 
-			rule = _vector_get(psl->suffixes, (pos = _vector_find(psl->suffixes, &suffix)));
+			rule = vector_get(psl->suffixes, (pos = vector_find(psl->suffixes, &suffix)));
 
 			if (rule) {
 				/* check for correct rule type */
@@ -984,7 +984,7 @@ int psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
 	if (!psl || !domain)
 		return 1;
 
-	return _psl_is_public_suffix(psl, domain, PSL_TYPE_ANY);
+	return is_public_suffix(psl, domain, PSL_TYPE_ANY);
 }
 
 /**
@@ -1019,7 +1019,7 @@ int psl_is_public_suffix2(const psl_ctx_t *psl, const char *domain, int type)
 	if (!psl || !domain)
 		return 1;
 
-	return _psl_is_public_suffix(psl, domain, type);
+	return is_public_suffix(psl, domain, type);
 }
 
 /**
@@ -1066,11 +1066,11 @@ const char *psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain)
 	 *   'forgot.his.name' and 'name' are in the PSL while 'his.name' is not.
 	 */
 
-	while (!_psl_is_public_suffix(psl, domain, 0)) {
+	while (!is_public_suffix(psl, domain, 0)) {
 		if ((domain = strchr(domain, '.')))
 			domain++;
 		else
-			break; /* prevent endless loop if psl_is_public_suffix() is broken. */
+			break; /* prevent endless loop if is_public_suffix() is broken. */
 	}
 
 	return domain;
@@ -1120,12 +1120,12 @@ const char *psl_registrable_domain(const psl_ctx_t *psl, const char *domain)
 	 *   'forgot.his.name' and 'name' are in the PSL while 'his.name' is not.
 	 */
 
-	while (!_psl_is_public_suffix(psl, domain, 0)) {
+	while (!is_public_suffix(psl, domain, 0)) {
 		if ((p = strchr(domain, '.'))) {
 			regdom = domain;
 			domain = p + 1;
 		} else
-			break; /* prevent endless loop if psl_is_public_suffix() is broken. */
+			break; /* prevent endless loop if is_public_suffix() is broken. */
 	}
 
 	return regdom;
@@ -1176,10 +1176,10 @@ psl_ctx_t *psl_load_file(const char *fname)
 psl_ctx_t *psl_load_fp(FILE *fp)
 {
 	psl_ctx_t *psl;
-	_psl_entry_t suffix, *suffixp;
+	psl_entry_t suffix, *suffixp;
 	char buf[256], *linep, *p;
 	int type = 0, is_dafsa;
-	_psl_idna_t *idna;
+	psl_idna_t *idna;
 
 	if (!fp)
 		return NULL;
@@ -1227,18 +1227,18 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 		return psl;
 	}
 
-	idna = _psl_idna_open();
+	idna = psl_idna_open();
 
 	/*
 	 *  as of 02.11.2012, the list at https://publicsuffix.org/list/ contains ~6000 rules and 40 exceptions.
 	 *  as of 19.02.2014, the list at https://publicsuffix.org/list/ contains ~6500 rules and 19 exceptions.
 	 *  as of 07.10.2018, the list at https://publicsuffix.org/list/ contains ~8600 rules and 8 exceptions.
 	 */
-	psl->suffixes = _vector_alloc(8*1024, _suffix_compare_array);
+	psl->suffixes = vector_alloc(8*1024, suffix_compare_array);
 	psl->utf8 = 1; /* we put UTF-8 and punycode rules in the lookup vector */
 
 	do {
-		while (_isspace_ascii(*linep)) linep++; /* ignore leading whitespace */
+		while (isspace_ascii(*linep)) linep++; /* ignore leading whitespace */
 		if (!*linep) continue; /* skip empty lines */
 
 		if (*linep == '/' && linep[1] == '/') {
@@ -1257,7 +1257,7 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 		}
 
 		/* parse suffix rule */
-		for (p = linep; *linep && !_isspace_ascii(*linep);) linep++;
+		for (p = linep; *linep && !isspace_ascii(*linep);) linep++;
 		*linep = 0;
 
 		if (*p == '!') {
@@ -1279,10 +1279,10 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 			psl->nsuffixes++;
 		}
 
-		if (_suffix_init(&suffix, p, linep - p) == 0) {
+		if (suffix_init(&suffix, p, linep - p) == 0) {
 			int index;
 
-			if ((index = _vector_find(psl->suffixes, &suffix)) >= 0) {
+			if ((index = vector_find(psl->suffixes, &suffix)) >= 0) {
 				/* Found existing entry:
 				 * Combination of exception and plain rule is ambiguous
 				 * !foo.bar
@@ -1295,23 +1295,23 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 				 * We do not check here, let's do it later.
 				 */
 
-				suffixp = _vector_get(psl->suffixes, index);
+				suffixp = vector_get(psl->suffixes, index);
 				suffixp->flags |= suffix.flags;
 			} else {
 				/* New entry */
-				suffixp = _vector_get(psl->suffixes, _vector_add(psl->suffixes, &suffix));
+				suffixp = vector_get(psl->suffixes, vector_add(psl->suffixes, &suffix));
 			}
 
 			if (suffixp) {
 				suffixp->label = suffixp->label_buf; /* set label to changed address */
-				_add_punycode_if_needed(idna, psl->suffixes, suffixp);
+				add_punycode_if_needed(idna, psl->suffixes, suffixp);
 			}
 		}
 	} while ((linep = fgets(buf, sizeof(buf), fp)));
 
-	_vector_sort(psl->suffixes);
+	vector_sort(psl->suffixes);
 
-	_psl_idna_close(idna);
+	psl_idna_close(idna);
 
 	return psl;
 
@@ -1331,8 +1331,8 @@ fail:
  */
 void psl_free(psl_ctx_t *psl)
 {
-	if (psl && psl != &_builtin_psl) {
-		_vector_free(&psl->suffixes);
+	if (psl && psl != &builtin_psl) {
+		vector_free(&psl->suffixes);
 		free(psl->dafsa);
 		free(psl);
 	}
@@ -1357,7 +1357,7 @@ void psl_free(psl_ctx_t *psl)
 const psl_ctx_t *psl_builtin(void)
 {
 #if defined(BUILTIN_GENERATOR_LIBICU) || defined(BUILTIN_GENERATOR_LIBIDN2) || defined(BUILTIN_GENERATOR_LIBIDN)
-	return &_builtin_psl;
+	return &builtin_psl;
 #else
 	return NULL;
 #endif
@@ -1379,7 +1379,7 @@ const psl_ctx_t *psl_builtin(void)
  */
 int psl_suffix_count(const psl_ctx_t *psl)
 {
-	if (psl == &_builtin_psl)
+	if (psl == &builtin_psl)
 		return _psl_nsuffixes;
 	else if (psl)
 		return psl->dafsa ? -1 : psl->nsuffixes;
@@ -1402,7 +1402,7 @@ int psl_suffix_count(const psl_ctx_t *psl)
  */
 int psl_suffix_exception_count(const psl_ctx_t *psl)
 {
-	if (psl == &_builtin_psl)
+	if (psl == &builtin_psl)
 		return _psl_nexceptions;
 	else if (psl)
 		return psl->dafsa ? -1 : psl->nexceptions;
@@ -1425,7 +1425,7 @@ int psl_suffix_exception_count(const psl_ctx_t *psl)
  */
 int psl_suffix_wildcard_count(const psl_ctx_t *psl)
 {
-	if (psl == &_builtin_psl)
+	if (psl == &builtin_psl)
 		return _psl_nwildcards;
 	else if (psl)
 		return psl->dafsa ? -1 : psl->nwildcards;
@@ -1576,7 +1576,7 @@ int psl_check_version_number(int version)
 }
 
 /* return whether hostname is an IP address or not */
-static int _isip(const char *hostname)
+static int isip(const char *hostname)
 {
 	struct in_addr addr;
 	struct in6_addr addr6;
@@ -1623,7 +1623,7 @@ int psl_is_cookie_domain_acceptable(const psl_ctx_t *psl, const char *hostname, 
 	if (!strcmp(hostname, cookie_domain))
 		return 1; /* an exact match is acceptable (and pretty common) */
 
-	if (_isip(hostname))
+	if (isip(hostname))
 		return 0; /* Hostname is an IP address and these must match fully (RFC 6265, 5.1.3) */
 
 	cookie_domain_length = strlen(cookie_domain);
@@ -1694,7 +1694,7 @@ psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding _UNUSED, 
 		return PSL_ERR_INVALID_ARG;
 
 	/* shortcut to avoid costly conversion */
-	if (_str_is_ascii(str)) {
+	if (str_is_ascii(str)) {
 		if (lower) {
 			char *p, *tmp;
 
@@ -1864,7 +1864,7 @@ out:
 }
 
 /* if file is newer than the builtin data, insert it reverse sorted by mtime */
-static int _insert_file(const char *fname, const char **psl_fname, time_t *psl_mtime, int n)
+static int insert_file(const char *fname, const char **psl_fname, time_t *psl_mtime, int n)
 {
 	struct stat st;
 	int it;
@@ -1914,9 +1914,9 @@ psl_ctx_t *psl_latest(const char *fname)
 	psl_fname[0] = NULL; /* silence gcc 6.2 false warning */
 
 	/* create array of PSL files reverse sorted by mtime (latest first) */
-	ntimes = _insert_file(fname, psl_fname, psl_mtime, 0);
-	ntimes = _insert_file(_psl_dist_filename, psl_fname, psl_mtime, ntimes);
-	ntimes = _insert_file(_psl_filename, psl_fname, psl_mtime, ntimes);
+	ntimes = insert_file(fname, psl_fname, psl_mtime, 0);
+	ntimes = insert_file(_psl_dist_filename, psl_fname, psl_mtime, ntimes);
+	ntimes = insert_file(_psl_filename, psl_fname, psl_mtime, ntimes);
 
 	/* load PSL data from the latest file, falling back to the second recent, ... */
 	for (psl = NULL, it = 0; it < ntimes; it++) {

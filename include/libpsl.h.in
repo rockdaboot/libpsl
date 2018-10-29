@@ -91,7 +91,7 @@ typedef enum {
 	PSL_ERR_NO_MEM = -6    /* failed to allocate memory */
 } psl_error_t;
 
-typedef struct _psl_ctx_st psl_ctx_t;
+typedef struct psl_ctx_st psl_ctx_t;
 
 /* frees PSL context */
 PSL_API
