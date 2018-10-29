@@ -661,7 +661,7 @@ static psl_idna_t *psl_idna_open(void)
 	return NULL;
 }
 
-static void psl_idna_close(psl_idna_t *idna _UNUSED)
+static void psl_idna_close(psl_idna_t *idna PSL_UNUSED)
 {
 #if defined(WITH_LIBICU)
 	if (idna)
@@ -669,7 +669,7 @@ static void psl_idna_close(psl_idna_t *idna _UNUSED)
 #endif
 }
 
-static int psl_idna_toASCII(psl_idna_t *idna _UNUSED, const char *utf8, char **ascii)
+static int psl_idna_toASCII(psl_idna_t *idna PSL_UNUSED, const char *utf8, char **ascii)
 {
 	int ret = -1;
 
@@ -765,7 +765,7 @@ cleanup:
 #elif defined(WITH_LIBIDN)
 	int rc;
 
-	if (!_utf8_is_valid(utf8)) {
+	if (!utf8_is_valid(utf8)) {
 		/* fprintf(stderr, "Invalid UTF-8 sequence not converted: '%s'\n", utf8); */
 		return -1;
 	}
