@@ -16,7 +16,7 @@ env:
   - RUNTIME=libicu
   - RUNTIME=libidn2
   - RUNTIME=libidn
-  - RUNTIME=no
+#  - RUNTIME=no
 
 addons:
   apt:
