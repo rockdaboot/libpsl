@@ -1,7 +1,8 @@
 extraction:
+  language: cpp
   cpp:
     prepare:
       packages:
-        - lzip
+        - libidn2-dev
     configure:
       command: ./autogen.sh && ./configure --disable-gtk-doc
