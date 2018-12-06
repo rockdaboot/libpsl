@@ -24,8 +24,8 @@ $<
 $<
 <<
 
-# Make sure we generate suffixes_dafsa.c before trying to compile psl.c
-$(CFG)\$(PLAT)\libpsl\psl.obj: $(CFG)\$(PLAT)\libpsl\suffixes_dafsa.c
+# Make sure we generate suffixes_dafsa.h before trying to compile psl.c
+$(CFG)\$(PLAT)\libpsl\psl.obj: $(CFG)\$(PLAT)\libpsl\suffixes_dafsa.h
 
 # Inference rules for building the test programs
 # Used for programs with a single source file.
@@ -104,7 +104,7 @@ clean:
 	@-del /f /q $(CFG)\$(PLAT)\*.ilk
 	@-if exist $(CFG)\$(PLAT)\tests del /f /q $(CFG)\$(PLAT)\tests\*.obj
 	@-del /f /q $(CFG)\$(PLAT)\libpsl\*.obj
-	@-del /f /q $(CFG)\$(PLAT)\libpsl\suffixes_dafsa.c
+	@-del /f /q $(CFG)\$(PLAT)\libpsl\suffixes_dafsa.h
 	@-del /f /q ..\config.h
 	@-del /f /q vc$(PDBVER)0.pdb
 	@-rmdir /s /q $(CFG)\$(PLAT)

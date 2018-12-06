@@ -9,7 +9,7 @@ $(CFG)\$(PLAT)\psl	\
 $(CFG)\$(PLAT)\tests:
 	@-md $@
 
-$(CFG)\$(PLAT)\libpsl\suffixes_dafsa.c: $(CFG)\$(PLAT)\libpsl $(PSL_FILE) ..\src\psl-make-dafsa
+$(CFG)\$(PLAT)\libpsl\suffixes_dafsa.h: $(CFG)\$(PLAT)\libpsl $(PSL_FILE) ..\src\psl-make-dafsa
 	@echo Generating $@
 	$(PYTHON) ..\src\psl-make-dafsa --output-format=cxx+ "$(PSL_FILE_INPUT)" $@
 

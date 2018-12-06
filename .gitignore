@@ -79,7 +79,7 @@ po/remove-potcdate.sed
 po/stamp-po
 src/psl2c
 src/suffixes.c
-src/suffixes_dafsa.c
+src/suffixes_dafsa.h
 stamp-h1
 test-driver
 tests/*.log
