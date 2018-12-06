@@ -1,4 +1,9 @@
-DEFS = @DEFS@ -DSRCDIR=\"$(srcdir)\" -DPSL_FILE=\"$(PSL_FILE)\" -DPSL_TESTFILE=\"$(PSL_TESTFILE)\"
+DEFS = @DEFS@ \
+       -DSRCDIR=\"$(srcdir)\" \
+       -DPSL_FILE=\"$(PSL_FILE)\" \
+       -DPSL_TESTFILE=\"$(PSL_TESTFILE)\" \
+       -DPSL_DAFSA=\"psl.dafsa\" \
+       -DPSL_ASCII_DAFSA=\"psl_ascii.dafsa\"
 AM_CPPFLAGS = -I$(top_srcdir)/include
 LDADD = ../src/libpsl.la
 AM_LDFLAGS = -no-install
