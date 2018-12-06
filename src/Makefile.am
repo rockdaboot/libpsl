@@ -1,10 +1,10 @@
 include libpsl-srcs.mk
 
 # suffixes.c must be created before psl.c is compiled
-BUILT_SOURCES = suffixes_dafsa.c
+BUILT_SOURCES = suffixes_dafsa.h
 
 # suffixes.c is a built source that must be cleaned
-CLEANFILES = suffixes_dafsa.c
+CLEANFILES = suffixes_dafsa.h
 
 lib_LTLIBRARIES = libpsl.la
 
@@ -18,8 +18,8 @@ libpsl_la_LDFLAGS = -no-undefined -version-info $(LIBPSL_SO_VERSION)
 
 # Build rule for suffix_dafsa.c
 # PSL_FILE can be set by ./configure --with-psl-file=[PATH]
-suffixes_dafsa.c: $(PSL_FILE) $(srcdir)/psl-make-dafsa
-	$(srcdir)/psl-make-dafsa --output-format=cxx+ "$(PSL_FILE)" suffixes_dafsa.c
+suffixes_dafsa.h: $(PSL_FILE) $(srcdir)/psl-make-dafsa
+	$(srcdir)/psl-make-dafsa --output-format=cxx+ "$(PSL_FILE)" suffixes_dafsa.h
 
 EXTRA_DIST = psl-make-dafsa LICENSE.chromium
 
