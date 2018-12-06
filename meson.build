@@ -1,0 +1,104 @@
+project('libpsl', 'c',
+  version : '0.20.2',
+  meson_version : '>=0.47.0')
+
+cc = meson.get_compiler('c')
+
+enable_runtime = get_option('runtime')
+enable_builtin = get_option('builtin')
+
+notfound = dependency('', required : false)
+libidn2_dep = notfound
+libicu_dep = notfound
+libidn_dep = notfound
+libunistring = notfound
+
+# FIXME: Cleanup this when Meson gets 'feature-combo'
+# https://github.com/mesonbuild/meson/issues/4566
+if ['libidn2', 'auto'].contains(enable_runtime) or ['libidn2', 'auto'].contains(enable_builtin)
+  libidn2_dep = dependency('libidn2', required : false)
+  if libidn2_dep.found()
+    if enable_runtime == 'auto'
+      enable_runtime = 'libidn2'
+    endif
+    if enable_builtin == 'auto'
+      enable_builtin = 'libidn2'
+    endif
+  endif
+endif
+
+if ['libicu', 'auto'].contains(enable_runtime) or ['libicu', 'auto'].contains(enable_builtin)
+  libicu_dep = dependency('icu-uc', required : false)
+  if libidn2_dep.found()
+    if enable_runtime == 'auto'
+      enable_runtime = 'libicu'
+    endif
+    if enable_builtin == 'auto'
+      enable_builtin = 'libicu'
+    endif
+  endif
+endif
+
+if ['libidn', 'auto'].contains(enable_runtime) or ['libidn', 'auto'].contains(enable_builtin)
+  libidn_dep = dependency('libidn', required : false)
+  if libidn2_dep.found()
+    if enable_runtime == 'auto'
+      enable_runtime = 'libidn'
+    endif
+    if enable_builtin == 'auto'
+      enable_builtin = 'libidn'
+    endif
+  endif
+endif
+
+if libidn2_dep.found() or libidn_dep.found()
+  # Check for libunistring, we need it for psl_str_to_utf8lower()
+  libunistring = cc.find_library('unistring')
+endif
+
+if enable_runtime == 'auto'
+  enable_runtime = 'no'
+endif
+if enable_builtin == 'auto'
+  enable_builtin = 'no'
+endif
+
+config = configuration_data()
+config.set_quoted('PACKAGE_VERSION', meson.project_version())
+config.set('WITH_LIBIDN2', enable_runtime == 'libidn2')
+config.set('WITH_LIBICU', enable_runtime == 'libicu')
+config.set('WITH_LIBIDN', enable_runtime == 'libidn')
+config.set('BUILTIN_GENERATOR_LIBIDN2', enable_builtin == 'libidn2')
+config.set('BUILTIN_GENERATOR_LIBICU', enable_builtin == 'libicu')
+config.set('BUILTIN_GENERATOR_LIBIDN', enable_builtin == 'libidn')
+config.set('HAVE_UNISTD_H', cc.check_header('unistd.h'))
+config.set('HAVE_STDINT_H', cc.check_header('stdint.h'))
+config.set('HAVE_ALLOCA_H', cc.check_header('alloca.h'))
+config.set('HAVE_ALLOCA', cc.has_function('alloca'))
+config.set('HAVE_STRNDUP', cc.has_function('strndup'))
+config.set('HAVE_CLOCK_GETTIME', cc.has_function('clock_gettime'))
+config.set('HAVE_FMEMOPEN', cc.has_function('fmemopen'))
+config.set('HAVE_NL_LANGINFO', cc.has_function('nl_langinfo'))
+configure_file(output : 'config.h', configuration : config)
+
+configinc = include_directories('.')
+includedir = include_directories('include')
+
+psl_distfile = get_option('psl_distfile')
+psl_file = get_option('psl_file')
+if psl_file == ''
+  psl_file = join_paths(meson.current_source_dir(), 'list', 'public_suffix_list.dat')
+endif
+psl_test_file = get_option('psl_testfile')
+if psl_test_file == ''
+  psl_test_file = join_paths(meson.current_source_dir(), 'list', 'tests', 'tests.txt')
+endif
+
+python = import('python').find_installation()
+pkgconfig = import('pkgconfig')
+
+subdir('include')
+subdir('src')
+subdir('tools')
+subdir('tests')
+subdir('fuzz')
