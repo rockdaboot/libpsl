@@ -29,7 +29,7 @@ endif
 
 if ['libicu', 'auto'].contains(enable_runtime) or ['libicu', 'auto'].contains(enable_builtin)
   libicu_dep = dependency('icu-uc', required : false)
-  if libidn2_dep.found()
+  if libicu_dep.found()
     if enable_runtime == 'auto'
       enable_runtime = 'libicu'
     endif
@@ -41,7 +41,7 @@ endif
 
 if ['libidn', 'auto'].contains(enable_runtime) or ['libidn', 'auto'].contains(enable_builtin)
   libidn_dep = dependency('libidn', required : false)
-  if libidn2_dep.found()
+  if libidn_dep.found()
     if enable_runtime == 'auto'
       enable_runtime = 'libidn'
     endif
@@ -101,4 +101,4 @@ subdir('include')
 subdir('src')
 subdir('tools')
 subdir('tests')
-subdir('fuzz')
+#subdir('fuzz')
