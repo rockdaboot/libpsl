@@ -22,7 +22,7 @@
  * This file is part of libpsl.
  */
 
-#include "../config.h"
+#include <config.h>
 
 #include <stdio.h>
 
