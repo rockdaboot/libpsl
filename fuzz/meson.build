@@ -1,5 +1,5 @@
 fuzzer_cargs = [
-  '-DSRCDIR="@0@"'.format(meson.source_root()),
+  '-DSRCDIR="@0@"'.format(meson.current_source_dir()),
   '-DTEST_RUN',
 ]
 

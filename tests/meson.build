@@ -9,7 +9,7 @@ psl_ascii_dafsa = custom_target('psl_ascii.dafsa',
   command : [python, psl_make_dafsa, '--output-format=binary', '--encoding=ascii', '@INPUT@', '@OUTPUT@'])
 
 tests_cargs = [
-  '-DSRCDIR="@0@"'.format(meson.source_root()),
+  '-DSRCDIR="@0@"'.format(meson.current_source_dir()),
   '-DPSL_FILE="@0@"'.format(psl_file),
   '-DPSL_TESTFILE="@0@"'.format(psl_test_file),
   '-DPSL_DAFSA="@0@"'.format(psl_dafsa.full_path()),
