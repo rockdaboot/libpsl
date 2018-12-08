@@ -13,10 +13,15 @@ libicu_dep = notfound
 libidn_dep = notfound
 libunistring = notfound
 
-# FIXME: Cleanup this when Meson gets 'feature-combo'
+# FIXME: Cleanup this when Meson gets 'feature-combo':
 # https://github.com/mesonbuild/meson/issues/4566
+# Dependency fallbacks would help too:
+# https://github.com/mesonbuild/meson/pull/4595
 if ['libidn2', 'auto'].contains(enable_runtime) or ['libidn2', 'auto'].contains(enable_builtin)
   libidn2_dep = dependency('libidn2', required : false)
+  if not libidn2_dep.found() and cc.has_header('idn2.h')
+    libidn2_dep = cc.find_library('idn2', required : false)
+  endif
   if libidn2_dep.found()
     if enable_runtime == 'auto'
       enable_runtime = 'libidn2'
@@ -24,11 +29,16 @@ if ['libidn2', 'auto'].contains(enable_runtime) or ['libidn2', 'auto'].contains(
     if enable_builtin == 'auto'
       enable_builtin = 'libidn2'
     endif
+  elif [enable_runtime, enable_builtin].contains('libidn2')
+    error('You requested libidn2 but it is not installed.')
   endif
 endif
 
 if ['libicu', 'auto'].contains(enable_runtime) or ['libicu', 'auto'].contains(enable_builtin)
   libicu_dep = dependency('icu-uc', required : false)
+  if not libicu_dep.found() and cc.has_header('unicode/ustring.h')
+    libicu_dep = cc.find_library('icuuc', required : false)
+  endif
   if libicu_dep.found()
     if enable_runtime == 'auto'
       enable_runtime = 'libicu'
@@ -36,11 +46,16 @@ if ['libicu', 'auto'].contains(enable_runtime) or ['libicu', 'auto'].contains(en
     if enable_builtin == 'auto'
       enable_builtin = 'libicu'
     endif
+  elif [enable_runtime, enable_builtin].contains('libicu')
+    error('You requested libicu but it is not installed.')
   endif
 endif
 
 if ['libidn', 'auto'].contains(enable_runtime) or ['libidn', 'auto'].contains(enable_builtin)
   libidn_dep = dependency('libidn', required : false)
+  if not libidn_dep.found() and cc.has_header('idna.h')
+    libidn_dep = cc.find_library('idn', required : false)
+  endif
   if libidn_dep.found()
     if enable_runtime == 'auto'
       enable_runtime = 'libidn'
@@ -48,6 +63,8 @@ if ['libidn', 'auto'].contains(enable_runtime) or ['libidn', 'auto'].contains(en
     if enable_builtin == 'auto'
       enable_builtin = 'libidn'
     endif
+  elif [enable_runtime, enable_builtin].contains('libidn')
+    error('You requested libidn but it is not installed.')
   endif
 endif
 
