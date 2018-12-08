@@ -8,6 +8,8 @@ foreach test_name : ['fuzzer', 'load_fuzzer', 'load_dafsa_fuzzer']
   exe = executable(test_name, source_file, 'main.c',
     link_with : libpsl,
     c_args : fuzzer_cargs,
-    include_directories : [configinc, includedir])
+    include_directories : [configinc, includedir],
+    dependencies : libicu_dep,
+  )
   test(test_name, exe)
 endforeach
