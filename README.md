@@ -119,6 +119,14 @@ Download project and prepare sources with
 		make
 		make check
 
+If you prefer a `meson` build
+
+		meson builddir
+		ninja -C builddir
+		ninja -C builddir test
+
+There is also an unofficial MSVC nmake build configuration in `msvc/`.
+
 
 Mailing List
 ------------
