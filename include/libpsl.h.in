@@ -40,7 +40,7 @@
 #define PSL_VERSION_PATCH @LIBPSL_VERSION_PATCH@
 #define PSL_VERSION_NUMBER @LIBPSL_VERSION_NUMBER@
 
-// support clang's __has_declspec_attribute attribute
+/* support clang's __has_declspec_attribute attribute */
 #ifndef __has_declspec_attribute
 #  define __has_declspec_attribute(x) 0
 #endif
