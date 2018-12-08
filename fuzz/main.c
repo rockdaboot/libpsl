@@ -57,31 +57,36 @@ static void test_all_from(const char *dirname)
 
 	if ((dirp = opendir(dirname))) {
 		while ((dp = readdir(dirp))) {
+			size_t fnamesize;
+			char *fname;
+			int fd;
+			struct stat st;
+			uint8_t *data;
+			ssize_t n;
+
 			if (*dp->d_name == '.') continue;
 
-			char fname[strlen(dirname) + strlen(dp->d_name) + 2];
-			snprintf(fname, sizeof(fname), "%s/%s", dirname, dp->d_name);
+			fnamesize = strlen(dirname) + strlen(dp->d_name) + 2;
+			fname = alloca(fnamesize);
+			snprintf(fname, fnamesize, "%s/%s", dirname, dp->d_name);
 
-			int fd;
 			if ((fd = open(fname, O_RDONLY)) == -1) {
 				fprintf(stderr, "Failed to open %s (%d)\n", fname, errno);
 				continue;
 			}
 
-			struct stat st;
 			if (fstat(fd, &st) != 0) {
 				fprintf(stderr, "Failed to stat %d (%d)\n", fd, errno);
 				close(fd);
 				continue;
 			}
 
-			uint8_t *data = malloc(st.st_size);
-			ssize_t n;
+			data = malloc(st.st_size);
 			if ((n = read(fd, data, st.st_size)) == st.st_size) {
-				printf("testing %llu bytes from '%s'\n", (unsigned long long) st.st_size, fname);
+				printf("testing %u bytes from '%s'\n", (int) st.st_size, fname);
 				LLVMFuzzerTestOneInput(data, st.st_size);
 			} else
-				fprintf(stderr, "Failed to read %llu bytes from %s (%d), got %zd\n", (unsigned long long) st.st_size, fname, errno, n);
+				fprintf(stderr, "Failed to read %d bytes from %s (%d), got %d\n", (int) st.st_size, fname, errno, (int) n);
 
 			free(data);
 			close(fd);
@@ -93,7 +98,8 @@ static void test_all_from(const char *dirname)
 int main(int argc, char **argv)
 {
 	const char *target;
-	char corporadir[sizeof(SRCDIR) + 1 + strlen(argv[0]) + 8];
+	size_t corporadirsize = sizeof(SRCDIR) + 1 + strlen(argv[0]) + 8;
+	char *corporadir = alloca(corporadirsize);
 
 	/* if VALGRIND testing is enabled, we have to call ourselves with valgrind checking */
 	if (argc == 1) {
@@ -111,11 +117,11 @@ int main(int argc, char **argv)
 	target = strrchr(argv[0], '/');
 	target = target ? target + 1 : argv[0];
 
-	snprintf(corporadir, sizeof(corporadir), SRCDIR "/%s.in", target);
+	snprintf(corporadir, corporadirsize, SRCDIR "/%s.in", target);
 
 	test_all_from(corporadir);
 
-	snprintf(corporadir, sizeof(corporadir), SRCDIR "/%s.repro", target);
+	snprintf(corporadir, corporadirsize, SRCDIR "/%s.repro", target);
 
 	test_all_from(corporadir);
 
