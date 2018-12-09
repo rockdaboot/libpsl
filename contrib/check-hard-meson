@@ -10,6 +10,8 @@ set -u
 # C89 does not know snprintf, strdup, strndup, popen, pclose
 export CFLAGS="-std=gnu89 -pedantic -g -Wall -Wextra -Wstrict-prototypes -Wold-style-definition -Wwrite-strings -Wshadow -Wformat -Wformat-security -Wunreachable-code -Wstrict-prototypes -Wmissing-prototypes -Wold-style-definition"
 
+ASAN_FLAGS="-fsanitize=address -fno-omit-frame-pointer -fsanitize-address-use-after-scope"
+
 # measure time consumed and print it at the end of the script
 START=$(date +%s.%N)
 
@@ -38,7 +40,7 @@ for CC in clang gcc; do
     cd ..
 
     # UBSAN build+check
-    flags="-Db_sanitize=undefined"
+    flags="-Db_sanitize=undefined -Db_lundef=false"
     echo
     echo "  *** $options $flags"
     rm -rf builddir
@@ -49,15 +51,15 @@ for CC in clang gcc; do
     done
 
     # ASAN build+check
-#    flags="-Db_sanitize=address -Db_lundef=false"
-#    echo
-#    echo "  *** $options $flags"
-#    rm -rf builddir
-#    LDFLAGS="-lasan" meson builddir $options $flags
-#    LDFLAGS="-lasan" ninja -C builddir
-#    for xLCALL in C tr_TR.utf8; do
-#      LC_ALL=$xLCALL ninja test -C builddir
-#    done
+    flags="-Db_sanitize=address -Db_lundef=false"
+    echo
+    echo "  *** $options $flags"
+    rm -rf builddir
+    CFLAGS="$CFLAGS $ASAN_FLAGS" meson builddir $options $flags
+    CFLAGS="$CFLAGS $ASAN_FLAGS" ninja -C builddir
+    for xLCALL in C tr_TR.utf8; do
+      LC_ALL=$xLCALL CFLAGS="$CFLAGS $ASAN_FLAGS" ninja test -C builddir
+    done
 
   done
 done
