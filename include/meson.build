@@ -1,15 +1,22 @@
-version_arr = meson.project_version().split('.')
-cdata = configuration_data()
-cdata.set('LIBPSL_VERSION', meson.project_version())
-cdata.set('LIBPSL_VERSION_MAJOR', version_arr[0])
-cdata.set('LIBPSL_VERSION_MINOR', version_arr[1])
-cdata.set('LIBPSL_VERSION_PATCH', version_arr[2])
+version = meson.project_version()
+version_arr = version.split('.')
+major = version_arr[0].to_int()
+minor = version_arr[1].to_int()
+patch = version_arr[2].to_int()
 
-# FIXME: We should not run a command-line for this, but I don't think Meson
-# has API for that.
-printf = find_program('printf')
-r = run_command(printf, '0x%02x%02x%02x', version_arr, check : true)
-cdata.set('LIBPSL_VERSION_NUMBER', r.stdout().strip())
+cdata = configuration_data()
+cdata.set('LIBPSL_VERSION', version)
+cdata.set('LIBPSL_VERSION_MAJOR', major)
+cdata.set('LIBPSL_VERSION_MINOR', minor)
+cdata.set('LIBPSL_VERSION_PATCH', patch)
+
+hex = '0123456789abcdef'
+ver = '0x@0@@1@@2@@3@@4@@5@'
+cdata.set('LIBPSL_VERSION_NUMBER',
+  ver.format(
+    hex[major / 16], hex[major % 16],
+    hex[minor / 16], hex[minor % 16],
+    hex[patch / 16], hex[minor % 16]))
 
 configure_file(
   input : 'libpsl.h.in',
