@@ -12,6 +12,7 @@ libidn2_dep = notfound
 libicu_dep = notfound
 libidn_dep = notfound
 libunistring = notfound
+networking_deps = notfound
 
 # FIXME: Cleanup this when Meson gets 'feature-combo':
 # https://github.com/mesonbuild/meson/issues/4566
@@ -73,6 +74,10 @@ if libidn2_dep.found() or libidn_dep.found()
   libunistring = cc.find_library('unistring')
 endif
 
+if host_machine.system() == 'windows'
+  networking_deps = cc.find_library('ws2_32')
+endif
+
 if enable_runtime == 'auto'
   enable_runtime = 'no'
 endif
@@ -113,6 +118,17 @@ endif
 
 python = import('python').find_installation()
 pkgconfig = import('pkgconfig')
+
+if cc.get_id() == 'msvc'
+  if not cc.has_header_symbol('stdio.h', 'snprintf')
+    if cc.has_header_symbol('stdio.h', '_snprintf')
+      add_project_arguments('-Dsnprintf=_snprintf', language: 'c')
+    endif
+  endif
+  if cc.has_header_symbol('malloc.h', '_alloca')
+    add_project_arguments('-Dalloca=_alloca', language: 'c')
+  endif
+endif
 
 subdir('include')
 subdir('src')

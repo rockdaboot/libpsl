@@ -1,12 +1,12 @@
 psl_dafsa = custom_target('psl.dafsa',
   input : psl_file,
   output : 'psl.dafsa',
-  command : [python, psl_make_dafsa, '--output-format=binary', '@INPUT@', '@OUTPUT@'])
+  command : [psl_make_dafsa, '--output-format=binary', '@INPUT@', '@OUTPUT@'])
 
 psl_ascii_dafsa = custom_target('psl_ascii.dafsa',
   input : psl_file,
   output : 'psl_ascii.dafsa',
-  command : [python, psl_make_dafsa, '--output-format=binary', '--encoding=ascii', '@INPUT@', '@OUTPUT@'])
+  command : [psl_make_dafsa, '--output-format=binary', '--encoding=ascii', '@INPUT@', '@OUTPUT@'])
 
 tests_cargs = [
   '-DHAVE_CONFIG_H',

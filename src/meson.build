@@ -3,7 +3,7 @@ psl_make_dafsa = find_program('psl-make-dafsa')
 suffixes_dafsa_h = custom_target('suffixes_dafsa.h',
   input : psl_file,
   output : 'suffixes_dafsa.h',
-  command : [python, psl_make_dafsa, '--output-format=cxx+', '@INPUT@', '@OUTPUT@'])
+  command : [psl_make_dafsa, '--output-format=cxx+', '@INPUT@', '@OUTPUT@'])
 
 sources = [
   'lookup_string_in_fixed_set.c',
@@ -19,7 +19,7 @@ cargs = [
 libpsl = library('psl', sources, suffixes_dafsa_h,
   include_directories : [configinc, includedir],
   c_args : cargs,
-  dependencies : [libidn2_dep, libidn_dep, libicu_dep, libunistring],
+  dependencies : [libidn2_dep, libidn_dep, libicu_dep, libunistring, networking_deps],
 )
 
 pkgconfig.generate(libpsl,
