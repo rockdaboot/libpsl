@@ -104,7 +104,7 @@ AC_ARG_ENABLE([asan],
     fi
   ], [ enable_asan=no ])
 
-# Define these substitions here to keep all version information in one place.
+# Define these substitutions here to keep all version information in one place.
 # For information on how to properly maintain the library version information,
 # refer to the libtool manual, section "Updating library version information":
 # https://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html

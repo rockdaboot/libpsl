@@ -356,7 +356,7 @@ def join_suffixes(dafsa):
   nodemap = {frozenset((b'',)): None}
 
   def join(node):
-    """Returns a macthing node. A new node is created if no matching node
+    """Returns a matching node. A new node is created if no matching node
     exists. The graph is accessed in dfs order.
     """
     suffixes = frozenset(to_words(node))

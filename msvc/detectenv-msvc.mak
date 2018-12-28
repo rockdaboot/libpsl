@@ -25,7 +25,7 @@ PERL = perl
 # the g-ir-scanner Python script and g-ir-compiler utility program needs to be found
 # in $(PREFIX)\bin, together with any DLLs they will depend on, if those DLLs are not already
 # in your PATH.
-# Note that the Python interpretor and the introspection modules and utility progam must
+# Note that the Python interpretor and the introspection modules and utility program must
 # correspond to the build type (i.e. 32-bit Release for 32-bit Release builds, and so on).
 #
 # For introspection, currently only Python 2.7.x is supported.  This may change when Python 3.x
