@@ -125,7 +125,7 @@ static void test_psl(void)
 		}
 	}
 
-	printf("psl_builtin_file_time()=%ld\n", psl_builtin_file_time());
+	printf("psl_builtin_file_time()=%ld\n", (long) psl_builtin_file_time());
 	psl_builtin_file_time() == 0 ? failed++ : ok++;
 
 	printf("psl_builtin_sha1sum()=%s\n", psl_builtin_sha1sum());
