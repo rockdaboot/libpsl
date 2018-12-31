@@ -18,7 +18,9 @@ cdata.set('LIBPSL_VERSION_NUMBER',
     hex[minor / 16], hex[minor % 16],
     hex[patch / 16], hex[minor % 16]))
 
-configure_file(
+libpsl_h = configure_file(
   input : 'libpsl.h.in',
   output : 'libpsl.h',
   configuration : cdata)
+
+install_headers(libpsl_h)
