@@ -48,9 +48,6 @@
 #include <sys/stat.h>
 
 #ifdef _WIN32
-/* This is for Windows Vista and later, for inet_pton() */
-# define _WIN32_WINNT 0x0600
-
 # include <winsock2.h>
 # include <ws2tcpip.h>
 #else
@@ -1578,10 +1575,26 @@ int psl_check_version_number(int version)
 /* return whether hostname is an IP address or not */
 static int isip(const char *hostname)
 {
+#ifdef _WIN32
+	WCHAR wName[INET6_ADDRSTRLEN+1];
+
+	struct sockaddr_in  addr  = {0};
+	struct sockaddr_in6 addr6 = {0};
+
+	INT size  = sizeof(addr);
+	INT size6 = sizeof(addr6);
+
+	if (!MultiByteToWideChar(CP_UTF8, 0, hostname, -1, wName, countof(wName)))
+		return 0;
+
+	return (WSAStringToAddressW(wName, AF_INET,  NULL, (struct sockaddr *)&addr,  &size) != SOCKET_ERROR) |
+	       (WSAStringToAddressW(wName, AF_INET6, NULL, (struct sockaddr *)&addr6, &size6) != SOCKET_ERROR);
+#else
 	struct in_addr addr;
 	struct in6_addr addr6;
 
 	return inet_pton(AF_INET, hostname, &addr) || inet_pton(AF_INET6, hostname, &addr6);
+#endif
 }
 
 /**
