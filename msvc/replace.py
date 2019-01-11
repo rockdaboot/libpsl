@@ -109,5 +109,7 @@ def main(argv):
 
     replace(args.input, args.output, input_string, output_string)
 
+    return 0
+
 if __name__ == '__main__':
     sys.exit(main(sys.argv))

@@ -28,5 +28,7 @@ def main(argv):
                   base_pc.srcdir + '/libpsl.pc',
                   pc_replace_items)
 
+    return 0
+
 if __name__ == '__main__':
     sys.exit(main(sys.argv))
