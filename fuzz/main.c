@@ -41,6 +41,11 @@
 #include <errno.h>
 #include <sys/stat.h>
 
+#if defined (_MSC_VER) && ! defined (ssize_t)
+#include <basetsd.h>
+typedef SSIZE_T ssize_t;
+#endif
+
 #include "fuzzer.h"
 
 #if defined (TEST_RUN) && defined (HAVE_FMEMOPEN)
