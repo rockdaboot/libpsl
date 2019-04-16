@@ -18,3 +18,7 @@ Giuseppe Scrivano
 Ryan Sleevi (Discussion, Requested DAFSA format and ICANN/PRIVATE support)
 Daurnimator (Code review, discussion, reports)
 Olle Liljenzin (Original DAFSA implementation and UTF-8 patch)
+Claudio Saveedra (Add support for PSL_TYPE_NO_STAR_RULE)
+Chun-wei Fan (Add NMake files)
+Xavier Claessens (Add Meson build system)
+Ignacio Casal Quinteiro (Improve Meson build)

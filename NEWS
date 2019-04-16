@@ -1,4 +1,12 @@
-Copyright (C) 2014-2018 Tim Rühsen
+Copyright (C) 2014-2019 Tim Rühsen
+
+16.04.2019 Release V0.21.0
+  * Add -b/--batch to 'psl' to suppress printing the domain
+  * Add support for Meson build system
+  * Improve build system
+  * Improve Windows compatibility
+  * Remove NLS / gettext
+  * Several cleanups and cosmetics
 
 26.04.2018 Release V0.20.2
   * Fix non srcdir builds
