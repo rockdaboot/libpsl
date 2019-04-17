@@ -16,7 +16,7 @@ cdata.set('LIBPSL_VERSION_NUMBER',
   ver.format(
     hex[major / 16], hex[major % 16],
     hex[minor / 16], hex[minor % 16],
-    hex[patch / 16], hex[minor % 16]))
+    hex[patch / 16], hex[patch % 16]))
 
 libpsl_h = configure_file(
   input : 'libpsl.h.in',
