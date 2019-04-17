@@ -381,6 +381,7 @@ AC_CONFIG_FILES([Makefile
                  tests/Makefile
                  docs/libpsl/Makefile docs/libpsl/version.xml
                  libpsl.pc:libpsl.pc.in
+                 meson.build
                  msvc/Makefile
                  msvc/config.h.win32
                  msvc/config-msvc.mak])

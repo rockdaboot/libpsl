@@ -1,5 +1,5 @@
 project('libpsl', 'c',
-  version : '0.21.0',
+  version : '@LIBPSL_VERSION_MAJOR@.@LIBPSL_VERSION_MINOR@.@LIBPSL_VERSION_PATCH@',
   meson_version : '>=0.47.0')
 
 cc = meson.get_compiler('c')
