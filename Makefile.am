@@ -22,7 +22,7 @@ ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libpsl.pc
 
-EXTRA_DIST = build-aux/config.rpath LICENSE
+EXTRA_DIST = build-aux/config.rpath LICENSE meson.build  meson_options.txt
 dist-hook:
 	mkdir -p $(distdir)/list/tests
 	cp -p $(PSL_FILE) $(distdir)/list

@@ -40,3 +40,5 @@ psl_ascii.dafsa: $(top_srcdir)/list/public_suffix_list.dat
 
 clean-local:
 	rm -f psl.dafsa psl_ascii.dafsa
+
+EXTRA_DIST = meson.build

@@ -52,6 +52,8 @@ endif
 
 check_PROGRAMS = $(PSL_TESTS)
 
+EXTRA_DIST = meson.build
+
 dist-hook:
 	find . -name '*.options' -exec cp -v '{}' $(distdir) ';'
 	find . -name '*.dict' -exec cp -v '{}' $(distdir) ';'
