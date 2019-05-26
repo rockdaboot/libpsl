@@ -34,6 +34,35 @@
     <title>Index of deprecated API</title>
     <xi:include href="xml/api-index-deprecated.xml"><xi:fallback /></xi:include>
   </index>
+  <index role="0.1">
+    <title>Index of symbols included in 0.1</title>
+    <xi:include href="xml/api-index-0.1.xml"><xi:fallback/></xi:include>
+  </index>
+  <index role="0.2.5">
+    <title>New symbols included in 0.2.5</title>
+    <xi:include href="xml/api-index-0.2.5.xml"><xi:fallback/></xi:include>
+  </index>
+  <index role="0.4">
+    <title>New symbols included in 0.4</title>
+    <xi:include href="xml/api-index-0.4.xml"><xi:fallback/></xi:include>
+  </index>
+  <index role="0.10.0">
+    <title>New symbols included in 0.10.0</title>
+    <xi:include href="xml/api-index-0.10.0.xml"><xi:fallback/></xi:include>
+  </index>
+  <index role="0.11.0">
+    <title>Index of symbols included in 0.11.0</title>
+    <xi:include href="xml/api-index-0.11.0.xml"><xi:fallback/></xi:include>
+  </index>
+  <index role="0.16">
+    <title>Index of symbols included in 0.16</title>
+    <xi:include href="xml/api-index-0.16.xml"><xi:fallback/></xi:include>
+  </index>
+  <index role="0.19">
+    <title>Index of symbols included in 0.19</title>
+    <xi:include href="xml/api-index-0.19.xml"><xi:fallback/></xi:include>
+  </index>
+
 
 <!--
   <xi:include href="xml/annotation-glossary.xml"><xi:fallback /></xi:include>
