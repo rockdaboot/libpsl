@@ -1164,9 +1164,9 @@ psl_ctx_t *psl_load_file(const char *fname)
 
 /**
  * psl_load_fp:
- * @fp: FILE pointer
+ * @fp: %FILE pointer
  *
- * This function loads the public suffixes from a FILE pointer.
+ * This function loads the public suffixes from a %FILE pointer.
  * To free the allocated resources, call psl_free().
  *
  * The suffixes are expected to be UTF-8 encoded (lowercase + NFKC) if they are international.
@@ -1352,7 +1352,7 @@ void psl_free(psl_ctx_t *psl)
  * When using the builtin psl context, you can provide UTF-8 (lowercase + NFKC) or ASCII/ACE (punycode)
  * representations of domains to functions like psl_is_public_suffix().
  *
- * Returns: Pointer to the built in PSL data or NULL if this data is not available.
+ * Returns: Pointer to the built in PSL data or %NULL if this data is not available.
  *
  * Since: 0.1
  */
@@ -1373,7 +1373,7 @@ const psl_ctx_t *psl_builtin(void)
  * The number of exceptions within the Public Suffix List are not included.
  *
  * If the information is not available, the return value is -1 (since 0.19).
- * This is the case with DAFSA blobs or if @psl is NULL.
+ * This is the case with DAFSA blobs or if @psl is %NULL.
  *
  * Returns: Number of public suffixes entries in PSL context or -1 if this information is not available.
  *
@@ -1396,7 +1396,7 @@ int psl_suffix_count(const psl_ctx_t *psl)
  * This function returns number of public suffix exceptions maintained by @psl.
  *
  * If the information is not available, the return value is -1 (since 0.19).
- * This is the case with DAFSA blobs or if @psl is NULL.
+ * This is the case with DAFSA blobs or if @psl is %NULL.
  *
  * Returns: Number of public suffix exceptions in PSL context or -1 if this information is not available.
  *
@@ -1419,7 +1419,7 @@ int psl_suffix_exception_count(const psl_ctx_t *psl)
  * This function returns number of public suffix wildcards maintained by @psl.
  *
  * If the information is not available, the return value is -1 (since 0.19).
- * This is the case with DAFSA blobs or if @psl is NULL.
+ * This is the case with DAFSA blobs or if @psl is %NULL.
  *
  * Returns: Number of public suffix wildcards in PSL context or -1 if this information is not available.
  *
