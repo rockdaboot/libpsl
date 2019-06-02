@@ -34,6 +34,7 @@ typedef unsigned __int8 uint8_t;
 
 #include <stdlib.h> /* malloc, free */
 #include <string.h> /* memcpy */
+#include <stdio.h> /* fmemopen */
 
 #include "libpsl.h"
 #include "fuzzer.h"
