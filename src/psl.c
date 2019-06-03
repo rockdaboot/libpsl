@@ -69,8 +69,11 @@ typedef SSIZE_T ssize_t;
 #include <errno.h>
 #include <limits.h> /* for UINT_MAX */
 
-#ifndef _WIN32
+#ifdef HAVE_NL_LANGINFO
 # include <langinfo.h>
+#endif
+
+#ifndef _WIN32
 # include <arpa/inet.h>
 #endif
 
