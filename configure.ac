@@ -370,6 +370,9 @@ AC_SUBST(PSL_TESTFILE)
 AC_FUNC_ALLOCA
 AC_CHECK_FUNCS([strndup clock_gettime fmemopen nl_langinfo])
 
+# check for dirent.h
+AC_HEADER_DIRENT
+
 # Override the template file name of the generated .pc file, so that there
 # is no need to rename the template file when the API version changes.
 AC_CONFIG_FILES([Makefile

@@ -40,7 +40,6 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <sys/stat.h>
-#include <dirent.h>
 
 #if defined (_MSC_VER) && ! defined (ssize_t)
 #include <basetsd.h>
@@ -49,7 +48,9 @@ typedef SSIZE_T ssize_t;
 
 #include "fuzzer.h"
 
-#if defined (TEST_RUN) && defined (HAVE_FMEMOPEN)
+#if defined (TEST_RUN) && defined (HAVE_FMEMOPEN) && defined (HAVE_DIRENT_H)
+
+#include <dirent.h>
 
 static void test_all_from(const char *dirname)
 {
@@ -122,7 +123,7 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-#else /* TEST_RUN && HAVE_FMEMOPEN */
+#else /* TEST_RUN && HAVE_FMEMOPEN && HAVE_DIRENT_H */
 
 #ifndef __AFL_LOOP
 static int __AFL_LOOP(int n)
@@ -158,4 +159,4 @@ int main(int argc, char **argv)
 #endif
 }
 
-#endif /* TEST_RUN && HAVE_FMEMOPEN*/
+#endif /* TEST_RUN && HAVE_FMEMOPEN && HAVE_DIRENT_H */
