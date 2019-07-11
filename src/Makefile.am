@@ -19,7 +19,7 @@ libpsl_la_LDFLAGS = -no-undefined -version-info $(LIBPSL_SO_VERSION)
 # Build rule for suffix_dafsa.c
 # PSL_FILE can be set by ./configure --with-psl-file=[PATH]
 suffixes_dafsa.h: $(PSL_FILE) $(srcdir)/psl-make-dafsa
-	$(srcdir)/psl-make-dafsa --output-format=cxx+ "$(PSL_FILE)" suffixes_dafsa.h
+	$(PYTHON) $(srcdir)/psl-make-dafsa --output-format=cxx+ "$(PSL_FILE)" suffixes_dafsa.h
 
 EXTRA_DIST = psl-make-dafsa LICENSE.chromium meson.build
 
