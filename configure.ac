@@ -118,7 +118,7 @@ AC_ARG_ENABLE([asan],
 AC_SUBST([LIBPSL_SO_VERSION], [8:1:3])
 AC_SUBST([LIBPSL_VERSION], $VERSION)
 
-# Check for enable/disable builtin PSL data
+# Check for enable/disable runtime PSL data
 AC_ARG_ENABLE(runtime,
   [
   --enable-runtime[[=IDNA library]]
@@ -235,7 +235,7 @@ if test "$enable_runtime" = "libicu" -o "$enable_builtin" = "libicu" -o "$enable
   if test "x$HAVE_LIBICU" = "xyes"; then
     if test "$enable_runtime" = "auto"; then
       enable_runtime=libicu
-      AC_DEFINE([BUILTIN_GENERATOR_LIBICU], [1], [generate PSL data using libicu])
+      AC_DEFINE([WITH_LIBICU], [1], [generate PSL data using libicu])
     fi
     if test "$enable_builtin" = "auto"; then
       enable_builtin=libicu
@@ -268,7 +268,7 @@ if test "$enable_runtime" = "libidn" -o "$enable_builtin" = "libidn" -o "$enable
     fi
     if test "$enable_builtin" = "auto"; then
       enable_builtin=libidn
-      AC_DEFINE([WITH_LIBIDN], [1], [generate PSL data using libidn])
+      AC_DEFINE([BUILTIN_GENERATOR_LIBIDN], [1], [generate PSL data using libidn])
     fi
   fi
 fi
