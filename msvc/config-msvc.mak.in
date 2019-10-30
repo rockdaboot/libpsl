@@ -128,7 +128,12 @@ BASE_CFLAGS = $(BASE_CFLAGS) /DUSE_ICONV=1
 PSL_MAKE_OPTIONS = $(PSL_MAKE_OPTIONS) USE_ICONV^=1
 !endif
 
-PSL_TEST_CFLAGS = $(BASE_CFLAGS) /DPSL_TESTFILE=\"$(PSL_TESTFILE_INPUT)\" /DPSL_FILE=\"$(PSL_FILE_INPUT)\"
+PSL_TEST_CFLAGS =	\
+	$(BASE_CFLAGS)	\
+	/DPSL_TESTFILE=\"$(PSL_TESTFILE_INPUT)\"	\
+	/DPSL_FILE=\"$(PSL_FILE_INPUT)\"	\
+	/DPSL_DAFSA=\"$(MAKEDIR:\=/)/$(CFG)/$(PLAT)/psl.dafsa\" 	\
+	/DPSL_ASCII_DAFSA=\"$(MAKEDIR:\=/)/$(CFG)/$(PLAT)/psl_ascii.dafsa\"
 
 # Visual Studio 2013 or earlier does not have snprintf(),
 # so use _snprintf() which seems to be enough for our purposes
