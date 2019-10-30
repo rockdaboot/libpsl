@@ -49,20 +49,20 @@ BASE_CFLAGS =	\
 	/DHAVE_CONFIG_H				\
 	/Dssize_t="$(SSIZE_T_DEF)"
 
-PSL_INCLUDES = /I..\include /I.. /I$(CFG)\$(PLAT)\libpsl /I$(PREFIX)\include
+PSL_INCLUDES = /I..\include /I.. /Ivs$(VSVER)\$(CFG)\$(PLAT)\libpsl /I$(PREFIX)\include
 
 # We build the psl.dll or psl.lib at least, with the psl.exe utility
-PSL_LIB = $(CFG)\$(PLAT)\psl.lib
-PSL_UTILS = $(CFG)\$(PLAT)\psl.exe
+PSL_LIB = vs$(VSVER)\$(CFG)\$(PLAT)\psl.lib
+PSL_UTILS = vs$(VSVER)\$(CFG)\$(PLAT)\psl.exe
 
 PSL_TESTS =	\
-	$(CFG)\$(PLAT)\test-is-public.exe		\
-	$(CFG)\$(PLAT)\test-is-public-all.exe	\
-	$(CFG)\$(PLAT)\test-is-cookie-domain-acceptable.exe
+	vs$(VSVER)\$(CFG)\$(PLAT)\test-is-public.exe		\
+	vs$(VSVER)\$(CFG)\$(PLAT)\test-is-public-all.exe	\
+	vs$(VSVER)\$(CFG)\$(PLAT)\test-is-cookie-domain-acceptable.exe
 
 PSL_TEST_DATA =	\
-	$(CFG)\$(PLAT)\psl.dafsa	\
-	$(CFG)\$(PLAT)\psl_ascii.dafsa
+	vs$(VSVER)\$(CFG)\$(PLAT)\psl.dafsa	\
+	vs$(VSVER)\$(CFG)\$(PLAT)\psl_ascii.dafsa
 
 PSL_MAKE_OPTIONS = CFG^=$(CFG)
 
@@ -77,7 +77,7 @@ PSL_DLL_SUFFIX =
 !endif
 !endif
 
-PSL_DLL = $(CFG)\$(PLAT)\$(PSL_DLL_PREFIX)psl$(PSL_DLL_SUFFIX).dll
+PSL_DLL = vs$(VSVER)\$(CFG)\$(PLAT)\$(PSL_DLL_PREFIX)psl$(PSL_DLL_SUFFIX).dll
 
 # ENABLE_RUNTIME_ICU and ENABLE_BUILTIN_ICU are currently dummy arguments to NMake
 ENABLED_RUNTIME =
@@ -111,8 +111,8 @@ PSL_LIBTYPE = DLL
 PSL_ADDITIONAL_LIBS = $(PSL_ADDITIONAL_LIBS) $(ICUUC_LIB)
 PSL_TESTS =	\
 	$(PSL_TESTS)	\
-	$(CFG)\$(PLAT)\test-is-public-builtin.exe	\
-	$(CFG)\$(PLAT)\test-registrable-domain.exe
+	vs$(VSVER)\$(CFG)\$(PLAT)\test-is-public-builtin.exe	\
+	vs$(VSVER)\$(CFG)\$(PLAT)\test-registrable-domain.exe
 !endif
 
 !ifdef USE_GETTEXT
@@ -128,7 +128,12 @@ BASE_CFLAGS = $(BASE_CFLAGS) /DUSE_ICONV=1
 PSL_MAKE_OPTIONS = $(PSL_MAKE_OPTIONS) USE_ICONV^=1
 !endif
 
-PSL_TEST_CFLAGS = $(BASE_CFLAGS) /DPSL_TESTFILE=\"$(PSL_TESTFILE_INPUT)\" /DPSL_FILE=\"$(PSL_FILE_INPUT)\"
+PSL_TEST_CFLAGS =	\
+	$(BASE_CFLAGS)	\
+	/DPSL_TESTFILE=\"$(PSL_TESTFILE_INPUT)\"	\
+	/DPSL_FILE=\"$(PSL_FILE_INPUT)\"	\
+	/DPSL_DAFSA=\"$(MAKEDIR:\=/)/vs$(VSVER)/$(CFG)/$(PLAT)/psl.dafsa\" 	\
+	/DPSL_ASCII_DAFSA=\"$(MAKEDIR:\=/)/vs$(VSVER)/$(CFG)/$(PLAT)/psl_ascii.dafsa\"
 
 # Visual Studio 2013 or earlier does not have snprintf(),
 # so use _snprintf() which seems to be enough for our purposes

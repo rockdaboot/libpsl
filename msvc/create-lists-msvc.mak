@@ -40,7 +40,7 @@ NULL=
 !if [call create-lists.bat header libpsl-msvc.mak libpsl_OBJS]
 !endif
 
-!if [for %c in ($(LIBPSL_SRCS)) do @if "%~xc" == ".c" @call create-lists.bat file libpsl-msvc.mak ^$(CFG)\^$(PLAT)\libpsl\%~nc.obj]
+!if [for %c in ($(LIBPSL_SRCS)) do @if "%~xc" == ".c" @call create-lists.bat file libpsl-msvc.mak vs^$(VSVER)\^$(CFG)\^$(PLAT)\libpsl\%~nc.obj]
 !endif
 
 !if [call create-lists.bat footer libpsl-msvc.mak]
@@ -49,7 +49,7 @@ NULL=
 !if [call create-lists.bat header libpsl-msvc.mak psl_OBJS]
 !endif
 
-!if [for %c in (..\tools\*.c) do @call create-lists.bat file libpsl-msvc.mak ^$(CFG)\^$(PLAT)\psl\%~nc.obj]
+!if [for %c in (..\tools\*.c) do @call create-lists.bat file libpsl-msvc.mak vs^$(VSVER)\^$(CFG)\^$(PLAT)\psl\%~nc.obj]
 !endif
 
 !if [call create-lists.bat footer libpsl-msvc.mak]
