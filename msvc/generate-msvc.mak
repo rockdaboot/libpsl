@@ -4,20 +4,20 @@
 # one is maintaining the NMake build files.
 
 # Create the build directories
-$(CFG)\$(PLAT)\libpsl	\
-$(CFG)\$(PLAT)\psl	\
-$(CFG)\$(PLAT)\tests:
+vs$(VSVER)\$(CFG)\$(PLAT)\libpsl	\
+vs$(VSVER)\$(CFG)\$(PLAT)\psl	\
+vs$(VSVER)\$(CFG)\$(PLAT)\tests:
 	@-md $@
 
-$(CFG)\$(PLAT)\libpsl\suffixes_dafsa.h: $(CFG)\$(PLAT)\libpsl $(PSL_FILE) ..\src\psl-make-dafsa
+vs$(VSVER)\$(CFG)\$(PLAT)\libpsl\suffixes_dafsa.h: vs$(VSVER)\$(CFG)\$(PLAT)\libpsl $(PSL_FILE) ..\src\psl-make-dafsa
 	@echo Generating $@
 	$(PYTHON) ..\src\psl-make-dafsa --output-format=cxx+ "$(PSL_FILE_INPUT)" $@
 
-$(CFG)\$(PLAT)\psl.dafsa: $(CFG)\$(PLAT)\tests
+vs$(VSVER)\$(CFG)\$(PLAT)\psl.dafsa: vs$(VSVER)\$(CFG)\$(PLAT)\tests
 	@echo Generating $@
 	$(PYTHON) ..\src\psl-make-dafsa --output-format=binary "$(PSL_FILE_INPUT)" $@
 
-$(CFG)\$(PLAT)\psl_ascii.dafsa: $(CFG)\$(PLAT)\tests
+vs$(VSVER)\$(CFG)\$(PLAT)\psl_ascii.dafsa: vs$(VSVER)\$(CFG)\$(PLAT)\tests
 	@echo Generating $@
 	$(PYTHON) ..\src\psl-make-dafsa --output-format=binary --encoding=ascii "$(PSL_FILE_INPUT)" $@
 

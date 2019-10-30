@@ -36,8 +36,9 @@ and libpsl header, into appropriate locations under PREFIX (please see
 below).
 
 This will build the libpsl DLL/LIB and the psl.exe utility in the
-$(CFG)\$(ARCH) subdirectory, where ARCH is Win32 for 32-bit builds
-and x64 for 64-bit (x86_64) builds.
+vsX\$(CFG)\$(ARCH) subdirectory, where X is the release version
+of Visual Studio, such as 9 for 2008 and 16 for 2019, and ARCH is 
+Win32 for 32-bit builds and x64 for 64-bit (x86_64) builds.
 
 A number of options can be passed into the NMake command, as follows.
 Enable by setting each option to 1, unless otherwise indicated:
