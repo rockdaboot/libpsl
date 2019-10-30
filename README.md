@@ -125,7 +125,8 @@ If you prefer a `meson` build
 		ninja -C builddir
 		ninja -C builddir test
 
-There is also an unofficial MSVC nmake build configuration in `msvc/`.
+There is also an unofficial MSVC nmake build configuration in `msvc/`.   Please
+see README.MSVC.md on building libpsl with Visual Studio via NMake or Meson.
 
 
 Mailing List
