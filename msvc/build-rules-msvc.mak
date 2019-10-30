@@ -15,12 +15,12 @@
 # <<
 
 {..\src\}.c{vs$(VSVER)\$(CFG)\$(PLAT)\libpsl\}.obj::
-	$(CC) $(BASE_CFLAGS) $(PSL_ADDITIONAL_CFLAGS) $(PSL_INCLUDES) /Fovs$(VSVER)\$(CFG)\$(PLAT)\libpsl\ /c @<<
+	$(CC) $(BASE_CFLAGS) $(PSL_ADDITIONAL_CFLAGS) $(PSL_INCLUDES) /Fovs$(VSVER)\$(CFG)\$(PLAT)\libpsl\ /Fdvs$(VSVER)\$(CFG)\$(PLAT)\libpsl\ /c @<<
 $<
 <<
 
 {..\tools\}.c{vs$(VSVER)\$(CFG)\$(PLAT)\psl\}.obj::
-	$(CC) $(BASE_CFLAGS) $(PSL_INCLUDES) /Fovs$(VSVER)\$(CFG)\$(PLAT)\psl\ /c @<<
+	$(CC) $(BASE_CFLAGS) $(PSL_INCLUDES) /Fovs$(VSVER)\$(CFG)\$(PLAT)\psl\ /Fdvs$(VSVER)\$(CFG)\$(PLAT)\psl\ /c @<<
 $<
 <<
 
@@ -38,7 +38,9 @@ vs$(VSVER)\$(CFG)\$(PLAT)\libpsl\psl.obj: vs$(VSVER)\$(CFG)\$(PLAT)\libpsl\suffi
 {..\tests\}.c{vs$(VSVER)\$(CFG)\$(PLAT)\}.exe:
 	@if not exist $(PSL_UTILS) $(MAKE) -f Makefile.vc $(PSL_MAKE_OPTIONS) $(PSL_UTILS)
 	@if not exist vs$(VSVER)\$(CFG)\$(PLAT)\tests $(MAKE) -f Makefile.vc $(PSL_MAKE_OPTIONS) vs$(VSVER)\$(CFG)\$(PLAT)\tests
-	$(CC) $(PSL_TEST_CFLAGS) $(PSL_INCLUDES) /Fovs$(VSVER)\$(CFG)\$(PLAT)\tests\ /Fe$@	\
+	$(CC) $(PSL_TEST_CFLAGS) $(PSL_INCLUDES)	\
+	/Fovs$(VSVER)\$(CFG)\$(PLAT)\tests\	\
+	/Fdvs$(VSVER)\$(CFG)\$(PLAT)\tests\ /Fe$@	\
 	$< /link $(LDFLAGS) $(PSL_LIB) $(PSL_ADDITIONAL_LIBS)
 	@if exist $@.manifest mt /manifest $@.manifest /outputresource:$@;1
 
@@ -102,9 +104,12 @@ clean:
 	@-del /f /q vs$(VSVER)\$(CFG)\$(PLAT)\*.dll.manifest
 	@-del /f /q vs$(VSVER)\$(CFG)\$(PLAT)\*.dll
 	@-del /f /q vs$(VSVER)\$(CFG)\$(PLAT)\*.ilk
+	@-if exist vs$(VSVER)\$(CFG)\$(PLAT)\tests del /f /q vs$(VSVER)\$(CFG)\$(PLAT)\tests\*.pdb
 	@-if exist vs$(VSVER)\$(CFG)\$(PLAT)\tests del /f /q vs$(VSVER)\$(CFG)\$(PLAT)\tests\*.obj
+	@-del /f /q vs$(VSVER)\$(CFG)\$(PLAT)\psl\*.pdb
+	@-del /f /q vs$(VSVER)\$(CFG)\$(PLAT)\psl\*.obj
+	@-del /f /q vs$(VSVER)\$(CFG)\$(PLAT)\libpsl\*.pdb
 	@-del /f /q vs$(VSVER)\$(CFG)\$(PLAT)\libpsl\*.obj
 	@-del /f /q vs$(VSVER)\$(CFG)\$(PLAT)\libpsl\suffixes_dafsa.h
 	@-del /f /q ..\config.h
-	@-del /f /q vc$(PDBVER)0.pdb
 	@-rmdir /s /q vs$(VSVER)\$(CFG)\$(PLAT)
