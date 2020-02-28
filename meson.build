@@ -2,6 +2,9 @@ project('libpsl', 'c',
   version : '0.20.2',
   meson_version : '>=0.47.0')
 
+# Derived from LIBPSL_SO_VERSION in configure.ac
+lt_version = '5.3.2'
+
 cc = meson.get_compiler('c')
 
 enable_runtime = get_option('runtime')
