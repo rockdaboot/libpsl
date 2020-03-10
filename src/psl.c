@@ -59,12 +59,13 @@
 #if defined(_MSC_VER)
 # include <basetsd.h>
   typedef SSIZE_T ssize_t;
+#else
+# include <strings.h>
 #endif
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <strings.h>
 #include <ctype.h>
 #include <time.h>
 #include <errno.h>
