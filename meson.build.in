@@ -2,6 +2,9 @@ project('libpsl', 'c',
   version : '@LIBPSL_VERSION_MAJOR@.@LIBPSL_VERSION_MINOR@.@LIBPSL_VERSION_PATCH@',
   meson_version : '>=0.47.0')
 
+# Derived from LIBPSL_SO_VERSION in configure.ac
+lt_version = '5.3.2'
+
 cc = meson.get_compiler('c')
 
 enable_runtime = get_option('runtime')
@@ -107,6 +110,7 @@ config.set('BUILTIN_GENERATOR_LIBIDN', enable_builtin == 'libidn')
 config.set('HAVE_UNISTD_H', cc.check_header('unistd.h'))
 config.set('HAVE_STDINT_H', cc.check_header('stdint.h'))
 config.set('HAVE_ALLOCA_H', cc.check_header('alloca.h'))
+config.set('HAVE_DIRENT_H', cc.check_header('dirent.h'))
 config.set('HAVE_ALLOCA', cc.has_function('alloca'))
 config.set('HAVE_STRNDUP', cc.has_function('strndup'))
 config.set('HAVE_CLOCK_GETTIME', cc.has_function('clock_gettime'))
