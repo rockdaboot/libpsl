@@ -41,7 +41,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 
-#if defined (_MSC_VER) && ! defined (ssize_t)
+#if defined(_MSC_VER)
 #include <basetsd.h>
 typedef SSIZE_T ssize_t;
 #endif

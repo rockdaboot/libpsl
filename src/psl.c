@@ -56,9 +56,9 @@
 # include <unistd.h>
 #endif
 
-#if defined(_MSC_VER) && ! defined(ssize_t)
+#if defined(_MSC_VER)
 # include <basetsd.h>
-typedef SSIZE_T ssize_t;
+  typedef SSIZE_T ssize_t;
 #endif
 
 #include <stdio.h>
