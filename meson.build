@@ -1,6 +1,6 @@
 project('libpsl', 'c',
   version : '0.21.0',
-  meson_version : '>=0.47.0')
+  meson_version : '>=0.49.0')
 
 # Derived from LIBPSL_SO_VERSION in configure.ac
 lt_version = '5.3.2'
@@ -10,9 +10,17 @@ cc = meson.get_compiler('c')
 enable_runtime = get_option('runtime')
 enable_builtin = get_option('builtin')
 
-# We need to know the build type to determine what .lib files we need on Visual Studio
-# for dependencies that don't normally come with pkg-config files for Visual Studio builds
-buildtype = get_option('buildtype')
+# We need to know the CRT being used to determine what .lib files we need on
+# Visual Studio for dependencies that don't normally come with pkg-config files
+vs_crt = 'release'
+vs_crt_opt = get_option('b_vscrt')
+if vs_crt_opt in ['mdd', 'mtd']
+  vs_crt = 'debug'
+if vs_crt_opt == 'from_buildtype'
+  if get_option('buildtype') == 'debug'
+    vs_crt = 'debug'
+  endif
+endif
 
 notfound = dependency('', required : false)
 libidn2_dep = notfound
@@ -48,7 +56,7 @@ if ['libicu', 'auto'].contains(enable_runtime) or ['libicu', 'auto'].contains(en
     # MSVC: the debug configuration of ICU generated the libraries with d suffix
     # we must handle this and search for the right library depending on the
     # build type. Note debugoptimized is just a release build with .pdb files enabled
-    if cc.get_id() == 'msvc' and buildtype == 'debug'
+    if cc.get_id() in ['msvc', 'clang-cl'] and vs_crt == 'debug'
       libicu_dep = cc.find_library('icuucd', required : false)
     else
       libicu_dep = cc.find_library('icuuc', required : false)
