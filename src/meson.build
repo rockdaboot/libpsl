@@ -3,7 +3,7 @@ psl_make_dafsa = find_program('psl-make-dafsa')
 suffixes_dafsa_h = custom_target('suffixes_dafsa.h',
   input : psl_file,
   output : 'suffixes_dafsa.h',
-  command : [psl_make_dafsa, '--output-format=cxx+', '@INPUT@', '@OUTPUT@'])
+  command : [python, psl_make_dafsa, '--output-format=cxx+', '@INPUT@', '@OUTPUT@'])
 
 sources = [
   'lookup_string_in_fixed_set.c',
