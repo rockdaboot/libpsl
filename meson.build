@@ -16,7 +16,7 @@ vs_crt = 'release'
 vs_crt_opt = get_option('b_vscrt')
 if vs_crt_opt in ['mdd', 'mtd']
   vs_crt = 'debug'
-if vs_crt_opt == 'from_buildtype'
+elif vs_crt_opt == 'from_buildtype'
   if get_option('buildtype') == 'debug'
     vs_crt = 'debug'
   endif
