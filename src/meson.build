@@ -1,4 +1,4 @@
-psl_make_dafsa = find_program('psl-make-dafsa')
+psl_make_dafsa = files('psl-make-dafsa')
 
 suffixes_dafsa_h = custom_target('suffixes_dafsa.h',
   input : psl_file,
