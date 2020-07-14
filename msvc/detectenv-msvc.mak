@@ -68,6 +68,8 @@ _HASH=^#
     && ![echo PLAT=Win32 >> vercl.x] \
     && ![echo $(_HASH)elif defined(_M_AMD64) >> vercl.x] \
     && ![echo PLAT=x64 >> vercl.x] \
+    && ![echo $(_HASH)elif defined(_M_ARM64) >> vercl.x] \
+    && ![echo PLAT=arm64 >> vercl.x] \
     && ![echo $(_HASH)endif >> vercl.x] \
     && ![cl -nologo -TC -P vercl.x $(ERRNUL)]
 !include vercl.i
@@ -132,6 +134,8 @@ LDFLAGS_ARCH = /machine:x64
 !elseif "$(PLAT)" == "arm"
 LDFLAGS_ARCH = /machine:arm
 CFLAGS_ADD = $(CFLAGS_ADD) /DWINAPI_FAMILY=3
+!elseif "$(PLAT)" == "arm64"
+LDFLAGS_ARCH = /machine:arm64
 !else
 LDFLAGS_ARCH = /machine:x86
 !endif
