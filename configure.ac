@@ -1,5 +1,5 @@
 
-AC_INIT([libpsl], [0.21.0], [tim.ruehsen@gmx.de], [libpsl], [https://github.com/rockdaboot/libpsl])
+AC_INIT([libpsl], [0.21.1], [tim.ruehsen@gmx.de], [libpsl], [https://github.com/rockdaboot/libpsl])
 AC_PREREQ([2.59])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([1.10 no-define foreign dist-lzip])
@@ -115,7 +115,7 @@ AC_ARG_ENABLE([asan],
 # 4. If any interfaces have been added, removed, or changed since the last update, increment current, and set revision to 0.
 # 5. If any interfaces have been added since the last public release, then increment age.
 # 6. If any existing interfaces have been removed or changed since the last public release, then set age to 0. 
-AC_SUBST([LIBPSL_SO_VERSION], [8:2:3])
+AC_SUBST([LIBPSL_SO_VERSION], [8:3:3])
 AC_SUBST([LIBPSL_VERSION], $VERSION)
 
 # Check for enable/disable runtime PSL data

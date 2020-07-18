@@ -1,4 +1,10 @@
-Copyright (C) 2014-2019 Tim Rühsen
+Copyright (C) 2014-2020 Tim Rühsen
+
+18.07.2020 Release V0.21.1
+  * Fixing a test due to recent changes in upstream PSL
+  * Meson build improvements
+  * Documentation cleanups
+  * Use semantic versioning for git tags
 
 16.04.2019 Release V0.21.0
   * Add -b/--batch to 'psl' to suppress printing the domain
