@@ -27,6 +27,7 @@ libidn2_dep = notfound
 libicu_dep = notfound
 libidn_dep = notfound
 libunistring = notfound
+libiconv = notfound
 networking_deps = notfound
 
 # FIXME: Cleanup this when Meson gets 'feature-combo':
@@ -94,6 +95,7 @@ endif
 if libidn2_dep.found() or libidn_dep.found()
   # Check for libunistring, we need it for psl_str_to_utf8lower()
   libunistring = cc.find_library('unistring')
+  libiconv = cc.find_library('libiconv')
 endif
 
 if host_machine.system() == 'windows'
