@@ -1,6 +1,6 @@
 project('libpsl', 'c',
   version : '0.21.1',
-  meson_version : '>=0.49.0')
+  meson_version : '>=0.47.0')
 
 # Derived from LIBPSL_SO_VERSION in configure.ac
 lt_version = '5.3.2'
@@ -10,24 +10,15 @@ cc = meson.get_compiler('c')
 enable_runtime = get_option('runtime')
 enable_builtin = get_option('builtin')
 
-# We need to know the CRT being used to determine what .lib files we need on
-# Visual Studio for dependencies that don't normally come with pkg-config files
-vs_crt = 'release'
-vs_crt_opt = get_option('b_vscrt')
-if vs_crt_opt in ['mdd', 'mtd']
-  vs_crt = 'debug'
-elif vs_crt_opt == 'from_buildtype'
-  if get_option('buildtype') == 'debug'
-    vs_crt = 'debug'
-  endif
-endif
+# We need to know the build type to determine what .lib files we need on Visual Studio
+# for dependencies that don't normally come with pkg-config files for Visual Studio builds
+buildtype = get_option('buildtype')
 
 notfound = dependency('', required : false)
 libidn2_dep = notfound
 libicu_dep = notfound
 libidn_dep = notfound
 libunistring = notfound
-libiconv = notfound
 networking_deps = notfound
 
 # FIXME: Cleanup this when Meson gets 'feature-combo':
@@ -57,7 +48,7 @@ if ['libicu', 'auto'].contains(enable_runtime) or ['libicu', 'auto'].contains(en
     # MSVC: the debug configuration of ICU generated the libraries with d suffix
     # we must handle this and search for the right library depending on the
     # build type. Note debugoptimized is just a release build with .pdb files enabled
-    if cc.get_id() in ['msvc', 'clang-cl'] and vs_crt == 'debug'
+    if cc.get_id() == 'msvc' and buildtype == 'debug'
       libicu_dep = cc.find_library('icuucd', required : false)
     else
       libicu_dep = cc.find_library('icuuc', required : false)
@@ -95,7 +86,6 @@ endif
 if libidn2_dep.found() or libidn_dep.found()
   # Check for libunistring, we need it for psl_str_to_utf8lower()
   libunistring = cc.find_library('unistring')
-  libiconv = cc.find_library('libiconv')
 endif
 
 if host_machine.system() == 'windows'
@@ -121,7 +111,6 @@ config.set('HAVE_UNISTD_H', cc.check_header('unistd.h'))
 config.set('HAVE_STDINT_H', cc.check_header('stdint.h'))
 config.set('HAVE_ALLOCA_H', cc.check_header('alloca.h'))
 config.set('HAVE_DIRENT_H', cc.check_header('dirent.h'))
-config.set('HAVE_STRINGS_H', cc.check_header('strings.h'))
 config.set('HAVE_ALLOCA', cc.has_function('alloca'))
 config.set('HAVE_STRNDUP', cc.has_function('strndup'))
 config.set('HAVE_CLOCK_GETTIME', cc.has_function('clock_gettime'))
