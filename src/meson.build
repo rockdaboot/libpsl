@@ -19,7 +19,7 @@ cargs = [
 libpsl = library('psl', sources, suffixes_dafsa_h,
   include_directories : [configinc, includedir],
   c_args : cargs,
-  dependencies : [libidn2_dep, libidn_dep, libicu_dep, libunistring, networking_deps],
+  dependencies : [libidn2_dep, libidn_dep, libicu_dep, libunistring, networking_deps, libiconv_dep],
   version: lt_version,
   install: true,
 )

@@ -20,6 +20,7 @@ libicu_dep = notfound
 libidn_dep = notfound
 libunistring = notfound
 networking_deps = notfound
+libiconv_dep = notfound
 
 # FIXME: Cleanup this when Meson gets 'feature-combo':
 # https://github.com/mesonbuild/meson/issues/4566
@@ -86,6 +87,19 @@ endif
 if libidn2_dep.found() or libidn_dep.found()
   # Check for libunistring, we need it for psl_str_to_utf8lower()
   libunistring = cc.find_library('unistring')
+  found_iconv = false
+  if cc.has_function('iconv_open')
+    libiconv_dep = []
+    found_iconv = true
+  endif
+  if not found_iconv and cc.has_header_symbol('iconv.h', 'iconv_open')
+    libiconv_dep = [cc.find_library('iconv')]
+    found_iconv = true
+  endif
+
+  if not found_iconv
+    error('iconv implementation not found')
+  endif
 endif
 
 if host_machine.system() == 'windows'
