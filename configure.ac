@@ -57,7 +57,7 @@ fi
 # enable creation of man pages
 #
 AC_ARG_ENABLE([man],
-  [AC_HELP_STRING([--enable-man], [generate man pages [default=auto]])],
+  [AS_HELP_STRING([--enable-man], [generate man pages [default=auto]])],
   [
     if test "$enable_man" = yes; then
       AC_PATH_PROG([XSLTPROC], [xsltproc])
@@ -349,19 +349,19 @@ fi
 
 # Check for distribution-wide PSL file
 AC_ARG_WITH(psl-distfile,
-  AC_HELP_STRING([--with-psl-distfile=[PATH]], [path to distribution-wide PSL file]),
+  AS_HELP_STRING([--with-psl-distfile=[PATH]], [path to distribution-wide PSL file]),
   PSL_DISTFILE=$withval AC_SUBST(PSL_DISTFILE))
 
 # Check for custom PSL file
 AC_ARG_WITH(psl-file,
-  AC_HELP_STRING([--with-psl-file=[PATH]], [path to PSL file]),
+  AS_HELP_STRING([--with-psl-file=[PATH]], [path to PSL file]),
   PSL_FILE=$withval,
   PSL_FILE="\$(top_srcdir)/list/public_suffix_list.dat")
 AC_SUBST(PSL_FILE)
 
 # Check for custom PSL test file
 AC_ARG_WITH(psl-testfile,
-  AC_HELP_STRING([--with-psl-testfile=[PATH]], [path to PSL test file]),
+  AS_HELP_STRING([--with-psl-testfile=[PATH]], [path to PSL test file]),
   PSL_TESTFILE=$withval,
   PSL_TESTFILE="\$(top_srcdir)/list/tests/tests.txt")
 AC_SUBST(PSL_TESTFILE)
