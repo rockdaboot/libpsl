@@ -129,7 +129,7 @@ typedef SSIZE_T ssize_t;
 
 typedef struct {
 	char
-		label_buf[48];
+		label_buf[128];
 	const char *
 		label;
 	unsigned short
