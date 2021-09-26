@@ -571,13 +571,11 @@ static int domain_to_punycode(const char *domain, char *out, size_t outsize)
 	for (e = label = domain; e; label = e + 1) {
 		e = strchr(label, '.');
 		labellen = e ? (size_t) (e - label) : strlen(label);
-		/* printf("s=%s inlen=%zd\n", label, labellen); */
 
 		if (mem_is_ascii(label, labellen)) {
 			if (outlen + labellen + (e != NULL) >= outsize)
 				return 1;
 
-			/* printf("outlen=%zd labellen=%zd\n", outlen, labellen); */
 			memcpy(out + outlen, label, labellen);
 			outlen += labellen;
 		} else {
@@ -592,8 +590,7 @@ static int domain_to_punycode(const char *domain, char *out, size_t outsize)
 			memcpy(out + outlen, "xn--", 4);
 			outlen += 4;
 
-			labellen = outsize - outlen;
-			/* printf("n=%zd space_left=%zd\n", n, labellen); */
+			labellen = outsize - outlen - 1; // -1 to leave space for the trailing \0
 			if (punycode_encode(inputlen, input, &labellen, out + outlen))
 				return 1;
 			outlen += labellen;
