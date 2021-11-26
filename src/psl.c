@@ -1619,6 +1619,9 @@ static int isip(const char *hostname)
  *
  * Use helper function psl_str_to_utf8lower() for normalization of @hostname and @cookie_domain.
  *
+ * Hint for Windows users:
+ * Please make sure the calling application has called WSAStartup() before calling psl_is_cookie_domain_acceptable().
+ *
  * Examples:
  * 1. Cookie domain 'example.com' would be acceptable for hostname 'www.example.com',
  * but '.com' or 'com' would NOT be acceptable since 'com' is a public suffix.

@@ -32,6 +32,10 @@
 # include <config.h>
 #endif
 
+#ifdef _WIN32
+# include <winsock2.h> // WSAStartup, WSACleanup
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -109,6 +113,18 @@ static void test_psl(void)
 
 int main(int argc, const char * const *argv)
 {
+#ifdef _WIN32
+	WSADATA wsa_data;
+	int err;
+
+	if ((err = WSAStartup(MAKEWORD(2,2), &wsa_data))) {
+		printf("WSAStartup failed with error: %d\n", err);
+		return 1;
+	}
+
+	atexit((void (__cdecl*)(void)) WSACleanup);
+#endif
+
 	/* if VALGRIND testing is enabled, we have to call ourselves with valgrind checking */
 	if (argc == 1) {
 		const char *valgrind = getenv("TESTS_VALGRIND");
