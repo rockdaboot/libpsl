@@ -36,6 +36,10 @@
 # include <unistd.h>
 #endif
 
+#ifdef _WIN32
+# include <winsock2.h> // WSAStartup, WSACleanup
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -64,6 +68,20 @@ static void usage(int err, FILE* f)
 	fprintf(f, "\n");
 
 	exit(err);
+}
+
+static void init_windows(void) {
+#ifdef _WIN32
+	WSADATA wsa_data;
+	int err;
+
+	if ((err = WSAStartup(MAKEWORD(2,2), &wsa_data))) {
+		printf("WSAStartup failed with error: %d\n", err);
+		exit(EXIT_FAILURE);
+	}
+
+	atexit((void (__cdecl*)(void)) WSACleanup);
+#endif
 }
 
 /* RFC 2822-compliant date format */
@@ -209,6 +227,8 @@ int main(int argc, const char *const *argv)
 				else if (mode == 4) {
 					char *cookie_domain_lower;
 
+					init_windows();
+
 					if ((rc = psl_str_to_utf8lower(domain, NULL, NULL, &cookie_domain_lower)) == PSL_SUCCESS) {
 						if (!batch_mode)
 							printf("%s: ", domain);
@@ -253,6 +273,8 @@ int main(int argc, const char *const *argv)
 		}
 	}
 	else if (mode == 4) {
+		init_windows();
+
 		for (; arg < argv + argc; arg++) {
 			if (!batch_mode)
 				printf("%s: ", *arg);
