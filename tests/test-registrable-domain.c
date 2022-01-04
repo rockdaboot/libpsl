@@ -39,11 +39,6 @@
 #	include <alloca.h>
 #endif
 
-#ifdef WITH_LIBICU
-#	include <unicode/uversion.h>
-#	include <unicode/ustring.h>
-#endif
-
 #include <libpsl.h>
 
 static int
