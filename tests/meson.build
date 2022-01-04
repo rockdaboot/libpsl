@@ -32,7 +32,8 @@ foreach test_name : tests
   exe = executable(test_name, source,
     c_args : tests_cargs,
     link_with : libpsl,
-    include_directories : [configinc, includedir],
-    link_language : link_language)
+    include_directories : configinc,
+    link_language : link_language,
+    dependencies : [libpsl_dep])
   test(test_name, exe, depends : [psl_dafsa, psl_ascii_dafsa])
 endforeach

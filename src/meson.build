@@ -23,6 +23,17 @@ libtool_version_revision = libtool_version_info[1].to_int()
 libtool_version_age = libtool_version_info[2].to_int()
 library_version = '@0@.@1@.@2@'.format(libtool_version_current - libtool_version_age, libtool_version_age, libtool_version_revision)
 
+interface_cargs = []
+if host_machine.system() == 'windows'
+    default_library = get_option('default_library')
+    if default_library == 'static'
+        interface_cargs = ['-DPSL_STATIC']
+        cargs += interface_cargs
+    elif default_library == 'both'
+        warning('Building both static and dynamic libraries. -DPSL_STATIC will not be added to pkg-config metadata')
+    endif
+endif
+
 libpsl = library('psl', sources, suffixes_dafsa_h,
   include_directories : [configinc, includedir],
   c_args : cargs,
@@ -34,10 +45,12 @@ libpsl = library('psl', sources, suffixes_dafsa_h,
 
 pkgconfig.generate(libpsl,
   name : 'libpsl',
-  description : 'Public Suffix List C library')
+  description : 'Public Suffix List C library',
+  extra_cflags : interface_cargs)
 
 libpsl_dep = declare_dependency(link_with : libpsl,
-  include_directories : includedir)
+  include_directories : includedir,
+  compile_args : interface_cargs)
 
 install_data('psl-make-dafsa', install_dir : get_option('bindir'))
 install_man('psl-make-dafsa.1')
