@@ -16,11 +16,18 @@ cargs = [
   '-DPSL_DISTFILE="@0@"'.format(psl_distfile),
 ]
 
+fs = import('fs')
+libtool_version_info = fs.read(meson.project_source_root() / 'libtool_version_info.txt').strip().split(':')
+libtool_version_current = libtool_version_info[0].to_int()
+libtool_version_revision = libtool_version_info[1].to_int()
+libtool_version_age = libtool_version_info[2].to_int()
+library_version = '@0@.@1@.@2@'.format(libtool_version_current - libtool_version_age, libtool_version_age, libtool_version_revision)
+
 libpsl = library('psl', sources, suffixes_dafsa_h,
   include_directories : [configinc, includedir],
   c_args : cargs,
   dependencies : [libidn2_dep, libidn_dep, libicu_dep, libunistring, networking_deps, libiconv_dep],
-  version: lt_version,
+  version: library_version,
   install: true,
 )
 
