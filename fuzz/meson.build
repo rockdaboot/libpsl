@@ -19,6 +19,7 @@ foreach test_case : ['fuzzer', 'load_fuzzer', 'load_dafsa_fuzzer']
     c_args : fuzzer_cargs,
     include_directories : [configinc, includedir],
     dependencies : libicu_dep,
+    link_language : link_language
   )
   test(test_name, exe)
 endforeach

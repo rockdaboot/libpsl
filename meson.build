@@ -19,6 +19,8 @@ libunistring = notfound
 networking_deps = notfound
 libiconv_dep = notfound
 
+link_language = 'c'
+
 # FIXME: Cleanup this when Meson gets 'feature-combo':
 # https://github.com/mesonbuild/meson/issues/4566
 # Dependency fallbacks would help too:
@@ -58,6 +60,11 @@ if ['libicu', 'auto'].contains(enable_runtime) or ['libicu', 'auto'].contains(en
     endif
     if enable_builtin == 'auto'
       enable_builtin = 'libicu'
+    endif
+    if add_languages('cpp', native : false)
+        link_language = 'cpp'
+    else
+        error('C++ compiler is not available')
     endif
   elif [enable_runtime, enable_builtin].contains('libicu')
     error('You requested libicu but it is not installed.')
