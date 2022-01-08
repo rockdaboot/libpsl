@@ -29,6 +29,7 @@ libpsl = library('psl', sources, suffixes_dafsa_h,
   dependencies : [libidn2_dep, libidn_dep, libicu_dep, libunistring, networking_deps, libiconv_dep],
   version: library_version,
   install: true,
+  link_language : link_language
 )
 
 pkgconfig.generate(libpsl,
