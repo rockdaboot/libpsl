@@ -34,6 +34,6 @@ foreach test_name : tests
     link_with : libpsl,
     include_directories : configinc,
     link_language : link_language,
-    dependencies : [libpsl_dep])
+    dependencies : [libpsl_dep, networking_deps])
   test(test_name, exe, depends : [psl_dafsa, psl_ascii_dafsa])
 endforeach
