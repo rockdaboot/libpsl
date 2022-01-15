@@ -1,4 +1,4 @@
-AC_INIT([libpsl], m4_normalize(m4_include([version.txt])), [tim.ruehsen@gmx.de], [libpsl], [https://github.com/rockdaboot/libpsl])
+AC_INIT([libpsl],[m4_normalize(m4_include(version.txt))],[tim.ruehsen@gmx.de],[libpsl],[https://github.com/rockdaboot/libpsl])
 AC_PREREQ([2.59])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([1.10 no-define foreign dist-lzip])
