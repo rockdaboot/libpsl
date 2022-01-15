@@ -590,7 +590,7 @@ static int domain_to_punycode(const char *domain, char *out, size_t outsize)
 			memcpy(out + outlen, "xn--", 4);
 			outlen += 4;
 
-			labellen = outsize - outlen - 1; // -1 to leave space for the trailing \0
+			labellen = outsize - outlen - (e != NULL) - 1; // -1 to leave space for the trailing \0
 			if (punycode_encode(inputlen, input, &labellen, out + outlen))
 				return 1;
 			outlen += labellen;
