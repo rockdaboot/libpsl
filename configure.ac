@@ -33,7 +33,7 @@ AC_CONFIG_FILES([include/libpsl.h])
 # Gettext
 #
 AM_GNU_GETTEXT([external],[need-ngettext])
-AM_GNU_GETTEXT_VERSION([0.18.1])
+AM_GNU_GETTEXT_VERSION([0.19.3])
 
 #
 # check for gtk-doc
