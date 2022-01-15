@@ -15,11 +15,10 @@ foreach test_case : ['fuzzer', 'load_fuzzer', 'load_dafsa_fuzzer']
   endif
   source_file = 'libpsl_@0@.c'.format(test_case)
   exe = executable(test_name, source_file, 'main.c',
-    link_with : libpsl,
     c_args : fuzzer_cargs,
-    include_directories : [configinc, includedir],
-    dependencies : libicu_dep,
-    link_language : link_language
+    include_directories : configinc,
+    link_language : link_language,
+    dependencies : [libpsl_dep, libicu_dep]
   )
   test(test_name, exe)
 endforeach

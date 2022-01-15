@@ -1,8 +1,8 @@
 psl = executable('psl', 'psl.c',
-  link_with : libpsl,
-  include_directories : [configinc, includedir],
+  include_directories : configinc,
   c_args : ['-DHAVE_CONFIG_H'],
   link_language : link_language,
+  dependencies : [libpsl_dep, networking_deps],
   install : true,
 )
 
