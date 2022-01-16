@@ -35,9 +35,20 @@ if test -z "$1"; then
 	exit 1
 fi
 
+if ! grep -q FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION Makefile; then
+  echo "The fuzzers haven't been built for fuzzing (maybe for regression testing !?)"
+  echo "Please built regarding README.md and try again."
+  exit 1
+fi
+
+# you'll need ~2GB free memory per worker !
 fuzzer=$1
-workers=$(($(nproc) - 1))
+workers=$(($(nproc) - 0))
 jobs=$workers
+
+if test -n "$BUILD_ONLY"; then
+  exit 0
+fi
 
 case $fuzzer in
   libpsl_idn2_*)
@@ -54,11 +65,11 @@ case $fuzzer in
     XLIBS=
 esac
 
-clang-5.0 \
+clang \
  $CFLAGS -Og -g -I../include -I.. \
  ${cfile} -o ${fuzzer} \
  -Wl,-Bstatic ../src/.libs/libpsl.a -lFuzzer \
- -Wl,-Bdynamic $XLIBS -lclang-5.0 -lpthread -lm -lstdc++
+ -Wl,-Bdynamic $XLIBS -lpthread -lm -lstdc++
 
 if test -n "$BUILD_ONLY"; then
   exit 0

@@ -73,6 +73,14 @@ AM_PATH_PYTHON([2.7])
 
 PKG_PROG_PKG_CONFIG
 
+AC_ARG_ENABLE([fuzzing],
+  [AS_HELP_STRING([--enable-fuzzing], [Turn on fuzzing build (for developers)])],
+  [enable_fuzzing=yes;
+   AC_SUBST([LIB_FUZZING_ENGINE])
+   AC_DEFINE([FUZZING], 1, [Define to 1 if this is a fuzzing build])
+  ], [enable_fuzzing=no; LIB_FUZZING_ENGINE=""])
+AM_CONDITIONAL([FUZZING], [test "$enable_fuzzing" = "yes"])
+
 AC_ARG_ENABLE([cfi],
   [AS_HELP_STRING([--enable-cfi], [Turn on clang's Control Flow Integrity (CFI)])],
   [
@@ -90,6 +98,7 @@ AC_ARG_ENABLE([ubsan],
   [AS_HELP_STRING([--enable-ubsan], [Turn on Undefined Behavior Sanitizer (UBSan)])],
   [
     if test "$enable_ubsan" = yes; then
+      # Set basic UBSAN compiler flags. Add your own to CFLAGS.
       CFLAGS=$CFLAGS" -fsanitize=undefined -fno-sanitize-recover=undefined"
     fi
   ], [ enable_ubsan=no ])
@@ -98,6 +107,7 @@ AC_ARG_ENABLE([asan],
   [AS_HELP_STRING([--enable-asan], [Turn on Address Sanitizer (ASan)])],
   [
     if test "$enable_asan" = yes; then
+      # Set basic ASAN compiler flags. Add your own to CFLAGS.
       CFLAGS=$CFLAGS" -fsanitize=address -fno-omit-frame-pointer"
       AX_CHECK_COMPILE_FLAG([-fsanitize-address-use-after-scope], [CFLAGS="$CFLAGS -fsanitize-address-use-after-scope"])
     fi
@@ -409,4 +419,5 @@ AC_MSG_NOTICE([Summary of build options:
   Docs:              $enable_gtk_doc
   Man pages:         $enable_man
   Tests:             ${TESTS_INFO}
+  Fuzzing build:     $enable_fuzzing, $LIB_FUZZING_ENGINE
 ])
