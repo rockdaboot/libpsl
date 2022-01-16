@@ -50,31 +50,6 @@ if test -n "$BUILD_ONLY"; then
   exit 0
 fi
 
-case $fuzzer in
-  libpsl_idn2_*)
-    cfile="libpsl_"$(echo $fuzzer|cut -d'_' -f3-)".c"
-    XLIBS="-lidn2 -lunistring";;
-  libpsl_idn_*)
-    cfile="libpsl_"$(echo $fuzzer|cut -d'_' -f3-)".c"
-    XLIBS="-lidn -lunistring";;
-  libpsl_icu_*)
-    cfile="libpsl_"$(echo $fuzzer|cut -d'_' -f3-)".c"
-    XLIBS="-licuuc -licudata";;
-  libpsl_*)
-    cfile=${fuzzer}.c
-    XLIBS=
-esac
-
-clang \
- $CFLAGS -Og -g -I../include -I.. \
- ${cfile} -o ${fuzzer} \
- -Wl,-Bstatic ../src/.libs/libpsl.a -lFuzzer \
- -Wl,-Bdynamic $XLIBS -lpthread -lm -lstdc++
-
-if test -n "$BUILD_ONLY"; then
-  exit 0
-fi
-
 # create directory for NEW test corpora (covering new areas of code)
 mkdir -p ${fuzzer}.new
 
