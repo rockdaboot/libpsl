@@ -835,8 +835,11 @@ static int is_public_suffix(const psl_ctx_t *psl, const char *domain, int type)
 	suffix.nlabels = 1;
 
 	for (p = domain; *p; p++) {
-		if (*p == '.')
+		if (*p == '.') {
+			if (suffix.nlabels == 255) // weird input, avoid 8bit overflow
+				return 0;
 			suffix.nlabels++;
+		}
 		else if (*((unsigned char *)p) >= 128)
 			need_conversion = 1; /* in case domain is non-ascii we need a toASCII conversion */
 	}
