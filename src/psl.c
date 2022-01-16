@@ -568,7 +568,7 @@ static int domain_to_punycode(const char *domain, char *out, size_t outsize)
 	punycode_uint input[256];
 	const char *label, *e;
 
-	for (e = label = domain; e; label = e + 1) {
+	for (e = label = domain; e;) {
 		e = strchr(label, '.');
 		labellen = e ? (size_t) (e - label) : strlen(label);
 
@@ -596,8 +596,10 @@ static int domain_to_punycode(const char *domain, char *out, size_t outsize)
 			outlen += labellen;
 		}
 
-		if (e)
+		if (e) {
+			label = e + 1;
 			out[outlen++] = '.';
+		}
 		out[outlen] = 0;
 	}
 
