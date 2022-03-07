@@ -25,7 +25,7 @@ link_language = 'c'
 # https://github.com/mesonbuild/meson/issues/4566
 # Dependency fallbacks would help too:
 # https://github.com/mesonbuild/meson/pull/4595
-if ['libidn2', 'auto'].contains(enable_runtime) or ['libidn2', 'auto'].contains(enable_builtin)
+if ['libidn2', 'auto'].contains(enable_runtime)
   libidn2_dep = dependency('libidn2', required : false)
   if not libidn2_dep.found() and cc.has_header('idn2.h')
     libidn2_dep = cc.find_library('idn2', required : false)
@@ -42,7 +42,7 @@ if ['libidn2', 'auto'].contains(enable_runtime) or ['libidn2', 'auto'].contains(
   endif
 endif
 
-if ['libicu', 'auto'].contains(enable_runtime) or ['libicu', 'auto'].contains(enable_builtin)
+if ['libicu', 'auto'].contains(enable_runtime)
   libicu_dep = dependency('icu-uc', required : false)
   if not libicu_dep.found() and cc.has_header('unicode/ustring.h')
     # MSVC: the debug configuration of ICU generated the libraries with d suffix
@@ -71,7 +71,7 @@ if ['libicu', 'auto'].contains(enable_runtime) or ['libicu', 'auto'].contains(en
   endif
 endif
 
-if ['libidn', 'auto'].contains(enable_runtime) or ['libidn', 'auto'].contains(enable_builtin)
+if ['libidn', 'auto'].contains(enable_runtime)
   libidn_dep = dependency('libidn', required : false)
   if not libidn_dep.found() and cc.has_header('idna.h')
     libidn_dep = cc.find_library('idn', required : false)
@@ -122,9 +122,7 @@ config.set_quoted('PACKAGE_VERSION', meson.project_version())
 config.set('WITH_LIBIDN2', enable_runtime == 'libidn2')
 config.set('WITH_LIBICU', enable_runtime == 'libicu')
 config.set('WITH_LIBIDN', enable_runtime == 'libidn')
-config.set('BUILTIN_GENERATOR_LIBIDN2', enable_builtin == 'libidn2')
-config.set('BUILTIN_GENERATOR_LIBICU', enable_builtin == 'libicu')
-config.set('BUILTIN_GENERATOR_LIBIDN', enable_builtin == 'libidn')
+config.set('ENABLE_BUILTIN', enable_builtin)
 config.set('HAVE_UNISTD_H', cc.check_header('unistd.h'))
 config.set('HAVE_STDINT_H', cc.check_header('stdint.h'))
 config.set('HAVE_ALLOCA_H', cc.check_header('alloca.h'))

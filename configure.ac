@@ -160,22 +160,14 @@ AC_ARG_ENABLE(runtime,
 # Check for enable/disable builtin PSL data
 AC_ARG_ENABLE(builtin,
   [
-  --enable-builtin[[=IDNA library]]
-      Specify the IDNA library used for built-in data generation:
-        libidn2 [[default]]: IDNA2008 library (also needs libunistring)
-        libicu: IDNA2008   UTS#46 library
-        libidn:            IDNA2003 library (also needs libunistring)
+  --enable-builtin         Generate built-in PSL data
   --disable-builtin        Do not generate built-in PSL data
   ], [
-    if test "$enableval" = "libidn2" -o "$enableval" = "yes"; then
-      enable_builtin=libidn2
-      AC_DEFINE([BUILTIN_GENERATOR_LIBIDN2], [1], [generate PSL data using libidn2])
-    elif test "$enableval" = "libicu"; then
-      enable_builtin=libicu
-      AC_DEFINE([BUILTIN_GENERATOR_LIBICU], [1], [generate PSL data using libicu])
-    elif test "$enableval" = "libidn"; then
-      enable_builtin=libidn
-      AC_DEFINE([BUILTIN_GENERATOR_LIBIDN], [1], [generate PSL data using libidn])
+    if test "$enableval" = "yes"; then
+      enable_builtin=yes
+    elif test "$enableval" = "libidn" -o "$enableval" = "libidn2" -o "$enableval" = "libicu"; then
+      AC_MSG_WARN([--enable-builtin=$enableval is deprecated, use --enable-builtin (enabled by default)])
+      enable_builtin=yes
     elif test "$enableval" = "no"; then
       enable_builtin=no
     else
@@ -183,10 +175,14 @@ AC_ARG_ENABLE(builtin,
     fi
   ], [
     # this is the default if neither --enable-builtin nor --disable-builtin were specified
-    enable_builtin=auto
+    enable_builtin=yes
   ])
 
-if test "$enable_runtime" = "libidn2" -o "$enable_builtin" = "libidn2" -o "$enable_runtime" = "auto" -o "$enable_builtin" = "auto"; then
+if test "$enable_builtin" = "yes"; then
+  AC_DEFINE([ENABLE_BUILTIN], [1], [Generate built-in PSL data])
+fi
+
+if test "$enable_runtime" = "libidn2" -o "$enable_runtime" = "auto"; then
   # Check for libidn2
   PKG_CHECK_MODULES([LIBIDN2], [libidn2], [
     HAVE_LIBIDN2=yes
@@ -197,7 +193,7 @@ if test "$enable_runtime" = "libidn2" -o "$enable_builtin" = "libidn2" -o "$enab
   ], [
     AC_SEARCH_LIBS(idn2_lookup_u8, idn2, HAVE_LIBIDN2=yes,
     [
-       if test "$enable_runtime" = "libidn2" -o "$enable_builtin" = "libidn2"; then
+       if test "$enable_runtime" = "libidn2"; then
           AC_MSG_ERROR(You requested libidn2 but it is not installed.)
        fi
     ], -lunistring)
@@ -208,14 +204,10 @@ if test "$enable_runtime" = "libidn2" -o "$enable_builtin" = "libidn2" -o "$enab
       enable_runtime=libidn2
       AC_DEFINE([WITH_LIBIDN2], [1], [generate PSL data using libidn2])
     fi
-    if test "$enable_builtin" = "auto"; then
-      enable_builtin=libidn2
-      AC_DEFINE([BUILTIN_GENERATOR_LIBIDN2], [1], [generate PSL data using libidn2])
-    fi
   fi
 fi
 
-if test "$enable_runtime" = "libicu" -o "$enable_builtin" = "libicu" -o "$enable_runtime" = "auto" -o "$enable_builtin" = "auto"; then
+if test "$enable_runtime" = "libicu" -o "$enable_runtime" = "auto"; then
   # Check for libicu
   # using pkg-config won't work on older systems like Ubuntu 12.04 LTS Server Edition 64bit
   # using AC_SEARCH_LIBS also don't work since functions have the library version appended
@@ -235,7 +227,7 @@ if test "$enable_runtime" = "libicu" -o "$enable_builtin" = "libicu" -o "$enable
         [[u_strToUTF8(NULL, 0, NULL, NULL, 0, NULL);]])],
       [HAVE_LIBICU=yes; LIBICU_LIBS="-licuuc"; AC_MSG_RESULT([yes])],
       [ AC_MSG_RESULT([no]);
-        if test "$enable_runtime" = "libicu" -o "$enable_builtin" = "libicu"; then
+        if test "$enable_runtime" = "libicu"; then
           AC_MSG_ERROR(You requested libicu but it is not installed.)
         fi
         LIBS=$OLDLIBS
@@ -247,14 +239,10 @@ if test "$enable_runtime" = "libicu" -o "$enable_builtin" = "libicu" -o "$enable
       enable_runtime=libicu
       AC_DEFINE([WITH_LIBICU], [1], [generate PSL data using libicu])
     fi
-    if test "$enable_builtin" = "auto"; then
-      enable_builtin=libicu
-      AC_DEFINE([BUILTIN_GENERATOR_LIBICU], [1], [generate PSL data using libicu])
-    fi
   fi
 fi
 
-if test "$enable_runtime" = "libidn" -o "$enable_builtin" = "libidn" -o "$enable_runtime" = "auto" -o "$enable_builtin" = "auto"; then
+if test "$enable_runtime" = "libidn" -o "$enable_runtime" = "auto"; then
   # Check for libidn
   PKG_CHECK_MODULES([LIBIDN], [libidn], [
     HAVE_LIBIDN=yes
@@ -265,7 +253,7 @@ if test "$enable_runtime" = "libidn" -o "$enable_builtin" = "libidn" -o "$enable
   ], [
     AC_SEARCH_LIBS(idna_to_ascii_8z, idn, HAVE_LIBIDN=yes,
     [
-      if test "$enable_runtime" = "libidn" -o "$enable_builtin" = "libidn"; then
+      if test "$enable_runtime" = "libidn"; then
         AC_MSG_ERROR(You requested libidn but it is not installed.)
       fi
     ])
@@ -276,19 +264,12 @@ if test "$enable_runtime" = "libidn" -o "$enable_builtin" = "libidn" -o "$enable
       enable_runtime=libidn
       AC_DEFINE([WITH_LIBIDN], [1], [generate PSL data using libidn])
     fi
-    if test "$enable_builtin" = "auto"; then
-      enable_builtin=libidn
-      AC_DEFINE([BUILTIN_GENERATOR_LIBIDN], [1], [generate PSL data using libidn])
-    fi
   fi
 fi
 
 # last fallback is noruntime/nobuiltin
 if test "$enable_runtime" = "auto"; then
   enable_runtime=no
-fi
-if test "$enable_builtin" = "auto"; then
-  enable_builtin=no
 fi
 
 if test "x$HAVE_LIBIDN2" = "xyes" -o "x$HAVE_LIBIDN" = "xyes"; then
@@ -303,10 +284,7 @@ AM_ICONV
 AM_CONDITIONAL([WITH_LIBICU], test "x$enable_runtime" = "xlibicu")
 AM_CONDITIONAL([WITH_LIBIDN2], test "x$enable_runtime" = "xlibidn2")
 AM_CONDITIONAL([WITH_LIBIDN], test "x$enable_runtime" = "xlibidn")
-AM_CONDITIONAL([BUILTIN_GENERATOR_LIBICU], test "x$enable_builtin" = "xlibicu")
-AM_CONDITIONAL([BUILTIN_GENERATOR_LIBIDN2], test "x$enable_builtin" = "xlibidn2")
-AM_CONDITIONAL([BUILTIN_GENERATOR_LIBIDN], test "x$enable_builtin" = "xlibidn")
-AM_CONDITIONAL([WITH_BUILTIN], test $enable_builtin = yes)
+AM_CONDITIONAL([ENABLE_BUILTIN], test "x$enable_builtin" = "xyes")
 
 # Solaris has socket in libsocket and inet_ntop in libnsl, but also needs libsocket, so the order is important here
 AC_CHECK_LIB([socket], [socket], [NEEDS_SOCKET=yes], [])
