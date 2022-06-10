@@ -13,15 +13,7 @@ AM_LDFLAGS = -no-install
 # Do not call test-registrable-domain here: it would fail due to missing punycode entries in PSL file.
 PSL_TESTS = test-is-public test-is-public-all test-is-cookie-domain-acceptable
 
-if BUILTIN_GENERATOR_LIBICU
-  PSL_TESTS += test-is-public-builtin test-registrable-domain
-endif
-
-if BUILTIN_GENERATOR_LIBIDN2
-  PSL_TESTS += test-is-public-builtin test-registrable-domain
-endif
-
-if BUILTIN_GENERATOR_LIBIDN
+if ENABLE_BUILTIN
   PSL_TESTS += test-is-public-builtin test-registrable-domain
 endif
 

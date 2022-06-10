@@ -23,7 +23,7 @@ tests = [
   'test-is-cookie-domain-acceptable',
 ]
 
-if enable_builtin != 'no'
+if enable_builtin
   tests += ['test-is-public-builtin', 'test-registrable-domain']
 endif
 
