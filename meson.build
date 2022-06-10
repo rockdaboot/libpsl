@@ -1,6 +1,6 @@
 project('libpsl', 'c',
   version : files('version.txt'),
-  meson_version : '>=0.57.0')
+  meson_version : '>=0.60.0')
 
 cc = meson.get_compiler('c')
 
@@ -91,19 +91,7 @@ endif
 if libidn2_dep.found() or libidn_dep.found()
   # Check for libunistring, we need it for psl_str_to_utf8lower()
   libunistring = cc.find_library('unistring')
-  found_iconv = false
-  if cc.has_function('iconv_open')
-    libiconv_dep = []
-    found_iconv = true
-  endif
-  if not found_iconv and cc.has_header_symbol('iconv.h', 'iconv_open')
-    libiconv_dep = [cc.find_library('iconv')]
-    found_iconv = true
-  endif
-
-  if not found_iconv
-    error('iconv implementation not found')
-  endif
+  libiconv_dep = dependency('iconv')
 endif
 
 if host_machine.system() == 'windows'
