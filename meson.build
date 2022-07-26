@@ -34,10 +34,7 @@ if ['libidn2', 'auto'].contains(enable_runtime)
     if enable_runtime == 'auto'
       enable_runtime = 'libidn2'
     endif
-    if enable_builtin == 'auto'
-      enable_builtin = 'libidn2'
-    endif
-  elif [enable_runtime, enable_builtin].contains('libidn2')
+  elif enable_runtime == 'libidn2'
     error('You requested libidn2 but it is not installed.')
   endif
 endif
@@ -58,15 +55,12 @@ if ['libicu', 'auto'].contains(enable_runtime)
     if enable_runtime == 'auto'
       enable_runtime = 'libicu'
     endif
-    if enable_builtin == 'auto'
-      enable_builtin = 'libicu'
-    endif
     if add_languages('cpp', native : false)
         link_language = 'cpp'
     else
         error('C++ compiler is not available')
     endif
-  elif [enable_runtime, enable_builtin].contains('libicu')
+  elif enable_runtime == 'libicu'
     error('You requested libicu but it is not installed.')
   endif
 endif
@@ -80,10 +74,7 @@ if ['libidn', 'auto'].contains(enable_runtime)
     if enable_runtime == 'auto'
       enable_runtime = 'libidn'
     endif
-    if enable_builtin == 'auto'
-      enable_builtin = 'libidn'
-    endif
-  elif [enable_runtime, enable_builtin].contains('libidn')
+  elif enable_runtime == 'libidn'
     error('You requested libidn but it is not installed.')
   endif
 endif
@@ -100,9 +91,6 @@ endif
 
 if enable_runtime == 'auto'
   enable_runtime = 'no'
-endif
-if enable_builtin == 'auto'
-  enable_builtin = 'no'
 endif
 
 config = configuration_data()
