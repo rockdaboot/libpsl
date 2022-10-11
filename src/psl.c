@@ -936,13 +936,11 @@ static int is_public_suffix(const psl_ctx_t *psl, const char *domain, int type)
 		}
 
 		if ((suffix.label = strchr(suffix.label, '.'))) {
-			int pos;
-
 			suffix.label++;
 			suffix.length = strlen(suffix.label);
 			suffix.nlabels--;
 
-			rule = vector_get(psl->suffixes, (pos = vector_find(psl->suffixes, &suffix)));
+			rule = vector_get(psl->suffixes, vector_find(psl->suffixes, &suffix));
 
 			if (rule) {
 				/* check for correct rule type */
