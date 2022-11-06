@@ -14,6 +14,8 @@ LT_INIT([win32-dll])
 AC_CONFIG_MACRO_DIR([m4])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
+AC_SYS_LARGEFILE
+
 dnl Check that compiler understands inline
 AC_C_INLINE
 
