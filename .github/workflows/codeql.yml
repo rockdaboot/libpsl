@@ -32,7 +32,7 @@ jobs:
         if: ${{ matrix.language == 'cpp' }}
         run: |
           sudo apt-get update
-          sudo apt-get install --yes lzip
+          sudo apt-get install --yes lzip autopoint
 
       - name: Configure (cpp)
         if: ${{ matrix.language == 'cpp' }}
