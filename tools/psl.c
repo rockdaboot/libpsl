@@ -88,9 +88,12 @@ static void init_windows(void) {
 static const char *time2str(time_t t)
 {
 	static char buf[64];
-	struct tm *tp = localtime(&t);
+	struct tm tm;
 
-	strftime(buf, sizeof(buf), "%a, %d %b %Y %H:%M:%S %Z", tp);
+	if (localtime_r(&t, &tm) != NULL)
+		strftime(buf, sizeof(buf), "%a, %d %b %Y %H:%M:%S %Z", &tm);
+	else
+		strcpy(buf, "--notime--");
 	return buf;
 }
 
