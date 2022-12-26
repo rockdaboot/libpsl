@@ -1,6 +1,6 @@
 #!/bin/sh -eu
 #
-# Copyright(c) 2017-2018 Tim Ruehsen
+# Copyright(c) 2017-2022 Tim Ruehsen
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
