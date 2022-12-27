@@ -38,6 +38,10 @@
 
 #ifdef _WIN32
 # include <winsock2.h> // WSAStartup, WSACleanup
+
+// Windows does not have localtime_r but has localtime_s, which is more or less
+// the same except that the arguments are reversed
+# define localtime_r(t_sec,t_now) localtime_s(t_now,t_sec)
 #endif
 
 #include <stdlib.h>
