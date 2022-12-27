@@ -40,17 +40,9 @@ if ['libidn2', 'auto'].contains(enable_runtime)
 endif
 
 if ['libicu', 'auto'].contains(enable_runtime)
-  libicu_dep = dependency('icu-uc', required : false)
-  if not libicu_dep.found() and cc.has_header('unicode/ustring.h')
-    # MSVC: the debug configuration of ICU generated the libraries with d suffix
-    # we must handle this and search for the right library depending on the
-    # build type. Note debugoptimized is just a release build with .pdb files enabled
-    if cc.get_id() == 'msvc' and buildtype == 'debug'
-      libicu_dep = cc.find_library('icuucd', required : false)
-    else
-      libicu_dep = cc.find_library('icuuc', required : false)
-    endif
-  endif
+  libicu_dep = dependency('icu-uc', 'ICU',
+                          components: 'uc',
+                          required : false)
   if libicu_dep.found()
     if enable_runtime == 'auto'
       enable_runtime = 'libicu'
