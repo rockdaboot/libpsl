@@ -129,15 +129,19 @@ Building from git
 
 You should have python2.7+ installed.
 
-Download project and prepare sources with
+Download project with
 
-		git clone https://github.com/rockdaboot/libpsl
+		git clone --recursive https://github.com/rockdaboot/libpsl
+		cd libpsl
+
+Build with GNU autotools
+
 		./autogen.sh
 		./configure
 		make
 		make check
 
-If you prefer a `meson` build
+Build with `meson`
 
 		meson builddir
 		ninja -C builddir
