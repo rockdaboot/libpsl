@@ -1,11 +1,13 @@
 psl_dafsa = custom_target('psl.dafsa',
   input : psl_file,
   output : 'psl.dafsa',
+  build_by_default: false,
   command : [python, psl_make_dafsa, '--output-format=binary', '@INPUT@', '@OUTPUT@'])
 
 psl_ascii_dafsa = custom_target('psl_ascii.dafsa',
   input : psl_file,
   output : 'psl_ascii.dafsa',
+  build_by_default: false,
   command : [python, psl_make_dafsa, '--output-format=binary', '--encoding=ascii', '@INPUT@', '@OUTPUT@'])
 
 tests_cargs = [
@@ -30,6 +32,7 @@ endif
 foreach test_name : tests
   source = test_name + '.c'
   exe = executable(test_name, source,
+    build_by_default: false,
     c_args : tests_cargs,
     link_with : libpsl,
     include_directories : configinc,
