@@ -127,6 +127,11 @@ typedef SSIZE_T ssize_t;
 #define PRIV_PSL_FLAG_PRIVATE   (1<<3) /* entry of PRIVATE section */
 #define PRIV_PSL_FLAG_PLAIN     (1<<4) /* just used for PSL syntax checking */
 
+// Case-insensitive string comparison function. Use _stricmp on Windows, and strcasecmp from POSIX otherwise
+#ifdef _WIN32
+#	define strcasecmp _stricmp
+#endif
+
 typedef struct {
 	char
 		label_buf[128];
