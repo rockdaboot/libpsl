@@ -10,13 +10,14 @@ psl_ascii_dafsa = custom_target('psl_ascii.dafsa',
   build_by_default: false,
   command : [python, psl_make_dafsa, '--output-format=binary', '--encoding=ascii', '@INPUT@', '@OUTPUT@'])
 
+fsmod = import('fs')
 tests_cargs = [
   '-DHAVE_CONFIG_H',
   '-DSRCDIR="@0@"'.format(meson.current_source_dir()),
   '-DPSL_FILE="@0@"'.format(psl_file),
   '-DPSL_TESTFILE="@0@"'.format(psl_test_file),
-  '-DPSL_DAFSA="@0@"'.format(psl_dafsa.full_path()),
-  '-DPSL_ASCII_DAFSA="@0@"'.format(psl_ascii_dafsa.full_path()),
+  '-DPSL_DAFSA="@0@"'.format(fsmod.as_posix(psl_dafsa.full_path())),
+  '-DPSL_ASCII_DAFSA="@0@"'.format(fsmod.as_posix(psl_ascii_dafsa.full_path())),
 ]
 
 tests = [
