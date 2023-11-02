@@ -82,6 +82,8 @@ typedef SSIZE_T ssize_t;
 
 #ifdef HAVE_ALLOCA_H
 #	include <alloca.h>
+#elif defined _WIN32
+#	include <malloc.h>
 #endif
 
 #ifdef WITH_LIBICU
