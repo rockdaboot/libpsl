@@ -88,10 +88,7 @@ static void test(const psl_ctx_t *psl, const char *domain, const char *expected_
 
 static void test_iso(const psl_ctx_t *psl, const char *domain, const char *expected_result)
 {
-	/* makes only sense with a runtime IDN library configured */
-#if defined(WITH_LIBIDN) || defined(WITH_LIBIDN2) || defined(WITH_LIBICU)
 	testx(psl, domain, "iso-8859-15", "de", expected_result);
-#endif
 }
 
 static void test_psl(void)
@@ -126,7 +123,10 @@ static void test_psl(void)
 	test(psl, "www.\303\270yer.no", "www.\303\270yer.no");
 
 	/* Norwegian with lowercase oe, encoded as ISO-8859-15 */
+        /* makes only sense with a runtime IDN library configured */
+#if defined(WITH_LIBIDN) || defined(WITH_LIBIDN2) || defined(WITH_LIBICU)
 	test_iso(psl, "www.\370yer.no", "www.\303\270yer.no");
+#endif
 
 	/* Testing special code paths of psl_str_to_utf8lower() */
 	for (it = 254; it <= 257; it++) {
