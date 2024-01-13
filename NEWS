@@ -1,5 +1,8 @@
 Copyright (C) 2014-2024 Tim Rühsen
 
+13.01.2024 Release V0.21.5
+  * Fix version.txt
+
 13.01.2024 Release V0.21.4
   * Fix meson build (missing ICONV_CONST in config.h)
 
