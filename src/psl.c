@@ -105,7 +105,7 @@ typedef SSIZE_T ssize_t;
 #endif
 
 #ifndef WINICONV_CONST
-#  define WINICONV_CONST
+#  define WINICONV_CONST ICONV_CONST
 #endif
 
 #include <libpsl.h>
