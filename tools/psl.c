@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2014-2022 Tim Ruehsen
+ * Copyright(c) 2014-2024 Tim Ruehsen
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -171,7 +171,7 @@ int main(int argc, const char *const *argv)
 				printf("psl %s (0x%06x)\n", PACKAGE_VERSION, psl_check_version_number(0));
 				printf("libpsl %s\n", psl_get_version());
 				printf("\n");
-				printf("Copyright (C) 2014-2022 Tim Ruehsen\n");
+				printf("Copyright (C) 2014-2024 Tim Ruehsen\n");
 				printf("License: MIT\n");
 				exit(0);
 			}
