@@ -1,6 +1,6 @@
-[![Travis-CI Status](https://travis-ci.org/rockdaboot/libpsl.png?branch=master)](https://travis-ci.org/rockdaboot/libpsl)
 [![Coverity Scan](https://img.shields.io/coverity/scan/10227.svg)](https://scan.coverity.com/projects/rockdaboot-libpsl)
 [![Coverage Status](https://coveralls.io/repos/github/rockdaboot/libpsl/badge.svg?branch=master)](https://coveralls.io/github/rockdaboot/libpsl?branch=master)
+[![CodeQL](https://github.com/rockdaboot/libpsl/actions/workflows/codeql.yml/badge.svg)](https://github.com/rockdaboot/libpsl/actions/workflows/codeql.yml)
 
 Solaris OpenCSW [![Build Status Solaris amd64](https://buildfarm.opencsw.org/buildbot/png?builder=libpsl-solaris10-amd64)](https://buildfarm.opencsw.org/buildbot/builders/libpsl-solaris10-amd64)
 [![Build Status Solaris i386](https://buildfarm.opencsw.org/buildbot/png?builder=libpsl-solaris10-i386)](https://buildfarm.opencsw.org/buildbot/builders/libpsl-solaris10-i386)
