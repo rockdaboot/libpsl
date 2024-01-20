@@ -41,15 +41,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#ifdef _WIN32
-# include <winsock2.h>
-# include <ws2tcpip.h>
-#else
-# include <sys/socket.h>
-# include <netinet/in.h>
-# include <unistd.h>
-#endif
-
 #if defined(_MSC_VER) && ! defined(ssize_t)
 # include <basetsd.h>
 typedef SSIZE_T ssize_t;
@@ -67,10 +58,8 @@ typedef SSIZE_T ssize_t;
 # include <langinfo.h>
 #endif
 
-#ifndef _WIN32
-# include <arpa/inet.h>
-#else
-# include <malloc.h>
+#ifdef _WIN32
+#	include <malloc.h>
 #endif
 
 #ifdef WITH_LIBICU
@@ -1602,30 +1591,90 @@ int psl_check_version_number(int version)
 
 	return PSL_VERSION_NUMBER;
 }
+/*
+ * Return true if 'src' is a valid dotted quad, else false.
+ * Assume that characters '0'..'9' have consecutive byte values.
+ * credit:
+ *	  inspired by Paul Vixie
+ */
+static int is_ip4(const char *s)
+{
+	int i, n;
+	unsigned char c;
+
+	for (i = 0; i < 4; i++) {
+		if (!(c = *s++) || c < '0' || c > '9')
+			return 0;
+
+		n = c - '0';
+		if ((c = *s++) && c >= '0' && c <= '9') {
+			n = n * 10 + c - '0';
+			if ((c = *s++) && c >= '0' && c <= '9') {
+				n = n * 10 + c - '0';
+				if ((c = *s++) && c >= '0' && c <= '9') {
+					n = n * 10 + c - '0';
+					c = *s++;
+				}
+			}
+		}
+
+		if (n > 255)
+			return 0;
+
+		if (i < 3 && c != '.')
+			return 0;
+	}
+
+	return !c;
+}
+
+static int hexval(unsigned c)
+{
+	if (c - '0' < 10) return c - '0';
+	c |= 32;
+	if (c - 'a' < 6) return c - 'a' + 10;
+	return -1;
+}
+
+/*
+ * Original code taken from musl inet_pton(),
+ *   which has a standard MIT license (https://git.musl-libc.org/cgit/musl/tree/COPYRIGHT).
+ * Amended and simplified to out needs.
+ */
+static int is_ip6(const char *s)
+{
+	int i, j, n, d, brk = -1, need_v4 = 0;
+
+	if (*s == ':' && *++s != ':') return 0;
+
+	for (i = 0; ; i++) {
+		if (s[0] == ':' && brk < 0) {
+			brk = i;
+			if (!*++s) break;
+			continue;
+		}
+		for (n = j = 0; j < 4 && (d = hexval(s[j])) >= 0; j++)
+			n = n * 16 + d;
+		if (j == 0) return 0;
+		if (!s[j] && (brk >= 0 || i == 7)) break;
+		if (i == 7) return 0;
+		if (s[j] != ':') {
+			if (s[j] != '.' || (i < 6 && brk < 0)) return 0;
+			need_v4 = 1;
+			i++;
+			break;
+		}
+		s += j + 1;
+	}
+
+	if (need_v4 && !is_ip4(s)) return 0;
+	return 1;
+}
 
 /* return whether hostname is an IP address or not */
 static int isip(const char *hostname)
 {
-#ifdef _WIN32
-	WCHAR wName[INET6_ADDRSTRLEN+1];
-
-	struct sockaddr_in  addr  = {0};
-	struct sockaddr_in6 addr6 = {0};
-
-	INT size  = sizeof(addr);
-	INT size6 = sizeof(addr6);
-
-	if (!MultiByteToWideChar(CP_UTF8, 0, hostname, -1, wName, countof(wName)))
-		return 0;
-
-	return (WSAStringToAddressW(wName, AF_INET,  NULL, (struct sockaddr *)&addr,  &size) != SOCKET_ERROR) |
-	       (WSAStringToAddressW(wName, AF_INET6, NULL, (struct sockaddr *)&addr6, &size6) != SOCKET_ERROR);
-#else
-	struct in_addr addr;
-	struct in6_addr addr6;
-
-	return inet_pton(AF_INET, hostname, &addr) || inet_pton(AF_INET6, hostname, &addr6);
-#endif
+	return is_ip4(hostname) || is_ip6(hostname);
 }
 
 /**
