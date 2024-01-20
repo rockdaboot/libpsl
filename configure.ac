@@ -299,19 +299,6 @@ elif test -n "$NEEDS_SOCKET" ; then
   LIBS="$LIBS -lsocket"
 elif test -n "$NEEDS_NSL" ; then
   LIBS="$LIBS -lnsl"
-else
-  # Platform dependant options
-  case "${host_os}" in
-    # MinGW / Windows
-    *mingw*)
-      # Select Windows NT/2000 and later, for WSAStringToAddressW()
-      CPPFLAGS="$CPPFLAGS -D_WIN32_WINNT=0x500"
-      # Needed for network support
-      LIBS="$LIBS -lws2_32"
-      ;;
-    *)
-      ;;
-  esac
 fi
 
 # Check for clock_gettime() used for performance measurement
