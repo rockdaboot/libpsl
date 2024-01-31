@@ -50,6 +50,12 @@
 #ifdef _WIN32
 # include <winsock2.h>
 # include <ws2tcpip.h>
+#elif defined __TANDEM
+# include <sys/socket.h>
+# include <netdb.h>
+# include <netinet/in6.h>
+# include <netinet/in.h>
+# include <unistd.h>
 #else
 # include <sys/socket.h>
 # include <netinet/in.h>
