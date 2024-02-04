@@ -31,8 +31,8 @@ if enable_builtin
 endif
 
 foreach test_name : tests
-  source = test_name + '.c'
-  exe = executable(test_name, source,
+  sources = [test_name + '.c', 'common.c', 'common.h']
+  exe = executable(test_name, sources,
     build_by_default: false,
     c_args : tests_cargs,
     link_with : libpsl,
