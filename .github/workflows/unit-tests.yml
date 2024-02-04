@@ -8,18 +8,20 @@ on:
 
 jobs:
   test:
-    name: Test (libidn2)
+    name: Test
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
-      max-parallel: 2
+      max-parallel: 3
+      matrix:
+        runtime: ["libidn", "libidn2", "libicu"]
     steps:
     - name: Check out
       uses: actions/checkout@v4
     - name: Install dependencies
-      run: sudo apt-get install -y autopoint autoconf automake gtk-doc-tools libidn2-dev libunistring-dev
-    - name: Run
+      run: sudo apt-get install -y autopoint autoconf automake gtk-doc-tools libidn2-dev libunistring-dev libicu-dev libidn-dev
+    - name: Test with ${{matrix.runtime}}
       run: |
           ./autogen.sh
-          CFLAGS="-O0 -Wall -Wextra" ./configure --enable-runtime=libidn2
+          CFLAGS="-O0 -Wall -Wextra" ./configure --enable-runtime=${{matrix.runtime}}
           make check
