@@ -16,6 +16,8 @@ jobs:
     steps:
     - name: Check out
       uses: actions/checkout@v4
+    - name: Install dependencies
+      run: sudo apt-get install -y autopoint autoconf automake gtk-doc-tools libidn2-dev libunistring-dev
     - name: Run
       run: |
           ./autogen.sh
