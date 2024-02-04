@@ -356,8 +356,6 @@ AC_ARG_WITH(psl-testfile,
   PSL_TESTFILE="\$(top_srcdir)/list/tests/tests.txt")
 AC_SUBST(PSL_TESTFILE)
 
-# check for alloca / alloca.h
-AC_FUNC_ALLOCA
 AC_CHECK_FUNCS([strndup clock_gettime fmemopen nl_langinfo])
 
 # check for dirent.h
