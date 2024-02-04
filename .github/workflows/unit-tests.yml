@@ -1,0 +1,23 @@
+name: libpsl
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  test:
+    name: Test (libidn2)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      max-parallel: 2
+    steps:
+    - name: Check out
+      uses: actions/checkout@v4
+    - name: Run
+      run: |
+          ./autogen.sh
+          CFLAGS="-O0 -Wall -Wextra" ./configure --enable-runtime=libidn2
+          make check
