@@ -41,6 +41,13 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#if defined(_WIN32) && (defined(WITH_LIBIDN2) || defined(WITH_LIBIDN))
+# ifndef WIN32_LEAN_AND_MEAN
+# define WIN32_LEAN_AND_MEAN
+# endif
+# include <windows.h> /* for GetACP() */
+#endif
+
 #if defined(_MSC_VER) && ! defined(ssize_t)
 # include <basetsd.h>
 typedef SSIZE_T ssize_t;
