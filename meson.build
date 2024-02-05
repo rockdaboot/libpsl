@@ -93,9 +93,7 @@ config.set('WITH_LIBIDN', enable_runtime == 'libidn')
 config.set('ENABLE_BUILTIN', enable_builtin)
 config.set('HAVE_UNISTD_H', cc.check_header('unistd.h'))
 config.set('HAVE_STDINT_H', cc.check_header('stdint.h'))
-config.set('HAVE_ALLOCA_H', cc.check_header('alloca.h'))
 config.set('HAVE_DIRENT_H', cc.check_header('dirent.h'))
-config.set('HAVE_ALLOCA', cc.has_function('alloca'))
 config.set('HAVE_STRNDUP', cc.has_function('strndup'))
 config.set('HAVE_CLOCK_GETTIME', cc.has_function('clock_gettime'))
 config.set('HAVE_FMEMOPEN', cc.has_function('fmemopen'))
@@ -126,9 +124,6 @@ if cc.get_id() == 'msvc'
     if cc.has_header_symbol('stdio.h', '_snprintf')
       add_project_arguments('-Dsnprintf=_snprintf', language: 'c')
     endif
-  endif
-  if cc.has_header_symbol('malloc.h', '_alloca')
-    add_project_arguments('-Dalloca=_alloca', language: 'c')
   endif
 endif
 
