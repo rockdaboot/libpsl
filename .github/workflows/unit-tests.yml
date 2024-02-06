@@ -25,3 +25,24 @@ jobs:
           ./autogen.sh
           CFLAGS="-O0 -Wall -Wextra" ./configure --enable-runtime=${{matrix.runtime}}
           make check
+  meson-test:
+    name: Meson Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      max-parallel: 3
+      matrix:
+        os: ['ubuntu-latest', 'windows-latest', 'macos-latest']
+    steps:
+    - name: Check out
+      uses: actions/checkout@v4
+      with:
+        submodules: true
+    - name: Install dependencies
+      run: pip install --pre meson ninja
+    - name: Configure
+      run: meson setup builddir
+    - name: Build
+      run: ninja -C builddir
+    - name: Test
+      run: meson test -C builddir --print-errorlogs
