@@ -38,12 +38,6 @@
 #       define GCC_VERSION_AT_LEAST(major, minor) 0
 #endif
 
-#if GCC_VERSION_AT_LEAST(2,95)
-#  define PSL_UNUSED __attribute__ ((unused))
-#else
-#  define PSL_UNUSED
-#endif
-
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -671,17 +665,21 @@ static psl_idna_t *psl_idna_open(void)
 	return NULL;
 }
 
-static void psl_idna_close(psl_idna_t *idna PSL_UNUSED)
+static void psl_idna_close(psl_idna_t *idna)
 {
+	(void) idna;
+
 #if defined(WITH_LIBICU)
 	if (idna)
 		uidna_close((UIDNA *)idna);
 #endif
 }
 
-static int psl_idna_toASCII(psl_idna_t *idna PSL_UNUSED, const char *utf8, char **ascii)
+static int psl_idna_toASCII(psl_idna_t *idna, const char *utf8, char **ascii)
 {
 	int ret = -1;
+
+	(void) idna;
 
 #if defined(WITH_LIBICU)
 	/* IDNA2008 UTS#46 punycode conversion */
@@ -1726,9 +1724,12 @@ static int isUTF8(const char *s) {
  *
  * Since: 0.4
  */
-psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding PSL_UNUSED, const char *locale PSL_UNUSED, char **lower)
+psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding, const char *locale, char **lower)
 {
 	int ret = PSL_ERR_INVALID_ARG;
+
+	(void) encoding;
+	(void) locale;
 
 	if (!str)
 		return PSL_ERR_INVALID_ARG;
