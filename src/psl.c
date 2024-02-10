@@ -64,9 +64,6 @@ typedef SSIZE_T ssize_t;
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef HAVE_STRINGS_H
-# include <strings.h>
-#endif
 #include <ctype.h>
 #include <time.h>
 #include <errno.h>
@@ -331,6 +328,14 @@ static int suffix_init(psl_entry_t *suffix, const char *rule, size_t length)
 	*dst = 0;
 
 	return 0;
+}
+
+/* Avoid using strcasecmp() or _stricmp() */
+static int isUTF8(const char *s) {
+	return (s[0] == 'u' || s[0] == 'U')
+		&& (s[1] == 't' || s[1] == 'T')
+		&& (s[2] == 'f' || s[2] == 'F')
+		&& s[3] == '-' && s[4] == 0;
 }
 
 #if !defined(WITH_LIBIDN) && !defined(WITH_LIBIDN2) && !defined(WITH_LIBICU)
@@ -1827,7 +1832,7 @@ out:
 		}
 
 		/* convert to UTF-8 */
-		if (strcasecmp(encoding, "utf-8")) {
+		if (!isUTF8(encoding)) {
 			iconv_t cd = iconv_open("utf-8", encoding);
 
 			if (cd != (iconv_t)-1) {
