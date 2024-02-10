@@ -330,14 +330,6 @@ static int suffix_init(psl_entry_t *suffix, const char *rule, size_t length)
 	return 0;
 }
 
-/* Avoid using strcasecmp() or _stricmp() */
-static int isUTF8(const char *s) {
-	return (s[0] == 'u' || s[0] == 'U')
-		&& (s[1] == 't' || s[1] == 'T')
-		&& (s[2] == 'f' || s[2] == 'F')
-		&& s[3] == '-' && s[4] == 0;
-}
-
 #if !defined(WITH_LIBIDN) && !defined(WITH_LIBIDN2) && !defined(WITH_LIBICU)
 /*
  * When configured without runtime IDNA support (./configure --disable-runtime), we need a pure ASCII
@@ -1698,6 +1690,16 @@ void psl_free_string(char *str)
 	if (str)
 		free(str);
 }
+
+#if defined(WITH_LIBIDN2) || defined(WITH_LIBIDN)
+/* Avoid using strcasecmp() or _stricmp() */
+static int isUTF8(const char *s) {
+	return (s[0] == 'u' || s[0] == 'U')
+		&& (s[1] == 't' || s[1] == 'T')
+		&& (s[2] == 'f' || s[2] == 'F')
+		&& s[3] == '-' && s[4] == 0;
+}
+#endif
 
 /**
  * psl_str_to_utf8lower:
