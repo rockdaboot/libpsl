@@ -320,6 +320,23 @@ static int suffix_init(psl_entry_t *suffix, const char *rule, size_t length)
 	return 0;
 }
 
+#ifndef HAVE_STRDUP
+static char *strdup(const char *s)
+{
+	char *p = malloc(strlen(s) + 1);
+	if (!p)
+		return NULL;
+	return strcpy(p, s);
+}
+#elif !HAVE_DECL_STRDUP
+/*
+ *  On Linux with
+ *    CC=gcc CFLAGS="-Wall -Wextra -Wpedantic -std=c89" ./configure
+ *  strdup isn't declared (warning: implicit declaration of function 'strdup').
+ */
+char *strdup(const char *);
+#endif
+
 #if !defined(WITH_LIBIDN) && !defined(WITH_LIBIDN2) && !defined(WITH_LIBICU)
 /*
  * When configured without runtime IDNA support (./configure --disable-runtime), we need a pure ASCII
