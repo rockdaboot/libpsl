@@ -320,6 +320,23 @@ static int suffix_init(psl_entry_t *suffix, const char *rule, size_t length)
 	return 0;
 }
 
+#ifndef HAVE_STRDUP
+static char *strdup(const char *s)
+{
+	char *p = malloc(strlen(s) + 1);
+	if (!p)
+		return NULL;
+	return strcpy(p, s);
+}
+#elif !HAVE_DECL_STRDUP
+/*
+ *  On Linux with
+ *    CC=gcc CFLAGS="-Wall -Wextra -Wpedantic -std=c89" ./configure
+ *  strdup isn't declared (warning: implicit declaration of function 'strdup').
+ */
+char *strdup(const char *);
+#endif
+
 #if !defined(WITH_LIBIDN) && !defined(WITH_LIBIDN2) && !defined(WITH_LIBICU)
 /*
  * When configured without runtime IDNA support (./configure --disable-runtime), we need a pure ASCII
@@ -675,9 +692,9 @@ static int psl_idna_toASCII(psl_idna_t *idna, const char *utf8, char **ascii)
 {
 	int ret = -1;
 
+#if defined(WITH_LIBICU)
 	(void) idna;
 
-#if defined(WITH_LIBICU)
 	/* IDNA2008 UTS#46 punycode conversion */
 	if (idna) {
 		char lookupname_buf[128] = "", *lookupname = lookupname_buf;
@@ -737,6 +754,8 @@ cleanup:
 #if IDN2_VERSION_NUMBER >= 0x00140000
 	int rc;
 
+	(void) idna;
+
 	/* IDN2_TRANSITIONAL automatically converts to lowercase
 	 * IDN2_NFC_INPUT converts to NFC before toASCII conversion
 	 * Since IDN2_TRANSITIONAL implicitly does NFC conversion, we don't need
@@ -769,6 +788,8 @@ cleanup:
 #elif defined(WITH_LIBIDN)
 	int rc;
 
+	(void) idna;
+
 	if (!utf8_is_valid(utf8)) {
 		/* fprintf(stderr, "Invalid UTF-8 sequence not converted: '%s'\n", utf8); */
 		return -1;
@@ -782,6 +803,8 @@ cleanup:
 		fprintf(stderr, "toASCII failed (%d): %s\n", rc, idna_strerror(rc)); */
 #else
 	char lookupname[128];
+
+	(void) idna;
 
 	if (domain_to_punycode(utf8, lookupname, sizeof(lookupname)) == 0) {
 		if (ascii)
@@ -835,7 +858,7 @@ static int is_public_suffix(const psl_ctx_t *psl, const char *domain, int type)
 
 	for (p = domain; *p; p++) {
 		if (*p == '.') {
-			if (suffix.nlabels == 255) // weird input, avoid 8bit overflow
+			if (suffix.nlabels == 255) /* weird input, avoid 8bit overflow */
 				return 0;
 			suffix.nlabels++;
 		}

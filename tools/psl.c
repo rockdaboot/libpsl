@@ -41,10 +41,15 @@
 
 // Windows does not have localtime_r but has localtime_s, which is more or less
 // the same except that the arguments are reversed
-# define LOCALTIME_R_SUCCESSFUL(t_sec,t_now)	\
+# define LOCALTIME_R_SUCCESSFUL(t_sec, t_now)	\
 	(localtime_s(t_now, t_sec) == 0)
 #else
-# define LOCALTIME_R_SUCCESSFUL(t_sec,t_now)	\
+# include <time.h>
+# if ! HAVE_DECL_LOCALTIME_R
+struct tm *localtime_r(const time_t *, struct tm *);
+#endif
+
+# define LOCALTIME_R_SUCCESSFUL(t_sec, t_now)	\
 	(localtime_r(t_sec, t_now) != NULL)
 #endif
 
