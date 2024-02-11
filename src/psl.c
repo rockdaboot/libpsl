@@ -841,7 +841,7 @@ static int is_public_suffix(const psl_ctx_t *psl, const char *domain, int type)
 
 	for (p = domain; *p; p++) {
 		if (*p == '.') {
-			if (suffix.nlabels == 255) // weird input, avoid 8bit overflow
+			if (suffix.nlabels == 255) /* weird input, avoid 8bit overflow */
 				return 0;
 			suffix.nlabels++;
 		}
