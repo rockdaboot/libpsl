@@ -30,12 +30,15 @@ if enable_builtin
   tests += ['test-is-public-builtin', 'test-registrable-domain']
 endif
 
+libtestcommon = static_library('testcommon', 'common.c',
+  build_by_default: false)
+
 foreach test_name : tests
-  source = test_name + '.c'
-  exe = executable(test_name, source,
+  sources = [test_name + '.c', 'common.c', 'common.h']
+  exe = executable(test_name, sources,
     build_by_default: false,
     c_args : tests_cargs,
-    link_with : libpsl,
+    link_with : [libpsl, libtestcommon],
     include_directories : configinc,
     link_language : link_language,
     dependencies : [libpsl_dep, networking_deps])

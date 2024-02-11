@@ -35,13 +35,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef HAVE_ALLOCA_H
-#	include <alloca.h>
-#elif defined _WIN32
-#	include <malloc.h>
-#endif
 
 #include <libpsl.h>
+#include "common.h"
 
 static int
 	ok,
@@ -199,11 +195,7 @@ int main(int argc, const char * const *argv)
 		const char *valgrind = getenv("TESTS_VALGRIND");
 
 		if (valgrind && *valgrind) {
-			size_t cmdsize = strlen(valgrind) + strlen(argv[0]) + 32;
-			char *cmd = alloca(cmdsize);
-
-			snprintf(cmd, cmdsize, "TESTS_VALGRIND="" %s %s", valgrind, argv[0]);
-			return system(cmd) != 0;
+			return run_valgrind(valgrind, argv[0]);
 		}
 	}
 
