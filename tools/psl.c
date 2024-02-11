@@ -44,6 +44,7 @@
 # define LOCALTIME_R_SUCCESSFUL(t_sec,t_now)	\
 	(localtime_s(t_now, t_sec) == 0)
 #else
+# include <time.h>
 # define LOCALTIME_R_SUCCESSFUL(t_sec,t_now)	\
 	(localtime_r(t_sec, t_now) != NULL)
 #endif
