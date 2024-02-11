@@ -675,9 +675,9 @@ static int psl_idna_toASCII(psl_idna_t *idna, const char *utf8, char **ascii)
 {
 	int ret = -1;
 
+#if defined(WITH_LIBICU)
 	(void) idna;
 
-#if defined(WITH_LIBICU)
 	/* IDNA2008 UTS#46 punycode conversion */
 	if (idna) {
 		char lookupname_buf[128] = "", *lookupname = lookupname_buf;
@@ -737,6 +737,8 @@ cleanup:
 #if IDN2_VERSION_NUMBER >= 0x00140000
 	int rc;
 
+	(void) idna;
+
 	/* IDN2_TRANSITIONAL automatically converts to lowercase
 	 * IDN2_NFC_INPUT converts to NFC before toASCII conversion
 	 * Since IDN2_TRANSITIONAL implicitly does NFC conversion, we don't need
@@ -769,6 +771,8 @@ cleanup:
 #elif defined(WITH_LIBIDN)
 	int rc;
 
+	(void) idna;
+
 	if (!utf8_is_valid(utf8)) {
 		/* fprintf(stderr, "Invalid UTF-8 sequence not converted: '%s'\n", utf8); */
 		return -1;
@@ -782,6 +786,8 @@ cleanup:
 		fprintf(stderr, "toASCII failed (%d): %s\n", rc, idna_strerror(rc)); */
 #else
 	char lookupname[128];
+
+	(void) idna;
 
 	if (domain_to_punycode(utf8, lookupname, sizeof(lookupname)) == 0) {
 		if (ascii)
