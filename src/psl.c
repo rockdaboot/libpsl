@@ -622,11 +622,11 @@ static int str_is_ascii(const char *s)
 }
 
 #if defined(WITH_LIBIDN)
-/*
+/**
  * Work around a libidn <= 1.30 vulnerability.
  *
  * The function checks for a valid UTF-8 character sequence before
- * passing it to idna_to_ascii_8z().
+ * passing it to `idna_to_ascii_8z()`.
  *
  * [1] https://lists.gnu.org/archive/html/help-libidn/2015-05/msg00002.html
  * [2] https://lists.gnu.org/archive/html/bug-wget/2015-06/msg00002.html
@@ -969,21 +969,21 @@ suffix_yes:
 }
 
 /**
- * psl_is_public_suffix:
+ * `psl_is_public_suffix`:
  * @psl: PSL context
  * @domain: Domain string
  *
  * This function checks if @domain is a public suffix by the means of the
  * [Mozilla Public Suffix List](https://publicsuffix.org).
  *
- * For cookie domain checking see psl_is_cookie_domain_acceptable().
+ * For cookie domain checking see `psl_is_cookie_domain_acceptable()`.
  *
  * International @domain names have to be either in UTF-8 (lowercase + NFKC) or in ASCII/ACE format (punycode).
  * Other encodings likely result in incorrect return values.
- * Use helper function psl_str_to_utf8lower() for normalization @domain.
+ * Use helper function `psl_str_to_utf8lower()` for normalization @domain.
  *
- * @psl is a context returned by either psl_load_file(), psl_load_fp() or
- * psl_builtin().
+ * @psl is a context returned by either `psl_load_file()`, `psl_load_fp()` or
+ * `psl_builtin()`.
  *
  * Returns: 1 if domain is a public suffix, 0 if not.
  *
@@ -998,7 +998,7 @@ int psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
 }
 
 /**
- * psl_is_public_suffix2:
+ * `psl_is_public_suffix2`:
  * @psl: PSL context
  * @domain: Domain string
  * @type: Domain type
@@ -1007,18 +1007,18 @@ int psl_is_public_suffix(const psl_ctx_t *psl, const char *domain)
  * [Mozilla Public Suffix List](https://publicsuffix.org).
  *
  * @type specifies the PSL section where to perform the lookup. Valid values are
- * %PSL_TYPE_PRIVATE, %PSL_TYPE_ICANN, %PSL_TYPE_NO_STAR_RULE, and %PSL_TYPE_ANY.
+ * `%PSL_TYPE_PRIVATE`, `%PSL_TYPE_ICANN`, `%PSL_TYPE_NO_STAR_RULE`, and `%PSL_TYPE_ANY`.
  *
- * %PSL_TYPE_NO_STAR_RULE switches of the 'prevailing star rule' (see
+ * `%PSL_TYPE_NO_STAR_RULE` switches of the 'prevailing star rule' (see
  * [List](https://publicsuffix.org/list) under 'Algorithm' 2.).
  * Applying the flag means that TLDs not explicitly listed in the PSL are *not* treated as public suffixes.
  *
  * International @domain names have to be either in UTF-8 (lowercase + NFKC) or in ASCII/ACE format (punycode).
  * Other encodings likely result in incorrect return values.
- * Use helper function psl_str_to_utf8lower() for normalization @domain.
+ * Use helper function `psl_str_to_utf8lower()` for normalization @domain.
  *
- * @psl is a context returned by either psl_load_file(), psl_load_fp() or
- * psl_builtin().
+ * @psl is a context returned by either `psl_load_file()`, `psl_load_fp()` or
+ * `psl_builtin()`.
  *
  * Returns: 1 if domain is a public suffix, 0 if not.
  *
@@ -1033,7 +1033,7 @@ int psl_is_public_suffix2(const psl_ctx_t *psl, const char *domain, int type)
 }
 
 /**
- * psl_unregistrable_domain:
+ * `psl_unregistrable_domain`:
  * @psl: PSL context
  * @domain: Domain string
  *
@@ -1042,10 +1042,10 @@ int psl_is_public_suffix2(const psl_ctx_t *psl, const char *domain, int type)
  *
  * International @domain names have to be either in UTF-8 (lowercase + NFKC) or in ASCII/ACE format (punycode).
  * Other encodings likely result in incorrect return values.
- * Use helper function psl_str_to_utf8lower() for normalization @domain.
+ * Use helper function `psl_str_to_utf8lower()` for normalization @domain.
  *
- * @psl is a context returned by either psl_load_file(), psl_load_fp() or
- * psl_builtin().
+ * @psl is a context returned by either `psl_load_file()`, `psl_load_fp()` or
+ * `psl_builtin()`.
  *
  * Returns: Pointer to longest public suffix part of @domain or %NULL if @domain
  * does not contain a public suffix (or if @psl is %NULL).
@@ -1087,7 +1087,7 @@ const char *psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain)
 }
 
 /**
- * psl_registrable_domain:
+ * `psl_registrable_domain`:
  * @psl: PSL context
  * @domain: Domain string
  *
@@ -1096,10 +1096,10 @@ const char *psl_unregistrable_domain(const psl_ctx_t *psl, const char *domain)
  *
  * International @domain names have to be either in UTF-8 (lowercase + NFKC) or in ASCII/ACE format (punycode).
  * Other encodings likely result in incorrect return values.
- * Use helper function psl_str_to_utf8lower() for normalization @domain.
+ * Use helper function `psl_str_to_utf8lower()` for normalization @domain.
  *
- * @psl is a context returned by either psl_load_file(), psl_load_fp() or
- * psl_builtin().
+ * @psl is a context returned by either `psl_load_file()`, `psl_load_fp()` or
+ * `psl_builtin()`.
  *
  * Returns: Pointer to shortest private suffix part of @domain or %NULL if @domain
  * does not contain a private suffix (or if @psl is %NULL).
@@ -1142,11 +1142,11 @@ const char *psl_registrable_domain(const psl_ctx_t *psl, const char *domain)
 }
 
 /**
- * psl_load_file:
+ * `psl_load_file`:
  * @fname: Name of PSL file
  *
  * This function loads the public suffixes file named @fname.
- * To free the allocated resources, call psl_free().
+ * To free the allocated resources, call `psl_free()`.
  *
  * The suffixes are expected to be UTF-8 encoded (lowercase + NFKC) if they are international.
  *
@@ -1171,11 +1171,11 @@ psl_ctx_t *psl_load_file(const char *fname)
 }
 
 /**
- * psl_load_fp:
+ * `psl_load_fp`:
  * @fp: %FILE pointer
  *
  * This function loads the public suffixes from a %FILE pointer.
- * To free the allocated resources, call psl_free().
+ * To free the allocated resources, call `psl_free()`.
  *
  * The suffixes are expected to be UTF-8 encoded (lowercase + NFKC) if they are international.
  *
@@ -1331,11 +1331,11 @@ fail:
 }
 
 /**
- * psl_free:
+ * `psl_free`:
  * @psl: PSL context pointer
  *
  * This function frees the the PSL context that has been retrieved via
- * psl_load_fp() or psl_load_file().
+ * `psl_load_fp()` or `psl_load_file()`.
  *
  * Since: 0.1
  */
@@ -1349,7 +1349,7 @@ void psl_free(psl_ctx_t *psl)
 }
 
 /**
- * psl_builtin:
+ * `psl_builtin`:
  *
  * This function returns the PSL context that has been generated and built in at compile-time.
  * You don't have to free the returned context explicitly.
@@ -1358,7 +1358,7 @@ void psl_free(psl_ctx_t *psl)
  *
  * If the generation of built-in data has been disabled during compilation, %NULL will be returned.
  * When using the builtin psl context, you can provide UTF-8 (lowercase + NFKC) or ASCII/ACE (punycode)
- * representations of domains to functions like psl_is_public_suffix().
+ * representations of domains to functions like `psl_is_public_suffix()`.
  *
  * Returns: Pointer to the built in PSL data or %NULL if this data is not available.
  *
@@ -1374,7 +1374,7 @@ const psl_ctx_t *psl_builtin(void)
 }
 
 /**
- * psl_suffix_count:
+ * `psl_suffix_count`:
  * @psl: PSL context pointer
  *
  * This function returns number of public suffixes maintained by @psl.
@@ -1398,7 +1398,7 @@ int psl_suffix_count(const psl_ctx_t *psl)
 }
 
 /**
- * psl_suffix_exception_count:
+ * `psl_suffix_exception_count`:
  * @psl: PSL context pointer
  *
  * This function returns number of public suffix exceptions maintained by @psl.
@@ -1421,7 +1421,7 @@ int psl_suffix_exception_count(const psl_ctx_t *psl)
 }
 
 /**
- * psl_suffix_wildcard_count:
+ * `psl_suffix_wildcard_count`:
  * @psl: PSL context pointer
  *
  * This function returns number of public suffix wildcards maintained by @psl.
@@ -1444,13 +1444,13 @@ int psl_suffix_wildcard_count(const psl_ctx_t *psl)
 }
 
 /**
- * psl_builtin_file_time:
+ * `psl_builtin_file_time`:
  *
  * This function returns the mtime of the Public Suffix List file that has been built in.
  *
  * If the generation of built-in data has been disabled during compilation, 0 will be returned.
  *
- * Returns: time_t value or 0.
+ * Returns: `time_t` value or 0.
  *
  * Since: 0.1
  */
@@ -1460,7 +1460,7 @@ time_t psl_builtin_file_time(void)
 }
 
 /**
- * psl_builtin_sha1sum:
+ * `psl_builtin_sha1sum`:
  *
  * This function returns the SHA1 checksum of the Public Suffix List file that has been built in.
  * The returned string is in lowercase hex encoding, e.g. "2af1e9e3044eda0678bb05949d7cca2f769901d8".
@@ -1477,7 +1477,7 @@ const char *psl_builtin_sha1sum(void)
 }
 
 /**
- * psl_builtin_filename:
+ * `psl_builtin_filename`:
  *
  * This function returns the file name of the Public Suffix List file that has been built in.
  *
@@ -1493,7 +1493,7 @@ const char *psl_builtin_filename(void)
 }
 
 /**
- * psl_builtin_outdated:
+ * `psl_builtin_outdated`:
  *
  * This function checks if the built-in data is older than the file it has been created from.
  * If it is, it might be a good idea for the application to reload the PSL.
@@ -1516,10 +1516,10 @@ int psl_builtin_outdated(void)
 }
 
 /**
- * psl_dist_filename:
+ * `psl_dist_filename`:
  *
  * This function returns the file name of the distribution/system PSL data file.
- * This file will be considered by psl_latest().
+ * This file will be considered by `psl_latest()`.
  *
  * Return the filename that is set by ./configure --with-psl-distfile, or an empty string.
  *
@@ -1533,7 +1533,7 @@ const char *psl_dist_filename(void)
 }
 
 /**
- * psl_get_version:
+ * `psl_get_version`:
  *
  * Get libpsl version.
  *
@@ -1555,7 +1555,7 @@ const char *psl_get_version(void)
 }
 
 /**
- * psl_check_version_number:
+ * `psl_check_version_number`:
  * @version: Version number (hex) to check against.
  *
  * Check the given version number is at minimum the current library version number.
@@ -1611,7 +1611,7 @@ static int isip(const char *hostname)
 }
 
 /**
- * psl_is_cookie_domain_acceptable:
+ * `psl_is_cookie_domain_acceptable`:
  * @psl: PSL context pointer
  * @hostname: The request hostname.
  * @cookie_domain: The domain value from a cookie
@@ -1622,10 +1622,10 @@ static int isip(const char *hostname)
  * For international domain names both, @hostname and @cookie_domain, have to be either in UTF-8 (lowercase + NFKC)
  * or in ASCII/ACE (punycode) format. Other encodings or mixing UTF-8 and punycode likely result in incorrect return values.
  *
- * Use helper function psl_str_to_utf8lower() for normalization of @hostname and @cookie_domain.
+ * Use helper function `psl_str_to_utf8lower()` for normalization of @hostname and @cookie_domain.
  *
  * Hint for Windows users:
- * Please make sure the calling application has called WSAStartup() before calling psl_is_cookie_domain_acceptable().
+ * Please make sure the calling application has called `WSAStartup()` before calling `psl_is_cookie_domain_acceptable()`.
  *
  * Examples:
  * 1. Cookie domain 'example.com' would be acceptable for hostname 'www.example.com',
@@ -1676,10 +1676,10 @@ int psl_is_cookie_domain_acceptable(const psl_ctx_t *psl, const char *hostname, 
 }
 
 /**
- * psl_free_string:
- * @str: pointer to lowercase string returned by psl_str_to_utf8lower()
+ * `psl_free_string`:
+ * @str: pointer to lowercase string returned by `psl_str_to_utf8lower()`
  *
- * This function free()'s the memory allocated by psl_str_to_utf8lower() when
+ * This function free()'s the memory allocated by `psl_str_to_utf8lower()` when
  * returning a lowercase string
  *
  * Since: 0.19
@@ -1691,7 +1691,7 @@ void psl_free_string(char *str)
 }
 
 /**
- * psl_str_to_utf8lower:
+ * `psl_str_to_utf8lower`:
  * @str: string to convert
  * @encoding: charset encoding of @str, e.g. 'iso-8859-1' or %NULL
  * @locale: locale of @str for to lowercase conversion, e.g. 'de' or %NULL
@@ -1702,16 +1702,16 @@ void psl_free_string(char *str)
  *
  * @lower stays unchanged on error.
  *
- * When returning PSL_SUCCESS, the return value 'lower' must be freed after usage.
+ * When returning `PSL_SUCCESS`, the return value 'lower' must be freed after usage.
  *
- * Returns: psl_error_t value.
- *   PSL_SUCCESS: Success
- *   PSL_ERR_INVALID_ARG: @str is a %NULL value.
- *   PSL_ERR_CONVERTER: Failed to open the unicode converter with name @encoding
- *   PSL_ERR_TO_UTF16: Failed to convert @str to unicode
- *   PSL_ERR_TO_LOWER: Failed to convert unicode to lowercase
- *   PSL_ERR_TO_UTF8: Failed to convert unicode to UTF-8
- *   PSL_ERR_NO_MEM: Failed to allocate memory
+ * Returns: `psl_error_t` value.
+ * * `PSL_SUCCESS`: Success
+ * * `PSL_ERR_INVALID_ARG`: @str is a %NULL value.
+ * * `PSL_ERR_CONVERTER`: Failed to open the unicode converter with name @encoding
+ * * `PSL_ERR_TO_UTF16`: Failed to convert @str to unicode
+ * * `PSL_ERR_TO_LOWER`: Failed to convert unicode to lowercase
+ * * `PSL_ERR_TO_UTF8`: Failed to convert unicode to UTF-8
+ * * `PSL_ERR_NO_MEM`: Failed to allocate memory
  *
  * Since: 0.4
  */
@@ -1916,7 +1916,7 @@ static int insert_file(const char *fname, const char **psl_fname, time_t *psl_mt
 }
 
 /**
- * psl_latest:
+ * `psl_latest`:
  * @fname: Name of PSL file or %NULL
  *
  * This function loads the the latest available PSL data from either
@@ -1927,7 +1927,7 @@ static int insert_file(const char *fname, const char **psl_fname, time_t *psl_mt
  *
  * If none of the above is available, the function returns %NULL.
  *
- * To free the allocated resources, call psl_free().
+ * To free the allocated resources, call `psl_free()`.
  *
  * Returns: Pointer to a PSL context or %NULL on failure.
  *
