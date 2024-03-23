@@ -316,22 +316,13 @@ static int suffix_init(psl_entry_t *suffix, const char *rule, size_t length)
 	return 0;
 }
 
-#ifndef HAVE_STRDUP
-static char *strdup(const char *s)
+static char *psl_strdup(const char *s)
 {
 	char *p = malloc(strlen(s) + 1);
 	if (!p)
 		return NULL;
 	return strcpy(p, s);
 }
-#elif !HAVE_DECL_STRDUP
-/*
- *  On Linux with
- *    CC=gcc CFLAGS="-Wall -Wextra -Wpedantic -std=c89" ./configure
- *  strdup isn't declared (warning: implicit declaration of function 'strdup').
- */
-char *strdup(const char *);
-#endif
 
 #if !defined(WITH_LIBIDN) && !defined(WITH_LIBIDN2) && !defined(WITH_LIBICU)
 /*
@@ -729,7 +720,7 @@ static int psl_idna_toASCII(psl_idna_t *idna, const char *utf8, char **ascii)
 
 			lookupname[bytes_written] = 0; /* u_strToUTF8() doesn't 0-terminate if dest is filled up */
 		} else {
-			if (!(lookupname = strdup(lookupname)))
+			if (!(lookupname = psl_strdup(lookupname)))
 				goto cleanup;
 		}
 
@@ -804,7 +795,7 @@ cleanup:
 
 	if (domain_to_punycode(utf8, lookupname, sizeof(lookupname)) == 0) {
 		if (ascii)
-			if ((*ascii = strdup(lookupname)))
+			if ((*ascii = psl_strdup(lookupname)))
 				ret = 0;
 	}
 #endif
@@ -1814,7 +1805,7 @@ psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding, const ch
 		if (lower) {
 			char *p, *tmp;
 
-			if (!(tmp = strdup(str)))
+			if (!(tmp = psl_strdup(str)))
 				return PSL_ERR_NO_MEM;
 
 			*lower = tmp;
@@ -1872,7 +1863,7 @@ psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding, const ch
 				if (U_SUCCESS(status)) {
 					ret = PSL_SUCCESS;
 					if (lower) {
-						char *tmp = strdup(utf8_lower);
+						char *tmp = psl_strdup(utf8_lower);
 
 						if (tmp)
 							*lower = tmp;

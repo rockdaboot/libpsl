@@ -343,8 +343,7 @@ AC_ARG_WITH(psl-testfile,
   PSL_TESTFILE="\$(top_srcdir)/list/tests/tests.txt")
 AC_SUBST(PSL_TESTFILE)
 
-AC_CHECK_FUNCS([strdup strndup clock_gettime fmemopen nl_langinfo])
-AC_CHECK_DECLS([strdup])
+AC_CHECK_FUNCS([clock_gettime fmemopen nl_langinfo])
 AC_CHECK_DECLS([localtime_r])
 
 # check for dirent.h
