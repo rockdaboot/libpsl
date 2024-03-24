@@ -22,6 +22,9 @@ AC_C_INLINE
 dnl Check for visibility support
 gl_VISIBILITY
 
+dnl Unicodesupport
+gl_LIBUNISTRING
+
 #
 # Generate version defines for include file
 #
