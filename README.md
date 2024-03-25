@@ -128,11 +128,11 @@ Download project with
 
 Prerequisites:
   - python2.7+ (for converting the PSL list)
-  - basic C development tools (compiler, linker)
-  - git, make, autoconf, autoconf-archive, autopoint, automake, autotools,
-  - libtool, gettext, m4, pkg-config
+  - basic C development tools (compiler, linker, make)
+  - autoconf, autoconf-archive, autopoint, automake, autotools
+  - libtool, gettext, pkg-config
+  - development files for either libidn2, libicu or libidn (the latter only offers IDNA2003)
   - for building docs: gtk-doc-tools (gtkdocize)
-  - for building tarballs: gzip, lzip
 
 		./autogen.sh
 		./configure
