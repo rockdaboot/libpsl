@@ -22,9 +22,6 @@ AC_C_INLINE
 dnl Check for visibility support
 gl_VISIBILITY
 
-dnl Unicodesupport
-gl_LIBUNISTRING
-
 #
 # Generate version defines for include file
 #
@@ -277,14 +274,19 @@ if test "$enable_runtime" = "auto"; then
   enable_runtime=no
 fi
 
-if test "x$HAVE_LIBIDN2" = "xyes" -o "x$HAVE_LIBIDN" = "xyes"; then
-  # Check for libunistring, we need it for psl_str_to_utf8lower()
-  AC_SEARCH_LIBS(u8_tolower, unistring, HAVE_UNISTRING=yes, AC_MSG_ERROR(You requested libidn2|libidn but libunistring is not installed.))
-fi
-
 # AM_ICONV sets @LIBICONV@ and @LTLIBICONV@ for use in Makefile.am
 # do not use AM_ICONV conditionally
 AM_ICONV
+
+if test "x$HAVE_LIBIDN2" = "xyes" -o "x$HAVE_LIBIDN" = "xyes"; then
+  # Check for libunistring, we need it for psl_str_to_utf8lower()
+  dnl Unicodesupport
+  gl_LIBUNISTRING
+else
+  # No need for libiconv when building without libidn/libidn2
+  LIBICONV=""
+  LTLIBICONV=""
+fi
 
 AM_CONDITIONAL([WITH_LIBICU], test "x$enable_runtime" = "xlibicu")
 AM_CONDITIONAL([WITH_LIBIDN2], test "x$enable_runtime" = "xlibidn2")
