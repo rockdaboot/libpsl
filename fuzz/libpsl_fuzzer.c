@@ -35,8 +35,12 @@ typedef unsigned __int8 uint8_t;
 #include <stdlib.h> /* malloc, free */
 #include <string.h> /* memcpy */
 
-#if defined(WITH_LIBICU)
+#ifdef WITH_LIBICU
+#ifndef WITH_LIBICU_WIN
 #include <unicode/uclean.h>
+#else
+#include <icu.h>
+#endif
 #endif
 
 #include "libpsl.h"

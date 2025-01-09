@@ -37,7 +37,7 @@ endif
 libpsl = library('psl', sources, suffixes_dafsa_h,
   include_directories : [configinc, includedir],
   c_args : cargs,
-  dependencies : [libidn2_dep, libidn_dep, libicu_dep, libicucore_dep, libunistring, networking_deps, libiconv_dep],
+  dependencies : [libidn2_dep, libidn_dep, libicu_dep, libicucore_dep, libicu_win_dep, libunistring, networking_deps, libiconv_dep],
   gnu_symbol_visibility: 'hidden',
   version: library_version,
   install: true,

@@ -15,6 +15,7 @@ notfound = dependency('', required : false)
 libidn2_dep = notfound
 libicu_dep = notfound
 libicucore_dep = notfound
+libicu_win_dep = notfound
 libidn_dep = notfound
 libunistring = notfound
 networking_deps = notfound
@@ -30,6 +31,17 @@ if enable_runtime == 'libicucore' or (host_machine.system() == 'darwin' and enab
     endif
   elif enable_runtime == 'libicucore'
     error('You requested libicucore but it is not available.')
+  endif
+endif
+
+if enable_runtime == 'libicu-win' or (host_machine.system() == 'windows' and enable_runtime == 'auto')
+  libicu_win_dep = cc.find_library('icu', has_headers : ['icu.h'], required: false)
+  if libicu_win_dep.found()
+    if enable_runtime == 'auto'
+      enable_runtime = 'libicu-win'
+    endif
+  elif enable_runtime == 'libicu-win'
+    error('You requested libicu-win but it is not available.')
   endif
 endif
 
@@ -104,6 +116,7 @@ config.set_quoted('PACKAGE_VERSION', meson.project_version())
 config.set('WITH_LIBIDN2', enable_runtime == 'libidn2')
 config.set('WITH_LIBICU', enable_runtime == 'libicu')
 config.set('WITH_LIBICUCORE', enable_runtime == 'libicucore')
+config.set('WITH_LIBICU_WIN', enable_runtime == 'libicu-win')
 config.set('WITH_LIBIDN', enable_runtime == 'libidn')
 config.set('ENABLE_BUILTIN', enable_builtin)
 config.set('HAVE_UNISTD_H', cc.check_header('unistd.h'))

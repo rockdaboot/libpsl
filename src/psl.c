@@ -104,6 +104,8 @@ typedef SSIZE_T ssize_t;
 #	include <unicode/uversion.h>
 #	include <unicode/ustring.h>
 #	include <unicode/uidna.h>
+#elif defined(WITH_LIBICU_WIN)
+# include <icu.h>
 #elif defined(WITH_LIBIDN2)
 #	include <iconv.h>
 #	include <idn2.h>
@@ -354,7 +356,7 @@ static char *psl_strdup(const char *s)
 	return strcpy(p, s);
 }
 
-#if !defined(WITH_LIBIDN) && !defined(WITH_LIBIDN2) && !defined(WITH_LIBICU) && !defined(WITH_LIBICUCORE)
+#if !defined(WITH_LIBIDN) && !defined(WITH_LIBIDN2) && !defined(WITH_LIBICU) && !defined(WITH_LIBICUCORE) && !defined(WITH_LIBICU_WIN)
 /*
  * When configured without runtime IDNA support (./configure --disable-runtime), we need a pure ASCII
  * representation of non-ASCII characters in labels as found in UTF-8 domain names.
@@ -688,7 +690,7 @@ typedef void *psl_idna_t;
 
 static psl_idna_t *psl_idna_open(void)
 {
-#if defined(WITH_LIBICU) || defined(WITH_LIBICUCORE)
+#if defined(WITH_LIBICU) || defined(WITH_LIBICUCORE) || defined(WITH_LIBICU_WIN)
 	UErrorCode status = 0;
 	return (void *)uidna_openUTS46(UIDNA_USE_STD3_RULES | UIDNA_NONTRANSITIONAL_TO_ASCII, &status);
 #endif
@@ -699,7 +701,7 @@ static void psl_idna_close(psl_idna_t *idna)
 {
 	(void) idna;
 
-#if defined(WITH_LIBICU) || defined(WITH_LIBICUCORE)
+#if defined(WITH_LIBICU) || defined(WITH_LIBICUCORE) || defined(WITH_LIBICU_WIN)
 	if (idna)
 		uidna_close((UIDNA *)idna);
 #endif
@@ -709,7 +711,7 @@ static int psl_idna_toASCII(psl_idna_t *idna, const char *utf8, char **ascii)
 {
 	int ret = -1;
 
-#if defined(WITH_LIBICU) || defined(WITH_LIBICUCORE)
+#if defined(WITH_LIBICU) || defined(WITH_LIBICUCORE) || defined(WITH_LIBICU_WIN)
 	(void) idna;
 
 	/* IDNA2008 UTS#46 punycode conversion */
@@ -1582,6 +1584,8 @@ const char *psl_get_version(void)
 	return PACKAGE_VERSION " (+libicu/" U_ICU_VERSION ")";
 #elif defined(WITH_LIBICUCORE)
 	return PACKAGE_VERSION " (+libicucore/" U_ICU_VERSION ")";
+#elif defined(WITH_LIBICU_WIN)
+	return PACKAGE_VERSION " (+icu.lib/Windows)";
 #elif defined(WITH_LIBIDN2)
 	return PACKAGE_VERSION " (+libidn2/" IDN2_VERSION ")";
 #elif defined(WITH_LIBIDN)
@@ -1928,7 +1932,7 @@ psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding, const ch
 		return PSL_SUCCESS;
 	}
 
-#ifdef WITH_LIBICU
+#if defined(WITH_LIBICU) || defined(WITH_LIBICU_WIN)
 #define STACK_STRLENGTH 256
 	do {
 	UErrorCode status = 0;

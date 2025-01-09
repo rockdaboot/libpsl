@@ -1,5 +1,5 @@
 option('runtime', type : 'combo',
-  choices : ['libidn2', 'libicu', 'libicucore', 'libidn', 'no', 'auto'], value : 'auto',
+  choices : ['libidn2', 'libicu', 'libicucore', 'libicu-win', 'libidn', 'no', 'auto'], value : 'auto',
   description : 'Specify the IDNA library used for libpsl run-time conversions')
 
 option('builtin', type : 'boolean',
