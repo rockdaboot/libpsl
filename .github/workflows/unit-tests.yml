@@ -40,6 +40,9 @@ jobs:
         submodules: true
     - name: Install dependencies
       run: pip install --pre meson ninja
+    - name: Install libunistring (macOS)
+      if: runner.os == 'macOS'
+      run: brew install libunistring
     - name: Configure
       run: meson setup builddir
     - name: Build
