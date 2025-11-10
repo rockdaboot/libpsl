@@ -43,6 +43,12 @@ jobs:
     - name: Install libunistring (macOS)
       if: runner.os == 'macOS'
       run: brew install libunistring
+    - name: Set Homebrew paths (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        echo "PKG_CONFIG_PATH=$(brew --prefix)/lib/pkgconfig:$PKG_CONFIG_PATH" >> $GITHUB_ENV
+        echo "LIBRARY_PATH=$(brew --prefix)/lib:$LIBRARY_PATH" >> $GITHUB_ENV
+        echo "CPATH=$(brew --prefix)/include:$CPATH" >> $GITHUB_ENV
     - name: Configure
       run: meson setup builddir
     - name: Build
