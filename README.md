@@ -142,6 +142,12 @@ Prerequisites:
 There is also an unofficial MSVC nmake build configuration in `msvc/`.   Please
 see README.MSVC.md on building libpsl with Visual Studio via NMake or Meson.
 
+### Building with `cmake`
+
+This only builds the static library libpsl.a.
+
+		cmake -S . -B builddir
+		cmake --build builddir
 
 ## Mailing List
 
