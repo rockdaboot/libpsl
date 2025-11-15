@@ -75,7 +75,10 @@ AC_ARG_ENABLE([man],
 AM_CONDITIONAL(ENABLE_MAN, test x$enable_man = xyes)
 
 # src/psl-make-dafsa needs python 2.7+
-AM_PATH_PYTHON([2.7])
+AS_IF([! test -f src/suffixes_dafsa.h -a -f tests/psl.dafsa -a -f tests/psl_ascii.dafsa],
+  [
+    AM_PATH_PYTHON([2.7],, [AC_MSG_ERROR([python 2.7+ is required to convert the PSL data])])
+  ])
 
 PKG_PROG_PKG_CONFIG
 

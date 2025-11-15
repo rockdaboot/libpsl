@@ -2,8 +2,8 @@ DEFS = @DEFS@ \
        -DSRCDIR=\"$(srcdir)\" \
        -DPSL_FILE=\"$(PSL_FILE)\" \
        -DPSL_TESTFILE=\"$(PSL_TESTFILE)\" \
-       -DPSL_DAFSA=\"psl.dafsa\" \
-       -DPSL_ASCII_DAFSA=\"psl_ascii.dafsa\"
+       -DPSL_DAFSA=\"$(srcdir)/psl.dafsa\" \
+       -DPSL_ASCII_DAFSA=\"$(srcdir)/psl_ascii.dafsa\"
 AM_CPPFLAGS = -I$(top_srcdir)/include
 LDADD = ../src/libpsl.la
 AM_LDFLAGS = -no-install
@@ -37,7 +37,7 @@ psl.dafsa: $(PSL_FILE)
 psl_ascii.dafsa: $(PSL_FILE)
 	$(PYTHON) $(top_srcdir)/src/psl-make-dafsa --output-format=binary --encoding=ascii "$(PSL_FILE)" psl_ascii.dafsa
 
-clean-local:
-	rm -f psl.dafsa psl_ascii.dafsa
+MAINTAINERCLEANFILES = psl.dafsa psl_ascii.dafsa
 
-EXTRA_DIST = meson.build
+# Add the dafsa files because building them is expensive and requires python to be installed.
+EXTRA_DIST = meson.build psl.dafsa psl_ascii.dafsa

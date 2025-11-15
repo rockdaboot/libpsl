@@ -3,8 +3,9 @@ include libpsl-srcs.mk
 # suffixes.c must be created before psl.c is compiled
 BUILT_SOURCES = suffixes_dafsa.h
 
-# suffixes.c is a built source that must be cleaned
-CLEANFILES = suffixes_dafsa.h
+# suffixes.c is a built source that a normal clean should not touch.
+# Because building it is expensive and requires python to be installed.
+MAINTAINERCLEANFILES = suffixes_dafsa.h
 
 lib_LTLIBRARIES = libpsl.la
 
@@ -23,6 +24,6 @@ suffixes_dafsa.h: $(PSL_FILE) $(srcdir)/psl-make-dafsa
 
 bin_SCRIPTS = psl-make-dafsa
 
-EXTRA_DIST = psl-make-dafsa LICENSE.chromium meson.build
+EXTRA_DIST = psl-make-dafsa LICENSE.chromium meson.build suffixes_dafsa.h
 
 dist_man_MANS = psl-make-dafsa.1

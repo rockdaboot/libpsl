@@ -149,16 +149,16 @@ static void test_psl(void)
 	printf("builtin PSL has %d suffixes and %d exceptions\n", psl_suffix_count(psl2), psl_suffix_exception_count(psl2));
 
 	if (!(psl3 = psl_load_file(PSL_DAFSA))) {
-		fprintf(stderr, "Failed to load 'psl.dafsa'\n");
+		fprintf(stderr, "Failed to load '%s'\n", PSL_DAFSA);
 		failed++;
 	}
 
 	if (!(psl4 = psl_load_file(PSL_ASCII_DAFSA))) {
-		fprintf(stderr, "Failed to load 'psl_ascii.dafsa'\n");
+		fprintf(stderr, "Failed to load '%s'\n", PSL_ASCII_DAFSA);
 		failed++;
 	}
 
-	psl5 = psl_latest("psl.dafsa");
+	psl5 = psl_latest(PSL_DAFSA);
 
 	if ((fp = fopen(PSL_FILE, "r"))) {
 #ifdef HAVE_CLOCK_GETTIME
