@@ -2,12 +2,6 @@
 [![Coverage Status](https://coveralls.io/repos/github/rockdaboot/libpsl/badge.svg?branch=master)](https://coveralls.io/github/rockdaboot/libpsl?branch=master)
 [![CodeQL](https://github.com/rockdaboot/libpsl/actions/workflows/codeql.yml/badge.svg)](https://github.com/rockdaboot/libpsl/actions/workflows/codeql.yml)
 
-Solaris OpenCSW [![Build Status Solaris amd64](https://buildfarm.opencsw.org/buildbot/png?builder=libpsl-solaris10-amd64)](https://buildfarm.opencsw.org/buildbot/builders/libpsl-solaris10-amd64)
-[![Build Status Solaris i386](https://buildfarm.opencsw.org/buildbot/png?builder=libpsl-solaris10-i386)](https://buildfarm.opencsw.org/buildbot/builders/libpsl-solaris10-i386)
-[![Build Status Solaris Sparc](https://buildfarm.opencsw.org/buildbot/png?builder=libpsl-solaris10-sparc)](https://buildfarm.opencsw.org/buildbot/builders/libpsl-solaris10-sparc)
-[![Build Status Solaris SparcV9](https://buildfarm.opencsw.org/buildbot/png?builder=libpsl-solaris10-sparcv9)](https://buildfarm.opencsw.org/buildbot/builders/libpsl-solaris10-sparcv9)
-
-
 # libpsl - C library to handle the Public Suffix List
 
 A *Public Suffix List* is a collection of Top Level Domains (TLDs) suffixes.
@@ -26,7 +20,7 @@ Browsers, web clients and other user agents can use a public suffix list to:
 
 Libpsl...
 
-- has built-in PSL data for fast access (DAWG/DAFSA reduces size from 180kB to ~32kB)
+- has built-in PSL data for fast access (DAWG/DAFSA reduces size from ~300kB to ~50kB)
 - allows to load PSL data from files
 - checks if a given domain is a "public suffix"
 - provides immediate cookie domain verification
@@ -34,7 +28,7 @@ Libpsl...
 - finds the shortest private part of a given domain
 - works with international domains (UTF-8 and IDNA2008 Punycode)
 - is thread-safe
-- handles IDNA2008 UTS#46 (if libicu is available)
+- handles IDNA2008 UTS#46 (if either libidn2 or libicu is available)
 
 Find more information about the Public Suffix List [here](https://publicsuffix.org/).
 
