@@ -17,13 +17,31 @@ set(LIBPSL_VERSION_MINOR ${psl_VERSION_MINOR})
 set(LIBPSL_VERSION_PATCH ${psl_VERSION_PATCH})
 set(LIBPSL_VERSION "${psl_VERSION_MAJOR}.${psl_VERSION_MINOR}.${psl_VERSION_PATCH}")
 
+set(LIBPSL_STANDALONE_BUILD OFF)
+if(PROJECT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+    set(LIBPSL_STANDALONE_BUILD ON)
+endif()
+option(LIBPSL_ENABLE_INSTALL "${PROJECT_NAME}: Enable install" ${LIBPSL_STANDALONE_BUILD})
+
+option(ENABLE_BUILTIN "Generate built-in PSL data" ON)
+set(ENABLE_RUNTIME "" CACHE STRING "Enable runtime PSL data (libicu, libidn, libidn2)")
+
 add_definitions(
   -DPACKAGE_VERSION=\"${LIBPSL_VERSION}\"
-  -DBUILDING_PSL=1
-  -DPSL_STATIC=1
-  # ensure that builtin list is enabled
-  -DENABLE_BUILTIN=1
 )
+
+if(ENABLE_BUILTIN)
+  add_definitions(-DENABLE_BUILTIN=1)
+endif()
+if(ENABLE_RUNTIME STREQUAL "libicu")
+  add_definitions(-DWITH_LIBICU=1)
+endif()
+if(ENABLE_RUNTIME STREQUAL "libidn")
+  add_definitions(-DWITH_LIBIDN=1)
+endif()
+if(ENABLE_RUNTIME STREQUAL "libidn2")
+  add_definitions(-DWITH_LIBIDN2=1)
+endif()
 
 set(PSL_FILE "${CMAKE_SOURCE_DIR}/list/public_suffix_list.dat")
 
@@ -62,5 +80,8 @@ add_dependencies(
   "suffixes_dafsa.h"
 )
 
-install(TARGETS ${PROJECT_NAME} DESTINATION lib)
-install(FILES "${CMAKE_BINARY_DIR}/libpsl.h" DESTINATION include)
+if(LIBPSL_ENABLE_INSTALL)
+  install(TARGETS ${PROJECT_NAME} DESTINATION lib)
+  install(FILES "${CMAKE_BINARY_DIR}/libpsl.h" DESTINATION include)
+endif()
+
