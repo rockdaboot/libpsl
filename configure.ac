@@ -297,9 +297,17 @@ if test "$enable_runtime" = "auto"; then
   enable_runtime=no
 fi
 
-dnl If we use libidn or libidn2, we also need libunistring
+dnl If we use libidn or libidn2, we also need libiconv and libunistring
 if test "x$enable_runtime" = "xlibidn2" -o "x$enable_runtime" = "xlibidn"; then
   __save_LIBS=$LIBS
+
+  LIBS=$LIBICONV
+  AC_LINK_IFELSE([
+    AC_LANG_PROGRAM([#include <iconv.h>], [iconv_open ("", "");])
+  ], [:], [
+    AC_MSG_ERROR([You requested libidn2|libidn but libiconv is not installed.])
+  ])
+  LIBS=$__save_LIBS
 
   LIBS=$LIBUNISTRING
   AC_LINK_IFELSE([
