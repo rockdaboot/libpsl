@@ -213,87 +213,259 @@ AC_SUBST([AM_CPPFLAGS])
 AC_SUBST([AM_CFLAGS])
 AC_SUBST([AM_LDFLAGS])
 
+dnl We use pkg-config/pkgconf to find dependencies. We want to ensure that we
+dnl are able to find them even if they are installed as static libraries only.
+dnl
+dnl If we were able to locate package using PKG_CHECK_MODULES, try to do a
+dnl link test to ensure that we can link against it. This may fail because only
+dnl static library is available but we did not add private libraries
+dnl (Libs.private) or compiler flags (Cflags.private).
+dnl
+dnl If we failed to link against library found with PKG_CHECK_MODULES, try
+dnl to use PKG_CHECK_MODULES_STATIC to obtain compiler and linker flags
+dnl required to link against static library.
+
+dnl Compiler flags required to use $enable_runtime (when != "no")
+runtime_CFLAGS=
+dnl Libraries required to use $enable_runitme (when != "no")
+runtime_LIBS=
+
+AC_SUBST([runtime_CFLAGS])
+AC_SUBST([runtime_LIBS])
+
+dnl Check for libidn2
 if test "$enable_runtime" = "libidn2" -o "$enable_runtime" = "auto"; then
-  # Check for libidn2
-  PKG_CHECK_MODULES([LIBIDN2], [libidn2], [
-    HAVE_LIBIDN2=yes
-    if test "$enable_runtime" = "libidn2" -o "$enable_runtime" = "auto"; then
-      LIBS="$LIBIDN2_LIBS $LIBS"
-      CFLAGS="$LIBIDN2_CFLAGS $CFLAGS"
-    fi
-  ], [
-    AC_SEARCH_LIBS(idn2_lookup_u8, idn2, HAVE_LIBIDN2=yes,
-    [
-       if test "$enable_runtime" = "libidn2"; then
-          AC_MSG_ERROR(You requested libidn2 but it is not installed.)
-       fi
-    ], -lunistring)
+  HAVE_LIBIDN2=no
+
+  # Save CFLAGS and LIBS so we can restore them later
+  __save_CFLAGS=$CFLAGS
+  __save_LIBS=$LIBS
+
+  m4_define([LIBIDN2_LINK_TEST], [AC_LANG_PROGRAM(
+    [extern char idn2_lookup_u8 (void);],
+    [idn2_lookup_u8();]
+  )])
+
+  PKG_CHECK_MODULES([LIBIDN2], [libidn2], [HAVE_LIBIDN2=maybe], [HAVE_LIBIDN2=no])
+
+  # Check if we can link against libidn2
+  AS_IF([test "x$HAVE_LIBIDN2" = xmaybe], [
+    CFLAGS="$LIBIDN2_CFLAGS $CFLAGS"
+    LIBS="$LIBIDN2_LIBS $LIBS"
+    AC_LINK_IFELSE([
+      LIBIDN2_LINK_TEST
+    ], [
+      HAVE_LIBIDN2=yes
+    ], [
+      AC_MSG_NOTICE([located libidn2 but cannot link... trying static linking])
+      LIBIDN2_CFLAGS=
+      LIBIDN2_LIBS=
+      CFLAGS=$__save_CFLAGS
+      LIBS=$__save_LIBS
+    ])
   ])
 
+  # If we cannot link against found libidn2, try static linking
+  AS_IF([test "x$HAVE_LIBIDN2" = xmaybe], [
+    PKG_CHECK_MODULES_STATIC([LIBIDN2], [libidn2], [
+      CFLAGS="$LIBIDN2_CFLAGS $CFLAGS"
+      LIBS="$LIBIDN2_LIBS $LIBS"
+      AC_LINK_IFELSE([
+        LIBIDN2_LINK_TEST
+      ], [
+        HAVE_LIBIDN2=yes
+        AC_MSG_NOTICE([using static libidn2])
+      ], [
+        HAVE_LIBIDN2=no
+        AC_MSG_NOTICE([libidn2 is installed but unusable])
+        LIBIDN2_CFLAGS=
+        LIBIDN2_LIBS=
+        CFLAGS=$__save_CFLAGS
+        LIBS=$__save_LIBS
+      ])
+    ], [
+      HAVE_LIBIDN2=no
+    ])
+  ])
+
+  CFLAGS=$__save_CFLAGS
+  LIBS=$__save_LIBS
+
   if test "x$HAVE_LIBIDN2" = "xyes"; then
+    runtime_CFLAGS=$LIBIDN2_CFLAGS
+    runtime_LIBS=$LIBIDN2_LIBS
+
     if test "$enable_runtime" = "auto"; then
       enable_runtime=libidn2
       AC_DEFINE([WITH_LIBIDN2], [1], [generate PSL data using libidn2])
     fi
+  else
+    if test "$enable_runtime" = "libidn2"; then
+      AC_MSG_ERROR([You requested libidn2 but it is not installed or usable.])
+    fi
   fi
 fi
 
+dnl Check for libicu
 if test "$enable_runtime" = "libicu" -o "$enable_runtime" = "auto"; then
-  # Check for libicu
+  HAVE_LIBICU=no
+
+  # Save CFLAGS and LIBS so we can restore them later
+  __save_CFLAGS=$CFLAGS
+  __save_LIBS=$LIBS
+
+  m4_define([ICU_LINK_TEST], [AC_LANG_PROGRAM(
+    [[#include <unicode/ustring.h>]],
+    [[u_strToUTF8(NULL, 0, NULL, NULL, 0, NULL);]]
+  )])
+
   # using pkg-config won't work on older systems like Ubuntu 12.04 LTS Server Edition 64bit
   # using AC_SEARCH_LIBS also don't work since functions have the library version appended
-  PKG_CHECK_MODULES([LIBICU], [icu-uc], [
-    HAVE_LIBICU=yes
-    if test "$enable_runtime" = "libicu" -o "$enable_runtime" = "auto"; then
-      LIBS="$LIBICU_LIBS $LIBS"
-      CFLAGS="$LIBICU_CFLAGS $CFLAGS"
-    fi
-  ], [
-    OLDLIBS=$LIBS
-    LIBS="-licuuc $LIBS"
-    AC_MSG_CHECKING([for ICU unicode library])
-    AC_LINK_IFELSE(
-      [AC_LANG_PROGRAM(
-        [[#include <unicode/ustring.h>]],
-        [[u_strToUTF8(NULL, 0, NULL, NULL, 0, NULL);]])],
-      [HAVE_LIBICU=yes; LIBICU_LIBS="-licuuc"; AC_MSG_RESULT([yes])],
-      [ AC_MSG_RESULT([no]);
-        if test "$enable_runtime" = "libicu"; then
-          AC_MSG_ERROR(You requested libicu but it is not installed.)
-        fi
-        LIBS=$OLDLIBS
-      ])
+  PKG_CHECK_MODULES([LIBICU], [icu-uc], [HAVE_LIBICU=maybe], [HAVE_LIBICU=no])
+
+  # Check if we can link against libicu
+  AS_IF([test "x$HAVE_LIBICU" = xmaybe], [
+    CFLAGS="$LIBICU_CFLAGS $CFLAGS"
+    LIBS="$LIBICU_LIBS $LIBS"
+    AC_LINK_IFELSE([
+      ICU_LINK_TEST
+    ], [
+      HAVE_LIBICU=yes
+    ], [
+      AC_MSG_NOTICE([located libicu but cannot link... trying static linking])
+      LIBICU_CFLAGS=
+      LIBICU_LIBS=
+      CFLAGS=$__save_CFLAGS
+      LIBS=$__save_LIBS
+    ])
   ])
 
+  # If we cannot link against found libicu, try static linking
+  AS_IF([test "x$HAVE_LIBICU" = xmaybe], [
+    PKG_CHECK_MODULES_STATIC([LIBICU], [icu-uc], [
+      CFLAGS="$LIBICU_CFLAGS $CFLAGS"
+      LIBS="$LIBICU_LIBS $LIBS"
+      AC_LINK_IFELSE([
+        ICU_LINK_TEST
+      ], [
+        HAVE_LIBICU=yes
+        AC_MSG_NOTICE([using static libicu])
+      ], [
+        HAVE_LIBICU=no
+        AC_MSG_NOTICE([libicu is installed but unusable])
+        LIBICU_CFLAGS=
+        LIBICU_LIBS=
+        CFLAGS=$__save_CFLAGS
+        LIBS=$__save_LIBS
+      ])
+    ], [
+      HAVE_LIBICU=no
+    ])
+  ])
+
+  # Try -licuuc
+  AS_IF([test "x$HAVE_LIBICU" = xno], [
+    AC_MSG_CHECKING([for ICU unicode library])
+    LIBS="-licuuc $LIBS"
+    AC_LINK_IFELSE([
+      ICU_LINK_TEST
+    ], [
+      HAVE_LIBICU=yes
+      LIBICU_LIBS='-licuuc'
+    ], [
+      HAVE_LIBICU=no
+      LIBS=$__save_LIBS
+    ])
+    AC_MSG_RESULT([$HAVE_LIBICU])
+  ])
+
+  CFLAGS=$__save_CFLAGS
+  LIBS=$__save_LIBS
+
   if test "x$HAVE_LIBICU" = "xyes"; then
+    runtime_CFLAGS=$LIBICU_CFLAGS
+    runtime_LIBS=$LIBICU_LIBS
+
     if test "$enable_runtime" = "auto"; then
       enable_runtime=libicu
       AC_DEFINE([WITH_LIBICU], [1], [generate PSL data using libicu])
     fi
+  else
+    if test "$enable_runtime" = "libicu"; then
+      AC_MSG_ERROR([You requested libicu but it is not installed or usable.])
+    fi
   fi
 fi
 
+dnl Checl for libidn
 if test "$enable_runtime" = "libidn" -o "$enable_runtime" = "auto"; then
-  # Check for libidn
-  PKG_CHECK_MODULES([LIBIDN], [libidn], [
-    HAVE_LIBIDN=yes
-    if test "$enable_runtime" = "libidn" -o "$enable_runtime" = "auto"; then
-      LIBS="$LIBIDN_LIBS $LIBS"
-      CFLAGS="$LIBIDN_CFLAGS $CFLAGS"
-    fi
-  ], [
-    AC_SEARCH_LIBS(idna_to_ascii_8z, idn, HAVE_LIBIDN=yes,
-    [
-      if test "$enable_runtime" = "libidn"; then
-        AC_MSG_ERROR(You requested libidn but it is not installed.)
-      fi
+  HAVE_LIBIDN=no
+
+  # Save CFLAGS and LIBS so we can restore them later
+  __save_CFLAGS=$CFLAGS
+  __save_LIBS=$LIBS
+
+  m4_define([LIBIDN_LINK_TEST], [AC_LANG_PROGRAM(
+    [extern char idna_to_ascii_8z (void);],
+    [idna_to_ascii_8z();]
+  )])
+
+  PKG_CHECK_MODULES([LIBIDN], [libidn], [HAVE_LIBIDN=maybe], [HAVE_LIBIDN=no])
+
+  # Check if we can link against libidn
+  AS_IF([test "x$HAVE_LIBIDN" = xmaybe], [
+    CFLAGS="$LIBIDN_CFLAGS $CFLAGS"
+    LIBS="$LIBIDN_LIBS $LIBS"
+    AC_LINK_IFELSE([
+      LIBIDN_LINK_TEST
+    ], [
+      HAVE_LIBIDN=yes
+    ], [
+      AC_MSG_NOTICE([located libidn but cannot link... trying static linking])
+      LIBIDN_CFLAGS=
+      LIBIDN_LIBS=
+      CFLAGS=$__save_CFLAGS
+      LIBS=$__save_LIBS
     ])
   ])
 
+  # If we cannot link against found libidn, try static linking
+  AS_IF([test "x$HAVE_LIBIDN" = xmaybe], [
+    PKG_CHECK_MODULES_STATIC([LIBIDN], [libidn], [
+      CFLAGS="$LIBIDN_CFLAGS $CFLAGS"
+      LIBS="$LIBIDN_LIBS $LIBS"
+      AC_LINK_IFELSE([
+        LIBIDN_LINK_TEST
+      ], [
+        HAVE_LIBIDN=yes
+        AC_MSG_NOTICE([using static libidn])
+      ], [
+        HAVE_LIBIDN=no
+        AC_MSG_NOTICE([libidn is installed but unusable])
+        LIBIDN_CFLAGS=
+        LIBIDN_LIBS=
+        CFLAGS=$__save_CFLAGS
+        LIBS=$__save_LIBS
+      ])
+    ], [
+      HAVE_LIBIDN=no
+    ])
+  ])
+
+  CFLAGS=$__save_CFLAGS
+  LIBS=$__save_LIBS
+
   if test "x$HAVE_LIBIDN" = "xyes"; then
+    runtime_CFLAGS=$LIBIDN_CFLAGS
+    runtime_LIBS=$LIBIDN_LIBS
+
     if test "$enable_runtime" = "auto"; then
       enable_runtime=libidn
       AC_DEFINE([WITH_LIBIDN], [1], [generate PSL data using libidn])
+    fi
+  else
+    if test "$enable_runtime" = "libidn"; then
+      AC_MSG_ERROR([You requested libidn but it is not installed or usable.])
     fi
   fi
 fi
@@ -322,6 +494,8 @@ if test "x$enable_runtime" = "xlibidn2" -o "x$enable_runtime" = "xlibidn"; then
     AC_MSG_ERROR([You requested libidn2|libidn but libunistring is not installed.])
   ])
   LIBS=$__save_LIBS
+
+  runtime_LIBS="$runtime_LIBS $LTLIBUNISTRING $LTLIBICONV"
 fi
 
 AM_CONDITIONAL([WITH_LIBICU], test "x$enable_runtime" = "xlibicu")

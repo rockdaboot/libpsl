@@ -1,7 +1,7 @@
 AM_CPPFLAGS = @AM_CPPFLAGS@ -I$(srcdir) -DSRCDIR=\"$(abs_srcdir)\"
 AM_CFLAGS   = @AM_CFLAGS@ $(WERROR_CFLAGS) $(WARN_CFLAGS)
 AM_LDFLAGS  = @AM_LDFLAGS@
-LDADD       = ../src/libpsl.la $(LIBICU_LIBS) $(LIBIDN_LIBS) $(LIBIDN2_LIBS)
+LDADD       = ../src/libpsl.la
 
 if !FUZZING
   MAIN = main.c fuzzer.h
