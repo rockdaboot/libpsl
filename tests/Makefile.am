@@ -2,8 +2,8 @@ DEFS = @DEFS@ \
        -DSRCDIR=\"$(srcdir)\" \
        -DPSL_FILE=\"$(PSL_FILE)\" \
        -DPSL_TESTFILE=\"$(PSL_TESTFILE)\" \
-       -DPSL_DAFSA=\"$(srcdir)/psl.dafsa\" \
-       -DPSL_ASCII_DAFSA=\"$(srcdir)/psl_ascii.dafsa\"
+       -DPSL_DAFSA=\"@PSL_DAFSA@\" \
+       -DPSL_ASCII_DAFSA=\"@PSL_ASCII_DAFSA@\"
 
 AM_CPPFLAGS = @AM_CPPFLAGS@
 AM_CFLAGS   = @AM_CFLAGS@
