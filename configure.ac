@@ -297,9 +297,17 @@ if test "$enable_runtime" = "auto"; then
   enable_runtime=no
 fi
 
-if test "x$HAVE_LIBIDN2" = "xyes" -o "x$HAVE_LIBIDN" = "xyes"; then
-  # Check for libunistring, we need it for psl_str_to_utf8lower()
-  AC_SEARCH_LIBS(u8_tolower, unistring, HAVE_UNISTRING=yes, AC_MSG_ERROR(You requested libidn2|libidn but libunistring is not installed.))
+dnl If we use libidn or libidn2, we also need libunistring
+if test "x$enable_runtime" = "xlibidn2" -o "x$enable_runtime" = "xlibidn"; then
+  __save_LIBS=$LIBS
+
+  LIBS=$LIBUNISTRING
+  AC_LINK_IFELSE([
+    AC_LANG_PROGRAM([char u8_tolower (void);], [u8_tolower ();])
+  ], [:], [
+    AC_MSG_ERROR([You requested libidn2|libidn but libunistring is not installed.])
+  ])
+  LIBS=$__save_LIBS
 fi
 
 AM_CONDITIONAL([WITH_LIBICU], test "x$enable_runtime" = "xlibicu")
