@@ -1,7 +1,7 @@
-AM_CFLAGS = $(WERROR_CFLAGS) $(WARN_CFLAGS)
-AM_CPPFLAGS = -I$(top_srcdir)/include -I$(srcdir) -DSRCDIR=\"$(abs_srcdir)\"
-#AM_LDFLAGS = -static
-LDADD = ../src/libpsl.la $(LIBICU_LIBS) $(LIBIDN_LIBS) $(LIBIDN2_LIBS)
+AM_CPPFLAGS = @AM_CPPFLAGS@ -I$(srcdir) -DSRCDIR=\"$(abs_srcdir)\"
+AM_CFLAGS   = @AM_CFLAGS@ $(WERROR_CFLAGS) $(WARN_CFLAGS)
+AM_LDFLAGS  = @AM_LDFLAGS@
+LDADD       = ../src/libpsl.la $(LIBICU_LIBS) $(LIBIDN_LIBS) $(LIBIDN2_LIBS)
 
 if !FUZZING
   MAIN = main.c fuzzer.h
@@ -56,7 +56,7 @@ endif
 if FUZZING
   bin_PROGRAMS = $(PSL_TESTS)
   LDADD += $(LIB_FUZZING_ENGINE)
-  AM_LDFLAGS = -no-install
+  AM_LDFLAGS += -no-install
 else
   AM_CPPFLAGS += -DTEST_RUN
   AM_TESTS_ENVIRONMENT = export VALGRIND_TESTS"=@VALGRIND_TESTS@";

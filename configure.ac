@@ -190,6 +190,19 @@ if test "$enable_builtin" = "yes"; then
   AC_DEFINE([ENABLE_BUILTIN], [1], [Generate built-in PSL data])
 fi
 
+dnl Global project-specific compiler and linker flags.
+dnl
+dnl We should not use plain *FLAGS since they belong to the user.
+dnl We can temporary modify them for configuration checks, but then we need to
+dnl restore them to their original values.
+AM_CPPFLAGS="-I\$(top_builddir)/include -I\$(top_srcdir)/include"
+AM_CFLAGS=
+AM_LDFLAGS=
+
+AC_SUBST([AM_CPPFLAGS])
+AC_SUBST([AM_CFLAGS])
+AC_SUBST([AM_LDFLAGS])
+
 if test "$enable_runtime" = "libidn2" -o "$enable_runtime" = "auto"; then
   # Check for libidn2
   PKG_CHECK_MODULES([LIBIDN2], [libidn2], [

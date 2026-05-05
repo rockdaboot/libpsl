@@ -4,9 +4,11 @@ DEFS = @DEFS@ \
        -DPSL_TESTFILE=\"$(PSL_TESTFILE)\" \
        -DPSL_DAFSA=\"$(srcdir)/psl.dafsa\" \
        -DPSL_ASCII_DAFSA=\"$(srcdir)/psl_ascii.dafsa\"
-AM_CPPFLAGS = -I$(top_srcdir)/include
-LDADD = ../src/libpsl.la
-AM_LDFLAGS = -no-install
+
+AM_CPPFLAGS = @AM_CPPFLAGS@
+AM_CFLAGS   = @AM_CFLAGS@
+AM_LDFLAGS  = @AM_LDFLAGS@ -no-install
+LDADD       = ../src/libpsl.la
 
 # ./configure'd with '--disable-builtin'
 # Do not call test-is-public-builtin here: it does not make sense.
