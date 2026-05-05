@@ -22,6 +22,12 @@ AC_C_INLINE
 dnl Check for visibility support
 gl_VISIBILITY
 
+dnl Solaris has socket in libsocket and inet_ntop in libnsl, but also needs
+dnl libsocket, so the order is important here
+AC_CHECK_LIB([socket], [socket], [
+  AC_CHECK_LIB([nsl], [inet_ntop], [:], [:])
+], [:])
+
 dnl AM_ICONV sets @LIBICONV@ and @LTLIBICONV@ for use in Makefile.am
 dnl libunistring may depend on libiconv, so invoke it before gl_LIBUNISTRING
 AM_ICONV
@@ -322,19 +328,6 @@ AM_CONDITIONAL([WITH_LIBICU], test "x$enable_runtime" = "xlibicu")
 AM_CONDITIONAL([WITH_LIBIDN2], test "x$enable_runtime" = "xlibidn2")
 AM_CONDITIONAL([WITH_LIBIDN], test "x$enable_runtime" = "xlibidn")
 AM_CONDITIONAL([ENABLE_BUILTIN], test "x$enable_builtin" = "xyes")
-
-# Solaris has socket in libsocket and inet_ntop in libnsl, but also needs libsocket, so the order is important here
-AC_CHECK_LIB([socket], [socket], [NEEDS_SOCKET=yes], [])
-if test -n "$NEEDS_SOCKET" ; then
-  AC_CHECK_LIB([nsl], [inet_ntop], [NEEDS_NSL=yes], [])
-fi
-if test -n "$NEEDS_SOCKET" && test -n "$NEEDS_NSL" ; then
-  LIBS="$LIBS -lsocket -lnsl"
-elif test -n "$NEEDS_SOCKET" ; then
-  LIBS="$LIBS -lsocket"
-elif test -n "$NEEDS_NSL" ; then
-  LIBS="$LIBS -lnsl"
-fi
 
 # Check for clock_gettime() used for performance measurement
 AC_SEARCH_LIBS(clock_gettime, rt)
