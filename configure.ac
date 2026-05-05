@@ -213,6 +213,12 @@ AC_SUBST([AM_CPPFLAGS])
 AC_SUBST([AM_CFLAGS])
 AC_SUBST([AM_LDFLAGS])
 
+dnl If we are building only static libraries, we need to define PSL_STATIC
+dnl when building psl executable; this is required on Windows since libpsl
+dnl uses __declspec(dllimport) by default.
+AS_IF([test "x${enable_shared}" = "xno"],
+  [AS_VAR_APPEND([AM_CPPFLAGS], [" -DPSL_STATIC"])])
+
 dnl We use pkg-config/pkgconf to find dependencies. We want to ensure that we
 dnl are able to find them even if they are installed as static libraries only.
 dnl
