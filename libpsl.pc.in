@@ -7,6 +7,9 @@ Name: @PACKAGE_NAME@
 Description: Public Suffix List C library.
 Version: @PACKAGE_VERSION@
 URL: @PACKAGE_URL@
-Libs: -L${libdir} -lpsl
-Libs.private: @runtime_LIBS@ @LIBS@
-Cflags: -I${includedir}
+Requires: @libpsl_pc_Requires@
+Requires.private: @libpsl_pc_Requires_private@
+Libs: -L${libdir} -lpsl @libpsl_pc_Libs@
+Libs.private: @libpsl_pc_Libs_private@
+Cflags: -I${includedir} @libpsl_pc_Cflags@
+@libpsl_pc_Cflags_private@

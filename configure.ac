@@ -309,6 +309,8 @@ fi
 dnl Check for libicu
 if test "$enable_runtime" = "libicu" -o "$enable_runtime" = "auto"; then
   HAVE_LIBICU=no
+  # Whether we found libicu using pkg-config
+  HAVE_LIBICU_PC=no
 
   # Save CFLAGS and LIBS so we can restore them later
   __save_CFLAGS=$CFLAGS
@@ -321,7 +323,12 @@ if test "$enable_runtime" = "libicu" -o "$enable_runtime" = "auto"; then
 
   # using pkg-config won't work on older systems like Ubuntu 12.04 LTS Server Edition 64bit
   # using AC_SEARCH_LIBS also don't work since functions have the library version appended
-  PKG_CHECK_MODULES([LIBICU], [icu-uc], [HAVE_LIBICU=maybe], [HAVE_LIBICU=no])
+  PKG_CHECK_MODULES([LIBICU], [icu-uc], [
+    HAVE_LIBICU_PC=yes
+    HAVE_LIBICU=maybe
+  ], [
+    HAVE_LIBICU=no
+  ])
 
   # Check if we can link against libicu
   AS_IF([test "x$HAVE_LIBICU" = xmaybe], [
@@ -351,6 +358,7 @@ if test "$enable_runtime" = "libicu" -o "$enable_runtime" = "auto"; then
         HAVE_LIBICU=yes
         AC_MSG_NOTICE([using static libicu])
       ], [
+        HAVE_LIBICU_PC=no
         HAVE_LIBICU=no
         AC_MSG_NOTICE([libicu is installed but unusable])
         LIBICU_CFLAGS=
@@ -502,6 +510,42 @@ AM_CONDITIONAL([WITH_LIBICU], test "x$enable_runtime" = "xlibicu")
 AM_CONDITIONAL([WITH_LIBIDN2], test "x$enable_runtime" = "xlibidn2")
 AM_CONDITIONAL([WITH_LIBIDN], test "x$enable_runtime" = "xlibidn")
 AM_CONDITIONAL([ENABLE_BUILTIN], test "x$enable_builtin" = "xyes")
+
+dnl libpsl.pc
+libpsl_pc_Cflags=
+libpsl_pc_Cflags_private=
+libpsl_pc_Libs=
+libpsl_pc_Libs_private=
+libpsl_pc_Requires=
+libpsl_pc_Requires_private=
+
+if test "$enable_runtime" = libidn2; then
+  libpsl_pc_Libs_private="$LTLIBUNISTRING $LTLIBICONV $LIBS"
+  libpsl_pc_Requires_private=libidn2
+elif test "$enable_runtime" = libidn; then
+  libpsl_pc_Libs_private="$LTLIBUNISTRING $LTLIBICONV $LIBS"
+  libpsl_pc_Requires_private=libidn
+elif test "$enable_runtime" = libicu; then
+  if test "x$HAVE_LIBICU_PC" = xyes; then
+    libpsl_pc_Libs_private="$LIBS"
+    libpsl_pc_Requires_private=icu-uc
+  else
+    libpsl_pc_Libs_private="$LIBICU_LIBS $LIBS"
+  fi
+fi
+
+dnl On Windows we use pkgconf-specific Cflags.private to pass -DPSL_STATIC
+AS_CASE([${host}],
+  [*-mingw32 | *-mingw64 | *-windows], [
+    libpsl_pc_Cflags_private='Cflags.private: -DPSL_STATIC'
+    libpsl_pc_Requires='pkgconf'])
+
+AC_SUBST([libpsl_pc_Cflags])
+AC_SUBST([libpsl_pc_Cflags_private])
+AC_SUBST([libpsl_pc_Libs])
+AC_SUBST([libpsl_pc_Libs_private])
+AC_SUBST([libpsl_pc_Requires])
+AC_SUBST([libpsl_pc_Requires_private])
 
 # Check for clock_gettime() used for performance measurement
 AC_SEARCH_LIBS(clock_gettime, rt)
