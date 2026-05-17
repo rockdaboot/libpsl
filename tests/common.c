@@ -22,12 +22,13 @@
  * This file is part of the test suite of libpsl.
  */
 
-#include <stdio.h> // snprintf
-#include <stdlib.h> // exit, system
-#include <string.h> // strlen
+#include <stdio.h> /* snprintf */
+#include <stdlib.h> /* exit, system */
+#include <string.h> /* strlen */
 #if defined _WIN32
 #	include <malloc.h>
 #endif
+#include "common.h"
 
 int run_valgrind(const char *valgrind, const char *executable)
 {
