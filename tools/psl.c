@@ -37,8 +37,8 @@
 #endif
 
 #ifdef _WIN32
-// Windows does not have localtime_r but has localtime_s, which is more or less
-// the same except that the arguments are reversed
+/* Windows does not have localtime_r but has localtime_s, which is more or less
+   the same except that the arguments are reversed. */
 # define LOCALTIME_R_SUCCESSFUL(t_sec, t_now)	\
 	(localtime_s(t_now, t_sec) == 0)
 #else

@@ -96,6 +96,9 @@ static void test_all_from(const char *dirname)
 
 int main(int argc, char **argv)
 {
+	const char *target = strrchr(argv[0], '/');
+	char corporadir[1024];
+
 	/* if VALGRIND testing is enabled, we have to call ourselves with valgrind checking */
 	if (argc == 1) {
 		const char *valgrind = getenv("TESTS_VALGRIND");
@@ -108,10 +111,8 @@ int main(int argc, char **argv)
 		}
 	}
 
-	const char *target = strrchr(argv[0], '/');
 	target = target ? target + 1 : argv[0];
 
-	char corporadir[1024];
 	snprintf(corporadir, sizeof(corporadir), SRCDIR "/%s.in", target);
 
 	test_all_from(corporadir);
