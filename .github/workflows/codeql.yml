@@ -24,7 +24,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
         with:
           submodules: recursive
 
@@ -39,15 +39,15 @@ jobs:
         run: ./autogen.sh && ./configure --disable-gtk-doc
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@8dca8a82e2fa1a2c8908956f711300f9c4a4f4f6 # v2
         with:
           languages: ${{ matrix.language }}
           queries: +security-and-quality
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v2
+        uses: github/codeql-action/autobuild@8dca8a82e2fa1a2c8908956f711300f9c4a4f4f6 # v2
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@8dca8a82e2fa1a2c8908956f711300f9c4a4f4f6 # v2
         with:
           category: "/language:${{ matrix.language }}"

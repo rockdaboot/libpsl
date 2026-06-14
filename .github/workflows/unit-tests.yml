@@ -7,6 +7,9 @@ on:
   pull_request:
     branches: ["**"]
 
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Test
@@ -18,7 +21,7 @@ jobs:
         runtime: ["libidn", "libidn2", "libicu"]
     steps:
     - name: Check out
-      uses: actions/checkout@v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
     - name: Install dependencies
       run: sudo apt-get install -y autopoint autoconf automake gtk-doc-tools libidn2-dev libunistring-dev libicu-dev libidn-dev
     - name: Test with ${{matrix.runtime}}
@@ -36,7 +39,7 @@ jobs:
         os: ['ubuntu-latest', 'windows-latest', 'macos-latest']
     steps:
     - name: Check out
-      uses: actions/checkout@v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       with:
         submodules: true
     - name: Install dependencies
