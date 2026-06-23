@@ -576,21 +576,6 @@ else
   TESTS_INFO="Valgrind testing not enabled"
 fi
 
-dnl Normally, tests/psl.dafsa and tests/psl_ascii.dafsa are distributed with
-dnl source code. When doing out-of-tree build from git checkout, they will be
-dnl generated in builddir. Make sure we support both cases.
-PSL_DAFSA=$srcdir/tests/psl.dafsa
-PSL_ASCII_DAFSA=$srcdir/tests/psl_ascii.dafsa
-
-AS_IF([test ! -f "$PSL_DAFSA"], [
-  PSL_DAFSA="\$(top_builddir)/tests/psl.dafsa"])
-
-AS_IF([test ! -f "$PSL_ASCII_DAFSA"], [
-  PSL_ASCII_DAFSA="\$(top_builddir)/tests/psl_ascii.dafsa"])
-
-AC_SUBST([PSL_DAFSA])
-AC_SUBST([PSL_ASCII_DAFSA])
-
 # Check for distribution-wide PSL file
 AC_ARG_WITH(psl-distfile,
   AS_HELP_STRING([--with-psl-distfile=[PATH]], [path to distribution-wide PSL file]),

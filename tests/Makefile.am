@@ -2,8 +2,8 @@ DEFS = @DEFS@ \
        -DSRCDIR=\"$(srcdir)\" \
        -DPSL_FILE=\"$(PSL_FILE)\" \
        -DPSL_TESTFILE=\"$(PSL_TESTFILE)\" \
-       -DPSL_DAFSA=\"@PSL_DAFSA@\" \
-       -DPSL_ASCII_DAFSA=\"@PSL_ASCII_DAFSA@\"
+       -DPSL_DAFSA=\"$(top_srcdir)/tests/psl.dafsa\" \
+       -DPSL_ASCII_DAFSA=\"$(top_srcdir)/tests/psl_ascii.dafsa\"
 
 AM_CPPFLAGS = @AM_CPPFLAGS@
 AM_CFLAGS   = @AM_CFLAGS@
@@ -35,9 +35,9 @@ test_is_cookie_domain_acceptable_SOURCES = test-is-cookie-domain-acceptable.c $(
 # check-local target works in parallel to the tests, so the test suite will likely fail
 BUILT_SOURCES = psl.dafsa psl_ascii.dafsa
 psl.dafsa: $(PSL_FILE)
-	$(PYTHON) $(top_srcdir)/src/psl-make-dafsa --output-format=binary "$(PSL_FILE)" psl.dafsa
+	$(PYTHON) $(top_srcdir)/src/psl-make-dafsa --output-format=binary "$(PSL_FILE)" $(top_srcdir)/tests/psl.dafsa
 psl_ascii.dafsa: $(PSL_FILE)
-	$(PYTHON) $(top_srcdir)/src/psl-make-dafsa --output-format=binary --encoding=ascii "$(PSL_FILE)" psl_ascii.dafsa
+	$(PYTHON) $(top_srcdir)/src/psl-make-dafsa --output-format=binary --encoding=ascii "$(PSL_FILE)" $(top_srcdir)/tests/psl_ascii.dafsa
 
 MAINTAINERCLEANFILES = psl.dafsa psl_ascii.dafsa
 
