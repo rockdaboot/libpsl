@@ -49,7 +49,7 @@ FIXXREF_OPTIONS=
 # Used for dependencies. The docs will be rebuilt if any of these change.
 # e.g. HFILE_GLOB=$(top_srcdir)/gtk/*.h
 # e.g. CFILE_GLOB=$(top_srcdir)/gtk/*.c
-HFILE_GLOB=$(top_srcdir)/include/*.h
+HFILE_GLOB=$(top_builddir)/include/*.h
 CFILE_GLOB=$(top_srcdir)/src/*.c
 
 # Extra header to include when scanning, which are not under DOC_SOURCE_DIR
