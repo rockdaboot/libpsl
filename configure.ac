@@ -583,7 +583,7 @@ PSL_DAFSA=$srcdir/tests/psl.dafsa
 PSL_ASCII_DAFSA=$srcdir/tests/psl_ascii.dafsa
 
 AS_IF([test ! -f "$PSL_DAFSA"], [
-  PSL_DAFSA="\$(top_builddir)/tests/psl.dafsa]")
+  PSL_DAFSA="\$(top_builddir)/tests/psl.dafsa"])
 
 AS_IF([test ! -f "$PSL_ASCII_DAFSA"], [
   PSL_ASCII_DAFSA="\$(top_builddir)/tests/psl_ascii.dafsa"])
