@@ -70,6 +70,8 @@ po/Rules-quot
 po/boldquot.sed
 po/en@boldquot.header
 po/en@quot.header
+po/fetch-po
+po/insert-header.sed
 po/insert-header.sin
 po/psl.pot
 po/libpsl.pot
