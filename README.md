@@ -28,7 +28,7 @@ Libpsl...
 - finds the shortest private part of a given domain
 - works with international domains (UTF-8 and IDNA2008 Punycode)
 - is thread-safe
-- handles IDNA2008 UTS#46 (if either libidn2 or libicu is available)
+- handles IDNA2008 UTS#46 (if libidn2, libicu or libicucore is available)
 
 Find more information about the Public Suffix List [here](https://publicsuffix.org/).
 
@@ -125,7 +125,7 @@ Prerequisites:
   - basic C development tools (compiler, linker, make)
   - autoconf, autoconf-archive, autopoint, automake, autotools
   - libtool, gettext, pkg-config
-  - development files for either libidn2, libicu or libidn (the latter only offers IDNA2003)
+  - development files for either libidn2, libicu, libicucore or libidn (the latter only offers IDNA2003)
   - for building docs: gtk-doc-tools (gtkdocize)
 
 		./autogen.sh

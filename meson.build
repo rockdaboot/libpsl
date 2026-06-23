@@ -14,12 +14,24 @@ buildtype = get_option('buildtype')
 notfound = dependency('', required : false)
 libidn2_dep = notfound
 libicu_dep = notfound
+libicucore_dep = notfound
 libidn_dep = notfound
 libunistring = notfound
 networking_deps = notfound
 libiconv_dep = notfound
 
 link_language = 'c'
+
+if enable_runtime == 'libicucore' or (host_machine.system() == 'darwin' and enable_runtime == 'auto')
+  libicucore_dep = cc.find_library('icucore', has_headers : ['unicode/uidna.h'], required : false)
+  if libicucore_dep.found()
+    if enable_runtime == 'auto'
+      enable_runtime = 'libicucore'
+    endif
+  elif enable_runtime == 'libicucore'
+    error('You requested libicucore but it is not available.')
+  endif
+endif
 
 # FIXME: Cleanup this when Meson gets 'feature-combo':
 # https://github.com/mesonbuild/meson/issues/4566
@@ -71,9 +83,11 @@ if ['libidn', 'auto'].contains(enable_runtime)
   endif
 endif
 
-if libidn2_dep.found() or libidn_dep.found()
-  # Check for libunistring, we need it for psl_str_to_utf8lower()
-  libunistring = cc.find_library('unistring')
+if libidn2_dep.found() or libidn_dep.found() or libicucore_dep.found()
+  if not libicucore_dep.found()
+    # Check for libunistring, we need it for psl_str_to_utf8lower()
+    libunistring = cc.find_library('unistring')
+  endif
   libiconv_dep = dependency('iconv')
 endif
 
@@ -89,6 +103,7 @@ config = configuration_data()
 config.set_quoted('PACKAGE_VERSION', meson.project_version())
 config.set('WITH_LIBIDN2', enable_runtime == 'libidn2')
 config.set('WITH_LIBICU', enable_runtime == 'libicu')
+config.set('WITH_LIBICUCORE', enable_runtime == 'libicucore')
 config.set('WITH_LIBIDN', enable_runtime == 'libidn')
 config.set('ENABLE_BUILTIN', enable_builtin)
 config.set('HAVE_UNISTD_H', cc.check_header('unistd.h'))

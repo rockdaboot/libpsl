@@ -99,6 +99,11 @@ typedef SSIZE_T ssize_t;
 #	include <unicode/ustring.h>
 #	include <unicode/uidna.h>
 #	include <unicode/ucnv.h>
+#elif defined(WITH_LIBICUCORE)
+#	include <iconv.h>
+#	include <unicode/uversion.h>
+#	include <unicode/ustring.h>
+#	include <unicode/uidna.h>
 #elif defined(WITH_LIBIDN2)
 #	include <iconv.h>
 #	include <idn2.h>
@@ -349,7 +354,7 @@ static char *psl_strdup(const char *s)
 	return strcpy(p, s);
 }
 
-#if !defined(WITH_LIBIDN) && !defined(WITH_LIBIDN2) && !defined(WITH_LIBICU)
+#if !defined(WITH_LIBIDN) && !defined(WITH_LIBIDN2) && !defined(WITH_LIBICU) && !defined(WITH_LIBICUCORE)
 /*
  * When configured without runtime IDNA support (./configure --disable-runtime), we need a pure ASCII
  * representation of non-ASCII characters in labels as found in UTF-8 domain names.
@@ -683,7 +688,7 @@ typedef void *psl_idna_t;
 
 static psl_idna_t *psl_idna_open(void)
 {
-#if defined(WITH_LIBICU)
+#if defined(WITH_LIBICU) || defined(WITH_LIBICUCORE)
 	UErrorCode status = 0;
 	return (void *)uidna_openUTS46(UIDNA_USE_STD3_RULES | UIDNA_NONTRANSITIONAL_TO_ASCII, &status);
 #endif
@@ -694,7 +699,7 @@ static void psl_idna_close(psl_idna_t *idna)
 {
 	(void) idna;
 
-#if defined(WITH_LIBICU)
+#if defined(WITH_LIBICU) || defined(WITH_LIBICUCORE)
 	if (idna)
 		uidna_close((UIDNA *)idna);
 #endif
@@ -704,7 +709,7 @@ static int psl_idna_toASCII(psl_idna_t *idna, const char *utf8, char **ascii)
 {
 	int ret = -1;
 
-#if defined(WITH_LIBICU)
+#if defined(WITH_LIBICU) || defined(WITH_LIBICUCORE)
 	(void) idna;
 
 	/* IDNA2008 UTS#46 punycode conversion */
@@ -1575,6 +1580,8 @@ const char *psl_get_version(void)
 {
 #ifdef WITH_LIBICU
 	return PACKAGE_VERSION " (+libicu/" U_ICU_VERSION ")";
+#elif defined(WITH_LIBICUCORE)
+	return PACKAGE_VERSION " (+libicucore/" U_ICU_VERSION ")";
 #elif defined(WITH_LIBIDN2)
 	return PACKAGE_VERSION " (+libidn2/" IDN2_VERSION ")";
 #elif defined(WITH_LIBIDN)
@@ -1780,13 +1787,91 @@ void psl_free_string(char *str)
 		free(str);
 }
 
-#if defined(WITH_LIBIDN2) || defined(WITH_LIBIDN)
+#if defined(WITH_LIBIDN2) || defined(WITH_LIBIDN) || defined(WITH_LIBICUCORE)
 /* Avoid using strcasecmp() or _stricmp() */
 static int isUTF8(const char *s) {
 	return (s[0] == 'u' || s[0] == 'U')
 		&& (s[1] == 't' || s[1] == 'T')
 		&& (s[2] == 'f' || s[2] == 'F')
 		&& s[3] == '-' && s[4] == 0;
+}
+
+static char *idn_u8_tolower(const char *buf, size_t len, const char *locale)
+{
+#if defined(WITH_LIBICUCORE)
+	if (len > INT_MAX)
+		return NULL;
+
+	int32_t src_len = (int32_t)len;
+	if (src_len > 0 && buf[src_len - 1] == 0)
+		src_len--;
+
+	UErrorCode status = U_ZERO_ERROR;
+	int32_t utf16_src_len;
+	u_strFromUTF8(NULL, 0, &utf16_src_len, buf, src_len, &status);
+	if (U_FAILURE(status) && status != U_BUFFER_OVERFLOW_ERROR)
+		return NULL;
+
+	UChar *utf16_src = malloc((size_t)utf16_src_len * sizeof(UChar));
+	if (!utf16_src)
+		return NULL;
+
+	status = U_ZERO_ERROR;
+	u_strFromUTF8(utf16_src, utf16_src_len, NULL, buf, src_len, &status);
+	if (U_FAILURE(status)) {
+		free(utf16_src);
+		return NULL;
+	}
+
+	status = U_ZERO_ERROR;
+	int32_t utf16_lower_len = u_strToLower(NULL, 0, utf16_src, utf16_src_len, locale, &status);
+	if (U_FAILURE(status) && status != U_BUFFER_OVERFLOW_ERROR) {
+		free(utf16_src);
+		return NULL;
+	}
+
+	UChar *utf16_lower = malloc((size_t)utf16_lower_len * sizeof(UChar));
+	if (!utf16_lower) {
+		free(utf16_src);
+		return NULL;
+	}
+
+	status = U_ZERO_ERROR;
+	u_strToLower(utf16_lower, utf16_lower_len, utf16_src, utf16_src_len, locale, &status);
+	free(utf16_src);
+	if (U_FAILURE(status)) {
+		free(utf16_lower);
+		return NULL;
+	}
+
+	status = U_ZERO_ERROR;
+	int32_t utf8_lower_len;
+	u_strToUTF8(NULL, 0, &utf8_lower_len, utf16_lower, utf16_lower_len, &status);
+	if (U_FAILURE(status) && status != U_BUFFER_OVERFLOW_ERROR) {
+		free(utf16_lower);
+		return NULL;
+	}
+
+	char *result = malloc((size_t)utf8_lower_len + 1);
+	if (!result) {
+		free(utf16_lower);
+		return NULL;
+	}
+
+	status = U_ZERO_ERROR;
+	u_strToUTF8(result, utf8_lower_len + 1, NULL, utf16_lower, utf16_lower_len, &status);
+	free(utf16_lower);
+	if (U_FAILURE(status)) {
+		free(result);
+		result = NULL;
+	}
+
+	return result;
+#else
+	(void) locale;
+
+	return (char *)u8_tolower((uint8_t *)buf, len, 0, UNINORM_NFKC, NULL, &len);
+#endif
 }
 #endif
 
@@ -1920,7 +2005,7 @@ out:
 		free(utf8_lower);
 
 	} while (0);
-#elif defined(WITH_LIBIDN2) || defined(WITH_LIBIDN)
+#elif defined(WITH_LIBIDN2) || defined(WITH_LIBIDN) || defined(WITH_LIBICUCORE)
 	do {
 		/* find out local charset encoding */
 		if (!encoding) {
@@ -1956,7 +2041,7 @@ out:
 					 * and thus in len. */
 					size_t len = dst_len - dst_len_tmp;
 
-					if ((tmp = (char *)u8_tolower((uint8_t *)dst, len, 0, UNINORM_NFKC, NULL, &len))) {
+					if ((tmp = idn_u8_tolower(dst, len, locale))) {
 						ret = PSL_SUCCESS;
 						if (lower) {
 							*lower = tmp;
@@ -1980,16 +2065,16 @@ out:
 			}
 		} else {
 			/* we need a conversion to lowercase */
-			uint8_t *tmp;
+			char *tmp;
 
 			/* start size for u8_tolower internal memory allocation.
 			 * u8_tolower() does not terminate the result string, so include terminating 0 byte in len. */
-			size_t len = u8_strlen((uint8_t *)str) + 1;
+			size_t len = strlen(str) + 1;
 
-			if ((tmp = u8_tolower((uint8_t *)str, len, 0, UNINORM_NFKC, NULL, &len))) {
+			if ((tmp = idn_u8_tolower(str, len, locale))) {
 				ret = PSL_SUCCESS;
 				if (lower) {
-					*lower = (char*)tmp;
+					*lower = tmp;
 					tmp = NULL;
 				} else
 					free(tmp);

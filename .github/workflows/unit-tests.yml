@@ -10,17 +10,32 @@ on:
 jobs:
   test:
     name: Test
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: true
       max-parallel: 3
       matrix:
-        runtime: ["libidn", "libidn2", "libicu"]
+        include:
+          - runtime: libidn
+            os: ubuntu-latest
+          - runtime: libidn2
+            os: ubuntu-latest
+          - runtime: libicu
+            os: ubuntu-latest
+          - runtime: libicucore
+            os: macos-latest
     steps:
     - name: Check out
       uses: actions/checkout@v7
     - name: Install dependencies
-      run: sudo apt-get install -y autopoint autoconf automake gtk-doc-tools libidn2-dev libunistring-dev libicu-dev libidn-dev lzip
+      run: |
+        if [ "$RUNNER_OS" = "macOS" ]; then
+          brew install autoconf automake gtk-doc libtool lzip
+          echo "am_cv_func_iconv_works=yes" >> $GITHUB_ENV # Use system libiconv on macOS
+          echo "XML_CATALOG_FILES=$(brew --prefix)/etc/xml/catalog" >> $GITHUB_ENV
+        else
+          sudo apt-get install -y autopoint autoconf automake gtk-doc-tools libidn2-dev libunistring-dev libicu-dev libidn-dev lzip
+        fi
     - name: Test with ${{matrix.runtime}}
       run: |
           ./autogen.sh

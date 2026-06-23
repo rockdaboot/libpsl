@@ -153,6 +153,7 @@ AC_ARG_ENABLE(runtime,
       Specify the IDNA library used for libpsl run-time conversions:
         libidn2 [[default]]: IDNA2008 library (also needs libunistring)
         libicu:            IDNA2008 UTS#46 library
+        libicucore:        IDNA2008 UTS#46 library shipped with Apple OSes
         libidn:            IDNA2003 library (also needs libunistring)
   --disable-runtime        Do not link runtime IDNA functionality
   ], [
@@ -162,6 +163,9 @@ AC_ARG_ENABLE(runtime,
     elif test "$enableval" = "libicu"; then
       enable_runtime=libicu
       AC_DEFINE([WITH_LIBICU], [1], [generate PSL data using libicu])
+    elif test "$enableval" = "libicucore"; then
+      enable_runtime=libicucore
+      AC_DEFINE([WITH_LIBICUCORE], [1], [generate PSL data using libicucore])
     elif test "$enableval" = "libidn"; then
       enable_runtime=libidn
       AC_DEFINE([WITH_LIBIDN], [1], [generate PSL data using libidn])
@@ -238,6 +242,31 @@ runtime_LIBS=
 
 AC_SUBST([runtime_CFLAGS])
 AC_SUBST([runtime_LIBS])
+
+dnl Check for libicucore
+if test "$enable_runtime" = "libicucore" || { test "$host_vendor" = "apple" -a "$enable_runtime" = "auto"; }; then
+  HAVE_LIBICUCORE=no
+
+  # Check if we can link against libicucore
+  AC_CHECK_LIB(icucore, uidna_openUTS46, [
+    AC_CHECK_HEADER(unicode/uidna.h, [
+      HAVE_LIBICUCORE=yes
+    ])
+  ])
+
+  if test "x$HAVE_LIBICUCORE" = "xyes"; then
+    runtime_LIBS="-licucore"
+
+    if test "$enable_runtime" = "auto"; then
+      enable_runtime=libicucore
+      AC_DEFINE([WITH_LIBICUCORE], [1], [generate PSL data using libicucore])
+    fi
+  else
+    if test "$enable_runtime" = "libicucore"; then
+      AC_MSG_ERROR([You requested libicucore but it is not available or usable.])
+    fi
+  fi
+fi
 
 dnl Check for libidn2
 if test "$enable_runtime" = "libidn2" -o "$enable_runtime" = "auto"; then
@@ -489,30 +518,33 @@ if test "$enable_runtime" = "auto"; then
   enable_runtime=no
 fi
 
-dnl If we use libidn or libidn2, we also need libiconv and libunistring
-if test "x$enable_runtime" = "xlibidn2" -o "x$enable_runtime" = "xlibidn"; then
+dnl If we use libidn or libidn2, we also need libiconv and libunistring. libicucore also needs iconv
+if test "x$enable_runtime" = "xlibidn2" -o "x$enable_runtime" = "xlibidn" -o "x$enable_runtime" = "xlibicucore"; then
   __save_LIBS=$LIBS
 
   LIBS=$LIBICONV
   AC_LINK_IFELSE([
     AC_LANG_PROGRAM([#include <iconv.h>], [iconv_open ("", "");])
   ], [:], [
-    AC_MSG_ERROR([You requested libidn2|libidn but libiconv is not installed.])
+    AC_MSG_ERROR([You requested libidn2|libidn|libicucore but libiconv is not installed.])
   ])
   LIBS=$__save_LIBS
+  runtime_LIBS="$runtime_LIBS $LTLIBICONV"
 
-  LIBS=$LIBUNISTRING
-  AC_LINK_IFELSE([
-    AC_LANG_PROGRAM([char u8_tolower (void);], [u8_tolower ();])
-  ], [:], [
-    AC_MSG_ERROR([You requested libidn2|libidn but libunistring is not installed.])
-  ])
-  LIBS=$__save_LIBS
-
-  runtime_LIBS="$runtime_LIBS $LTLIBUNISTRING $LTLIBICONV"
+  if test "x$enable_runtime" != "xlibicucore"; then
+    LIBS=$LIBUNISTRING
+    AC_LINK_IFELSE([
+      AC_LANG_PROGRAM([char u8_tolower (void);], [u8_tolower ();])
+    ], [:], [
+      AC_MSG_ERROR([You requested libidn2|libidn but libunistring is not installed.])
+    ])
+    LIBS=$__save_LIBS
+    runtime_LIBS="$runtime_LIBS $LTLIBUNISTRING"
+  fi
 fi
 
 AM_CONDITIONAL([WITH_LIBICU], test "x$enable_runtime" = "xlibicu")
+AM_CONDITIONAL([WITH_LIBICUCORE], test "x$enable_runtime" = "xlibicucore")
 AM_CONDITIONAL([WITH_LIBIDN2], test "x$enable_runtime" = "xlibidn2")
 AM_CONDITIONAL([WITH_LIBIDN], test "x$enable_runtime" = "xlibidn")
 AM_CONDITIONAL([ENABLE_BUILTIN], test "x$enable_builtin" = "xyes")
@@ -538,6 +570,8 @@ elif test "$enable_runtime" = libicu; then
   else
     libpsl_pc_Libs_private="$LIBICU_LIBS $LIBS"
   fi
+elif test "$enable_runtime" = libicucore; then
+  libpsl_pc_Libs_private="-licucore $LTLIBICONV $LIBS"
 fi
 
 dnl On Windows we use pkgconf-specific Cflags.private to pass -DPSL_STATIC
