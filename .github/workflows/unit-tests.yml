@@ -20,11 +20,17 @@ jobs:
     - name: Check out
       uses: actions/checkout@v4
     - name: Install dependencies
-      run: sudo apt-get install -y autopoint autoconf automake gtk-doc-tools libidn2-dev libunistring-dev libicu-dev libidn-dev
+      run: sudo apt-get install -y autopoint autoconf automake gtk-doc-tools libidn2-dev libunistring-dev libicu-dev libidn-dev lzip
     - name: Test with ${{matrix.runtime}}
       run: |
           ./autogen.sh
-          CFLAGS="-O0 -Wall -Wextra" ./configure --enable-runtime=${{matrix.runtime}}
+          CFLAGS="-O0 -Wall -Wextra" ./configure --enable-asan --enable-ubsan --enable-runtime=${{matrix.runtime}}
+          make check
+          make distcheck
+          # Test out-of-tree build
+          make maintainer-clean
+          mkdir vpath && cd vpath
+          CFLAGS="-O0 -Wall -Wextra" ../configure --enable-runtime=${{matrix.runtime}}
           make check
   meson-test:
     name: Meson Test
