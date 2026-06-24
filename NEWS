@@ -1,4 +1,18 @@
-Copyright (C) 2014-2024 Tim Rühsen
+Copyright (C) 2014-2026 Tim Rühsen
+
+24.06.2026 Release V0.22.0
+  * Allow building from tarball without Python
+  * Add support for libcucore on Apple OSes
+  * Add support for Windows native ICU
+  * Avoid using alloca()
+  * Improve portability
+  * Avoid deps by implementing is_ipv4() and is_ipv6()
+  * Get rid of WSA startup code
+  * Add a contrib/mingw.static to cross-build a static Windows library
+  * Improve documentation
+  * Improve meson and autotools builds
+  * Fix typo in config-msvc.mak.in
+  * Improve libpsl.pc for pkg-config
 
 13.01.2024 Release V0.21.5
   * Fix version.txt
