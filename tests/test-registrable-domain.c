@@ -55,7 +55,7 @@ static void testx(const psl_ctx_t *psl, const char *domain, const char *encoding
 	if ((rc = psl_str_to_utf8lower(domain, encoding, lang, &lower)) == PSL_SUCCESS)
 		domain = lower;
 	/* non-ASCII domains fail here if no runtime IDN library is configured, so skip it */
-#if defined(WITH_LIBIDN) || defined(WITH_LIBIDN2) || defined(WITH_LIBICU)
+#if defined(WITH_LIBIDN) || defined(WITH_LIBIDN2) || defined(WITH_LIBICU) || defined(WITH_LIBICUCORE) || defined(WITH_LIBICU_WIN)
 	else if (domain) {
 		/* if we do not runtime support, test failure have to be skipped */
 		failed++;
@@ -111,7 +111,7 @@ static void test_psl(void)
 	test(NULL, "com", NULL);
 
 	/* Norwegian with uppercase oe */
-#ifdef WITH_LIBICU
+#if defined(WITH_LIBICU) || defined(WITH_LIBICUCORE) || defined(WITH_LIBICU_WIN)
 	test(psl, "www.\303\230yer.no", "www.\303\270yer.no");
 #endif
 
@@ -120,7 +120,7 @@ static void test_psl(void)
 
 	/* Norwegian with lowercase oe, encoded as ISO-8859-15 */
         /* makes only sense with a runtime IDN library configured */
-#if defined(WITH_LIBIDN) || defined(WITH_LIBIDN2) || defined(WITH_LIBICU)
+#if defined(WITH_LIBIDN) || defined(WITH_LIBIDN2) || defined(WITH_LIBICU) || defined(WITH_LIBICUCORE) || defined(WITH_LIBICU_WIN)
 	test_iso(psl, "www.\370yer.no", "www.\303\270yer.no");
 #endif
 
