@@ -156,3 +156,28 @@ libpsl-bugs+subscribe@googlegroups.com
 and follow the instructions provided by the answer mail.
 
 Or click [join](https://groups.google.com/forum/#!forum/libpsl-bugs/join).
+
+
+## FAQ
+
+1. Why do releases not contain a configure script?
+
+You possibly accidentally downloaded the "Source code" from Github, which is not what you want.
+The official release tarball *does* contain a configure script, typical name is `libpsl-x.y.z.tar.gz` or `libpsl-x.y.z.tar.lz`
+
+There is a detailed explanation [here](https://github.com/rockdaboot/libpsl/issues/251).
+
+2. Why is there no CMake support for building libpsl?
+
+There is an open [PR](https://github.com/rockdaboot/libpsl/pull/254) which needs polishing.
+Contributions are appreciated.
+
+3. Can you update the PSL data by making a new release?
+
+No. The idea is to keep libpsl and the PSL list independent from each other.
+
+Either your OS updates PSL packages regularly (for example, Debian has the package `publicsuffix`)
+or you can do this yourself. `Libpsl` offers an API to read the PSL data in it's original form or
+to read a converted DAFSA blob.
+If you read often and update the PSL data less often, create a DAFSA blob with `psl-make-dafsa`.
+It just needs to be mapped into memory (no parsing) and allows random access. It's also much smaller than the original PSL data.
