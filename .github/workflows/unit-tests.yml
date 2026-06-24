@@ -54,7 +54,10 @@ jobs:
       fail-fast: true
       max-parallel: 3
       matrix:
-        os: ['ubuntu-latest', 'windows-latest', 'macos-latest']
+        os: ['ubuntu-latest', 'macos-latest']
+        include:
+          - os: 'windows-latest'
+            extra_meson_args: '--vsenv'
     steps:
     - name: Check out
       uses: actions/checkout@v7
@@ -72,8 +75,8 @@ jobs:
         echo "LIBRARY_PATH=$(brew --prefix)/lib:$LIBRARY_PATH" >> $GITHUB_ENV
         echo "CPATH=$(brew --prefix)/include:$CPATH" >> $GITHUB_ENV
     - name: Configure
-      run: meson setup builddir
+      run: meson setup builddir ${{matrix.extra_meson_args}}
     - name: Build
-      run: ninja -C builddir
+      run: meson compile -C builddir
     - name: Test
       run: meson test -C builddir --print-errorlogs
