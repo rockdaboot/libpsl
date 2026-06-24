@@ -3,6 +3,7 @@
 *.gcno
 *.gcov
 *.gz
+*.lz
 *.la
 *.lo
 *.log
@@ -31,11 +32,13 @@ depcomp
 docs/libpsl/html/
 docs/libpsl/libpsl-decl-list.txt
 docs/libpsl/libpsl-decl.txt
+docs/libpsl/libpsl-decl.txt.bak
 docs/libpsl/libpsl-overrides.txt
 docs/libpsl/libpsl-undeclared.txt
 docs/libpsl/libpsl-undocumented.txt
 docs/libpsl/libpsl-unused.txt
 docs/libpsl/libpsl.3
+docs/libpsl/libpsl.actions
 docs/libpsl/libpsl.args
 docs/libpsl/libpsl.hierarchy
 docs/libpsl/libpsl.interfaces
