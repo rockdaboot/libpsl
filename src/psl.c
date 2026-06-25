@@ -312,7 +312,7 @@ static int suffix_compare(const psl_entry_t *s1, const psl_entry_t *s2)
 	if ((n = s1->length - s2->length))
 		return n;  /* shorter rules first */
 
-	return strcmp(s1->label ? s1->label : s1->label_buf, s2->label ? s2->label : s2->label_buf);
+	return strncmp(s1->label ? s1->label : s1->label_buf, s2->label ? s2->label : s2->label_buf, s1->length);
 }
 
 /* needed to sort array of pointers, given to qsort() */
@@ -867,15 +867,22 @@ static int is_public_suffix(const psl_ctx_t *psl, const char *domain, int type)
 	psl_entry_t suffix;
 	const char *p;
 	char *punycode = NULL;
+	size_t domain_len;
 	int need_conversion = 0;
 
 	/* this function should be called without leading dots, just make sure */
 	if (*domain == '.')
 		domain++;
 
+	/* a single leading dot needs to be handled here, so that e.g.,
+	 * co.uk and co.uk. are both detected as publicsuffix */
+	domain_len = strlen(domain);
+	if (domain_len > 0 && domain[domain_len - 1] == '.')
+		domain_len--;
+
 	suffix.nlabels = 1;
 
-	for (p = domain; *p; p++) {
+	for (p = domain; p < domain + domain_len; p++) {
 		if (*p == '.') {
 			if (suffix.nlabels == 255) /* weird input, avoid 8bit overflow */
 				return 0;
@@ -907,13 +914,13 @@ static int is_public_suffix(const psl_ctx_t *psl, const char *domain, int type)
 			/* fallback */
 
 			suffix.label = domain;
-			suffix.length = p - suffix.label;
+			suffix.length = domain_len;
 		}
 
 		psl_idna_close(idna);
 	} else {
 		suffix.label = domain;
-		suffix.length = p - suffix.label;
+		suffix.length = domain_len;
 	}
 
 	if (psl == &builtin_psl || psl->dafsa) {

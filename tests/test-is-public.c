@@ -59,9 +59,13 @@ static void test_psl(void)
 	} test_data[] = {
 		{ "www.example.com", 0, 0 },
 		{ "com.ar", 1 , 1},
+		{ "co.uk", 1 , 1},
+		{ "co.uk.", 1 , 1}, /* trailing dot must not matter */
+		{ "co.uk..", 0 , 0}, /* two trailing dots is an invalid domain */
 		{ "www.com.ar", 0, 0 },
 		{ "cc.ar.us", 1, 1 },
 		{ ".cc.ar.us", 1, 1 },
+		{ ".cc.ar.us.", 1, 1 }, /* trailing dot must not matter */
 		{ "www.cc.ar.us", 0, 0 },
 		{ "www.ck", 0, 0 }, /* exception from *.ck */
 		{ "abc.www.ck", 0, 0 },
