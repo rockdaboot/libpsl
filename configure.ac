@@ -442,7 +442,7 @@ if test "$enable_runtime" = "libicu" -o "$enable_runtime" = "auto"; then
 fi
 
 dnl Checl for libidn
-if test "$enable_runtime" = "libidn" -o "$enable_runtime" = "auto"; then
+if test "$enable_runtime" = "libidn"; then
   HAVE_LIBIDN=no
 
   # Save CFLAGS and LIBS so we can restore them later
@@ -502,11 +502,6 @@ if test "$enable_runtime" = "libidn" -o "$enable_runtime" = "auto"; then
   if test "x$HAVE_LIBIDN" = "xyes"; then
     runtime_CFLAGS=$LIBIDN_CFLAGS
     runtime_LIBS=$LIBIDN_LIBS
-
-    if test "$enable_runtime" = "auto"; then
-      enable_runtime=libidn
-      AC_DEFINE([WITH_LIBIDN], [1], [generate PSL data using libidn])
-    fi
   else
     if test "$enable_runtime" = "libidn"; then
       AC_MSG_ERROR([You requested libidn but it is not installed or usable.])
