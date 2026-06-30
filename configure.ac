@@ -65,9 +65,9 @@ m4_ifdef([GTK_DOC_USE_LIBTOOL], [], [
 AM_CONDITIONAL([GTK_DOC_USE_LIBTOOL], false)
 ])
 
-if test x"$have_gtk_doc" = xyes -a x"$enable_gtk_doc" = xyes; then
+AS_IF([test "$have_gtk_doc" = yes && test "$enable_gtk_doc" = yes], [
   AC_SUBST([LIBPSL_DOCS], [docs/libpsl])
-fi
+])
 
 #
 # enable creation of man pages
@@ -75,15 +75,15 @@ fi
 AC_ARG_ENABLE([man],
   [AS_HELP_STRING([--enable-man], [generate man pages [default=auto]])],
   [
-    if test "$enable_man" = yes; then
+    AS_IF([test "$enable_man" = yes], [
       AC_PATH_PROG([XSLTPROC], [xsltproc])
       AS_IF([test -z "$XSLTPROC"], [
         AC_MSG_ERROR([xsltproc is required for --enable-man])
         enable_man="no (xsltproc not found)"
       ])
-    fi
-  ], [ enable_man=no ])
-AM_CONDITIONAL(ENABLE_MAN, test x$enable_man = xyes)
+    ])
+  ], [enable_man=no])
+AM_CONDITIONAL([ENABLE_MAN], [test "$enable_man" = "yes"])
 
 # src/psl-make-dafsa needs python 2.7+
 AS_IF([! test -f src/suffixes_dafsa.h -a -f tests/psl.dafsa -a -f tests/psl_ascii.dafsa],
@@ -95,43 +95,44 @@ PKG_PROG_PKG_CONFIG
 
 AC_ARG_ENABLE([fuzzing],
   [AS_HELP_STRING([--enable-fuzzing], [Turn on fuzzing build (for developers)])],
-  [enable_fuzzing=yes;
-   AC_SUBST([LIB_FUZZING_ENGINE])
-   AC_DEFINE([FUZZING], 1, [Define to 1 if this is a fuzzing build])
+  [
+    enable_fuzzing=yes
+    AC_SUBST([LIB_FUZZING_ENGINE])
+    AC_DEFINE([FUZZING], 1, [Define to 1 if this is a fuzzing build])
   ], [enable_fuzzing=no; LIB_FUZZING_ENGINE=""])
 AM_CONDITIONAL([FUZZING], [test "$enable_fuzzing" = "yes"])
 
 AC_ARG_ENABLE([cfi],
   [AS_HELP_STRING([--enable-cfi], [Turn on clang's Control Flow Integrity (CFI)])],
   [
-    if test "$enable_cfi" = yes; then
-      CFLAGS=$CFLAGS" -B/usr/bin/gold -fsanitize=cfi -flto -fvisibility=default -fno-sanitize-trap=all"
+    AS_IF([test "$enable_cfi" = yes], [
+      CFLAGS="$CFLAGS -B/usr/bin/gold -fsanitize=cfi -flto -fvisibility=default -fno-sanitize-trap=all"
       AC_LINK_IFELSE([
         AC_LANG_PROGRAM([], [])
       ], [], [
         AC_MSG_ERROR([clang 3.7+ and the 'gold' linker are required for --enable-cfi])
       ])
-    fi
-  ], [ enable_cfi=no ])
+    ])
+  ], [enable_cfi=no])
 
 AC_ARG_ENABLE([ubsan],
   [AS_HELP_STRING([--enable-ubsan], [Turn on Undefined Behavior Sanitizer (UBSan)])],
   [
-    if test "$enable_ubsan" = yes; then
+    AS_IF([test "$enable_ubsan" = yes], [
       # Set basic UBSAN compiler flags. Add your own to CFLAGS.
-      CFLAGS=$CFLAGS" -fsanitize=undefined -fno-sanitize-recover=undefined"
-    fi
-  ], [ enable_ubsan=no ])
+      CFLAGS="$CFLAGS -fsanitize=undefined -fno-sanitize-recover=undefined"
+    ])
+  ], [enable_ubsan=no])
 
 AC_ARG_ENABLE([asan],
   [AS_HELP_STRING([--enable-asan], [Turn on Address Sanitizer (ASan)])],
   [
-    if test "$enable_asan" = yes; then
+    AS_IF([test "$enable_asan" = yes], [
       # Set basic ASAN compiler flags. Add your own to CFLAGS.
-      CFLAGS=$CFLAGS" -fsanitize=address -fno-omit-frame-pointer"
+      CFLAGS="$CFLAGS -fsanitize=address -fno-omit-frame-pointer"
       AX_CHECK_COMPILE_FLAG([-fsanitize-address-use-after-scope], [CFLAGS="$CFLAGS -fsanitize-address-use-after-scope"])
-    fi
-  ], [ enable_asan=no ])
+    ])
+  ], [enable_asan=no])
 
 # Define these substitutions here to keep all version information in one place.
 # For information on how to properly maintain the library version information,
@@ -158,23 +159,18 @@ AC_ARG_ENABLE(runtime,
         libidn:            IDNA2003 library (also needs libunistring)
   --disable-runtime        Do not link runtime IDNA functionality
   ], [
-    if test "$enableval" = "libidn2" -o "$enableval" = "yes"; then
-      enable_runtime=libidn2
-      AC_DEFINE([WITH_LIBIDN2], [1], [generate PSL data using libidn2])
-    elif test "$enableval" = "libicu"; then
-      enable_runtime=libicu
-      AC_DEFINE([WITH_LIBICU], [1], [generate PSL data using libicu])
-    elif test "$enableval" = "libicucore"; then
-      enable_runtime=libicucore
-      AC_DEFINE([WITH_LIBICUCORE], [1], [generate PSL data using libicucore])
-    elif test "$enableval" = "libidn"; then
-      enable_runtime=libidn
-      AC_DEFINE([WITH_LIBIDN], [1], [generate PSL data using libidn])
-    elif test "$enableval" = "no"; then
-      enable_runtime=no
-    else
-      AC_MSG_ERROR([Unknown value $enableval for --enable-runtime])
-    fi
+    AS_IF(
+      [test "$enableval" = "libidn2" -o "$enableval" = "yes"],
+      [enable_runtime=libidn2; AC_DEFINE([WITH_LIBIDN2], [1], [generate PSL data using libidn2])],
+      [test "$enableval" = "libicu"],
+      [enable_runtime=libicu; AC_DEFINE([WITH_LIBICU], [1], [generate PSL data using libicu])],
+      [test "$enableval" = "libicucore"],
+      [enable_runtime=libicucore; AC_DEFINE([WITH_LIBICUCORE], [1], [generate PSL data using libicucore])],
+      [test "$enableval" = "libidn"],
+      [enable_runtime=libidn; AC_DEFINE([WITH_LIBIDN], [1], [generate PSL data using libidn])],
+      [test "$enableval" = "no"],
+      [enable_runtime=no],
+      [AC_MSG_ERROR([Unknown value $enableval for --enable-runtime])] )
   ], [
     # this is the default if neither --enable-runtime nor --disable-runtime were specified
     enable_runtime=auto
@@ -186,24 +182,22 @@ AC_ARG_ENABLE(builtin,
   --enable-builtin         Generate built-in PSL data
   --disable-builtin        Do not generate built-in PSL data
   ], [
-    if test "$enableval" = "yes"; then
-      enable_builtin=yes
-    elif test "$enableval" = "libidn" -o "$enableval" = "libidn2" -o "$enableval" = "libicu"; then
-      AC_MSG_WARN([--enable-builtin=$enableval is deprecated, use --enable-builtin (enabled by default)])
-      enable_builtin=yes
-    elif test "$enableval" = "no"; then
-      enable_builtin=no
-    else
-      AC_MSG_ERROR(Unknown value $enableval)
-    fi
+    AS_IF(
+      [test "$enableval" = "yes"],
+      [enable_builtin=yes],
+      [test "$enableval" = "libidn" -o "$enableval" = "libidn2" -o "$enableval" = "libicu"],
+      [AC_MSG_WARN([--enable-builtin=$enableval is deprecated, use --enable-builtin (enabled by default)]); enable_builtin=yes],
+      [test "$enableval" = "no"],
+      [enable_builtin=no],
+      [AC_MSG_ERROR(Unknown value $enableval)] )
   ], [
     # this is the default if neither --enable-builtin nor --disable-builtin were specified
     enable_builtin=yes
   ])
 
-if test "$enable_builtin" = "yes"; then
+AS_IF([test "$enable_builtin" = "yes"], [
   AC_DEFINE([ENABLE_BUILTIN], [1], [Generate built-in PSL data])
-fi
+])
 
 dnl Global project-specific compiler and linker flags.
 dnl
@@ -221,7 +215,7 @@ AC_SUBST([AM_LDFLAGS])
 dnl If we are building only static libraries, we need to define PSL_STATIC
 dnl when building psl executable; this is required on Windows since libpsl
 dnl uses __declspec(dllimport) by default.
-AS_IF([test "x${enable_shared}" = "xno"],
+AS_IF([test "${enable_shared}" = "no"],
   [AS_VAR_APPEND([AM_CPPFLAGS], [" -DPSL_STATIC"])])
 
 dnl We use pkg-config/pkgconf to find dependencies. We want to ensure that we
@@ -245,277 +239,285 @@ AC_SUBST([runtime_CFLAGS])
 AC_SUBST([runtime_LIBS])
 
 dnl Check for libicucore
-if test "$enable_runtime" = "libicucore" || { test "$host_vendor" = "apple" -a "$enable_runtime" = "auto"; }; then
-  HAVE_LIBICUCORE=no
+AS_IF(
+  [test "$enable_runtime" = "libicucore" || { test "$host_vendor" = "apple" -a "$enable_runtime" = "auto"; }],
+  [
+    HAVE_LIBICUCORE=no
 
-  # Check if we can link against libicucore
-  AC_CHECK_LIB(icucore, uidna_openUTS46, [
-    AC_CHECK_HEADER(unicode/uidna.h, [
-      HAVE_LIBICUCORE=yes
+    # Check if we can link against libicucore
+    AC_CHECK_LIB(icucore, uidna_openUTS46, [
+      AC_CHECK_HEADER(unicode/uidna.h, [
+        HAVE_LIBICUCORE=yes
+      ])
+    ])
+
+    AS_IF([test "$HAVE_LIBICUCORE" = "yes"], [
+      runtime_LIBS="-licucore"
+
+      AS_IF([test "$enable_runtime" = "auto"], [
+        enable_runtime=libicucore
+        AC_DEFINE([WITH_LIBICUCORE], [1], [generate PSL data using libicucore])
+      ])
+    ],
+    [test "$enable_runtime" = "libicucore"], [
+      AC_MSG_ERROR([You requested libicucore but it is not available or usable.])
     ])
   ])
 
-  if test "x$HAVE_LIBICUCORE" = "xyes"; then
-    runtime_LIBS="-licucore"
-
-    if test "$enable_runtime" = "auto"; then
-      enable_runtime=libicucore
-      AC_DEFINE([WITH_LIBICUCORE], [1], [generate PSL data using libicucore])
-    fi
-  else
-    if test "$enable_runtime" = "libicucore"; then
-      AC_MSG_ERROR([You requested libicucore but it is not available or usable.])
-    fi
-  fi
-fi
 
 dnl Check for libidn2
-if test "$enable_runtime" = "libidn2" -o "$enable_runtime" = "auto"; then
-  HAVE_LIBIDN2=no
+AS_IF(
+  [test "$enable_runtime" = "libidn2" -o "$enable_runtime" = "auto"],
+  [
+    HAVE_LIBIDN2=no
 
-  # Save CFLAGS and LIBS so we can restore them later
-  __save_CFLAGS=$CFLAGS
-  __save_LIBS=$LIBS
+    # Save CFLAGS and LIBS so we can restore them later
+    __save_CFLAGS=$CFLAGS
+    __save_LIBS=$LIBS
 
-  m4_define([LIBIDN2_LINK_TEST], [AC_LANG_PROGRAM(
-    [extern char idn2_lookup_u8 (void);],
-    [idn2_lookup_u8();]
-  )])
+    m4_define([LIBIDN2_LINK_TEST], [AC_LANG_PROGRAM(
+      [extern char idn2_lookup_u8 (void);],
+      [idn2_lookup_u8();]
+    )])
 
-  PKG_CHECK_MODULES([LIBIDN2], [libidn2], [HAVE_LIBIDN2=maybe], [HAVE_LIBIDN2=no])
+    PKG_CHECK_MODULES([LIBIDN2], [libidn2], [HAVE_LIBIDN2=maybe], [HAVE_LIBIDN2=no])
 
-  # Check if we can link against libidn2
-  AS_IF([test "x$HAVE_LIBIDN2" = xmaybe], [
-    CFLAGS="$LIBIDN2_CFLAGS $CFLAGS"
-    LIBS="$LIBIDN2_LIBS $LIBS"
-    AC_LINK_IFELSE([
-      LIBIDN2_LINK_TEST
-    ], [
-      HAVE_LIBIDN2=yes
-    ], [
-      AC_MSG_NOTICE([located libidn2 but cannot link... trying static linking])
-      LIBIDN2_CFLAGS=
-      LIBIDN2_LIBS=
-      CFLAGS=$__save_CFLAGS
-      LIBS=$__save_LIBS
-    ])
-  ])
-
-  # If we cannot link against found libidn2, try static linking
-  AS_IF([test "x$HAVE_LIBIDN2" = xmaybe], [
-    PKG_CHECK_MODULES_STATIC([LIBIDN2], [libidn2], [
+    # Check if we can link against libidn2
+    AS_IF([test "$HAVE_LIBIDN2" = maybe], [
       CFLAGS="$LIBIDN2_CFLAGS $CFLAGS"
       LIBS="$LIBIDN2_LIBS $LIBS"
       AC_LINK_IFELSE([
         LIBIDN2_LINK_TEST
       ], [
         HAVE_LIBIDN2=yes
-        AC_MSG_NOTICE([using static libidn2])
       ], [
-        HAVE_LIBIDN2=no
-        AC_MSG_NOTICE([libidn2 is installed but unusable])
+        AC_MSG_NOTICE([located libidn2 but cannot link... trying static linking])
         LIBIDN2_CFLAGS=
         LIBIDN2_LIBS=
         CFLAGS=$__save_CFLAGS
         LIBS=$__save_LIBS
       ])
-    ], [
-      HAVE_LIBIDN2=no
+    ])
+
+    # If we cannot link against found libidn2, try static linking
+    AS_IF([test "$HAVE_LIBIDN2" = maybe], [
+      PKG_CHECK_MODULES_STATIC([LIBIDN2], [libidn2], [
+        CFLAGS="$LIBIDN2_CFLAGS $CFLAGS"
+        LIBS="$LIBIDN2_LIBS $LIBS"
+        AC_LINK_IFELSE([
+          LIBIDN2_LINK_TEST
+        ], [
+          HAVE_LIBIDN2=yes
+          AC_MSG_NOTICE([using static libidn2])
+        ], [
+          HAVE_LIBIDN2=no
+          AC_MSG_NOTICE([libidn2 is installed but unusable])
+          LIBIDN2_CFLAGS=
+          LIBIDN2_LIBS=
+          CFLAGS=$__save_CFLAGS
+          LIBS=$__save_LIBS
+        ])
+      ], [
+        HAVE_LIBIDN2=no
+      ])
+    ])
+
+    CFLAGS=$__save_CFLAGS
+    LIBS=$__save_LIBS
+
+    AS_IF([test "$HAVE_LIBIDN2" = "yes"], [
+      runtime_CFLAGS=$LIBIDN2_CFLAGS
+      runtime_LIBS=$LIBIDN2_LIBS
+
+      AS_IF([test "$enable_runtime" = "auto"], [
+        enable_runtime=libidn2
+        AC_DEFINE([WITH_LIBIDN2], [1], [generate PSL data using libidn2])
+      ])
+    ],
+    [test "$enable_runtime" = "libidn2"], [
+      AC_MSG_ERROR([You requested libidn2 but it is not installed or usable.])
     ])
   ])
 
-  CFLAGS=$__save_CFLAGS
-  LIBS=$__save_LIBS
-
-  if test "x$HAVE_LIBIDN2" = "xyes"; then
-    runtime_CFLAGS=$LIBIDN2_CFLAGS
-    runtime_LIBS=$LIBIDN2_LIBS
-
-    if test "$enable_runtime" = "auto"; then
-      enable_runtime=libidn2
-      AC_DEFINE([WITH_LIBIDN2], [1], [generate PSL data using libidn2])
-    fi
-  else
-    if test "$enable_runtime" = "libidn2"; then
-      AC_MSG_ERROR([You requested libidn2 but it is not installed or usable.])
-    fi
-  fi
-fi
 
 dnl Check for libicu
-if test "$enable_runtime" = "libicu" -o "$enable_runtime" = "auto"; then
-  HAVE_LIBICU=no
-  # Whether we found libicu using pkg-config
-  HAVE_LIBICU_PC=no
-
-  # Save CFLAGS and LIBS so we can restore them later
-  __save_CFLAGS=$CFLAGS
-  __save_LIBS=$LIBS
-
-  m4_define([ICU_LINK_TEST], [AC_LANG_PROGRAM(
-    [[#include <unicode/ustring.h>]],
-    [[u_strToUTF8(NULL, 0, NULL, NULL, 0, NULL);]]
-  )])
-
-  # using pkg-config won't work on older systems like Ubuntu 12.04 LTS Server Edition 64bit
-  # using AC_SEARCH_LIBS also don't work since functions have the library version appended
-  PKG_CHECK_MODULES([LIBICU], [icu-uc], [
-    HAVE_LIBICU_PC=yes
-    HAVE_LIBICU=maybe
-  ], [
+AS_IF(
+  [test "$enable_runtime" = "libicu" -o "$enable_runtime" = "auto"],
+  [
     HAVE_LIBICU=no
-  ])
+    # Whether we found libicu using pkg-config
+    HAVE_LIBICU_PC=no
 
-  # Check if we can link against libicu
-  AS_IF([test "x$HAVE_LIBICU" = xmaybe], [
-    CFLAGS="$LIBICU_CFLAGS $CFLAGS"
-    LIBS="$LIBICU_LIBS $LIBS"
-    AC_LINK_IFELSE([
-      ICU_LINK_TEST
+    # Save CFLAGS and LIBS so we can restore them later
+    __save_CFLAGS=$CFLAGS
+    __save_LIBS=$LIBS
+
+    m4_define([ICU_LINK_TEST], [AC_LANG_PROGRAM(
+      [[#include <unicode/ustring.h>]],
+      [[u_strToUTF8(NULL, 0, NULL, NULL, 0, NULL);]]
+    )])
+
+    # using pkg-config won't work on older systems like Ubuntu 12.04 LTS Server Edition 64bit
+    # using AC_SEARCH_LIBS also don't work since functions have the library version appended
+    PKG_CHECK_MODULES([LIBICU], [icu-uc], [
+      HAVE_LIBICU_PC=yes
+      HAVE_LIBICU=maybe
     ], [
-      HAVE_LIBICU=yes
-    ], [
-      AC_MSG_NOTICE([located libicu but cannot link... trying static linking])
-      LIBICU_CFLAGS=
-      LIBICU_LIBS=
-      CFLAGS=$__save_CFLAGS
-      LIBS=$__save_LIBS
+      HAVE_LIBICU=no
     ])
-  ])
 
-  # If we cannot link against found libicu, try static linking
-  AS_IF([test "x$HAVE_LIBICU" = xmaybe], [
-    PKG_CHECK_MODULES_STATIC([LIBICU], [icu-uc], [
+    # Check if we can link against libicu
+    AS_IF([test "$HAVE_LIBICU" = maybe], [
       CFLAGS="$LIBICU_CFLAGS $CFLAGS"
       LIBS="$LIBICU_LIBS $LIBS"
       AC_LINK_IFELSE([
         ICU_LINK_TEST
       ], [
         HAVE_LIBICU=yes
-        AC_MSG_NOTICE([using static libicu])
       ], [
-        HAVE_LIBICU_PC=no
-        HAVE_LIBICU=no
-        AC_MSG_NOTICE([libicu is installed but unusable])
+        AC_MSG_NOTICE([located libicu but cannot link... trying static linking])
         LIBICU_CFLAGS=
         LIBICU_LIBS=
         CFLAGS=$__save_CFLAGS
         LIBS=$__save_LIBS
       ])
-    ], [
-      HAVE_LIBICU=no
     ])
-  ])
 
-  # Try -licuuc
-  AS_IF([test "x$HAVE_LIBICU" = xno], [
-    AC_MSG_CHECKING([for ICU unicode library])
-    LIBS="-licuuc $LIBS"
-    AC_LINK_IFELSE([
-      ICU_LINK_TEST
-    ], [
-      HAVE_LIBICU=yes
-      LIBICU_LIBS='-licuuc'
-    ], [
-      HAVE_LIBICU=no
-      LIBS=$__save_LIBS
+    # If we cannot link against found libicu, try static linking
+    AS_IF([test "$HAVE_LIBICU" = maybe], [
+      PKG_CHECK_MODULES_STATIC([LIBICU], [icu-uc], [
+        CFLAGS="$LIBICU_CFLAGS $CFLAGS"
+        LIBS="$LIBICU_LIBS $LIBS"
+        AC_LINK_IFELSE([
+          ICU_LINK_TEST
+        ], [
+          HAVE_LIBICU=yes
+          AC_MSG_NOTICE([using static libicu])
+        ], [
+          HAVE_LIBICU_PC=no
+          HAVE_LIBICU=no
+          AC_MSG_NOTICE([libicu is installed but unusable])
+          LIBICU_CFLAGS=
+          LIBICU_LIBS=
+          CFLAGS=$__save_CFLAGS
+          LIBS=$__save_LIBS
+        ])
+      ], [
+        HAVE_LIBICU=no
+      ])
     ])
-    AC_MSG_RESULT([$HAVE_LIBICU])
-  ])
 
-  CFLAGS=$__save_CFLAGS
-  LIBS=$__save_LIBS
+    # Try -licuuc
+    AS_IF([test "$HAVE_LIBICU" = no], [
+      AC_MSG_CHECKING([for ICU unicode library])
+      LIBS="-licuuc $LIBS"
+      AC_LINK_IFELSE([
+        ICU_LINK_TEST
+      ], [
+        HAVE_LIBICU=yes
+        LIBICU_LIBS='-licuuc'
+      ], [
+        HAVE_LIBICU=no
+        LIBS=$__save_LIBS
+      ])
+      AC_MSG_RESULT([$HAVE_LIBICU])
+    ])
 
-  if test "x$HAVE_LIBICU" = "xyes"; then
-    runtime_CFLAGS=$LIBICU_CFLAGS
-    runtime_LIBS=$LIBICU_LIBS
+    CFLAGS=$__save_CFLAGS
+    LIBS=$__save_LIBS
 
-    if test "$enable_runtime" = "auto"; then
-      enable_runtime=libicu
-      AC_DEFINE([WITH_LIBICU], [1], [generate PSL data using libicu])
-    fi
-  else
-    if test "$enable_runtime" = "libicu"; then
+    AS_IF([test "$HAVE_LIBICU" = "yes"], [
+      runtime_CFLAGS=$LIBICU_CFLAGS
+      runtime_LIBS=$LIBICU_LIBS
+
+      AS_IF([test "$enable_runtime" = "auto"], [
+        enable_runtime=libicu
+        AC_DEFINE([WITH_LIBICU], [1], [generate PSL data using libicu])
+      ])
+    ],
+    [test "$enable_runtime" = "libicu"], [
       AC_MSG_ERROR([You requested libicu but it is not installed or usable.])
-    fi
-  fi
-fi
-
-dnl Checl for libidn
-if test "$enable_runtime" = "libidn"; then
-  HAVE_LIBIDN=no
-
-  # Save CFLAGS and LIBS so we can restore them later
-  __save_CFLAGS=$CFLAGS
-  __save_LIBS=$LIBS
-
-  m4_define([LIBIDN_LINK_TEST], [AC_LANG_PROGRAM(
-    [extern char idna_to_ascii_8z (void);],
-    [idna_to_ascii_8z();]
-  )])
-
-  PKG_CHECK_MODULES([LIBIDN], [libidn], [HAVE_LIBIDN=maybe], [HAVE_LIBIDN=no])
-
-  # Check if we can link against libidn
-  AS_IF([test "x$HAVE_LIBIDN" = xmaybe], [
-    CFLAGS="$LIBIDN_CFLAGS $CFLAGS"
-    LIBS="$LIBIDN_LIBS $LIBS"
-    AC_LINK_IFELSE([
-      LIBIDN_LINK_TEST
-    ], [
-      HAVE_LIBIDN=yes
-    ], [
-      AC_MSG_NOTICE([located libidn but cannot link... trying static linking])
-      LIBIDN_CFLAGS=
-      LIBIDN_LIBS=
-      CFLAGS=$__save_CFLAGS
-      LIBS=$__save_LIBS
     ])
   ])
 
-  # If we cannot link against found libidn, try static linking
-  AS_IF([test "x$HAVE_LIBIDN" = xmaybe], [
-    PKG_CHECK_MODULES_STATIC([LIBIDN], [libidn], [
+
+dnl Check for libidn
+AS_IF(
+  [test "$enable_runtime" = "libidn"],
+  [
+    HAVE_LIBIDN=no
+
+    # Save CFLAGS and LIBS so we can restore them later
+    __save_CFLAGS=$CFLAGS
+    __save_LIBS=$LIBS
+
+    m4_define([LIBIDN_LINK_TEST], [AC_LANG_PROGRAM(
+      [extern char idna_to_ascii_8z (void);],
+      [idna_to_ascii_8z();]
+    )])
+
+    PKG_CHECK_MODULES([LIBIDN], [libidn], [HAVE_LIBIDN=maybe], [HAVE_LIBIDN=no])
+
+    # Check if we can link against libidn
+    AS_IF([test "$HAVE_LIBIDN" = maybe], [
       CFLAGS="$LIBIDN_CFLAGS $CFLAGS"
       LIBS="$LIBIDN_LIBS $LIBS"
       AC_LINK_IFELSE([
         LIBIDN_LINK_TEST
       ], [
         HAVE_LIBIDN=yes
-        AC_MSG_NOTICE([using static libidn])
       ], [
-        HAVE_LIBIDN=no
-        AC_MSG_NOTICE([libidn is installed but unusable])
+        AC_MSG_NOTICE([located libidn but cannot link... trying static linking])
         LIBIDN_CFLAGS=
         LIBIDN_LIBS=
         CFLAGS=$__save_CFLAGS
         LIBS=$__save_LIBS
       ])
-    ], [
-      HAVE_LIBIDN=no
+    ])
+
+    # If we cannot link against found libidn, try static linking
+    AS_IF([test "$HAVE_LIBIDN" = maybe], [
+      PKG_CHECK_MODULES_STATIC([LIBIDN], [libidn], [
+        CFLAGS="$LIBIDN_CFLAGS $CFLAGS"
+        LIBS="$LIBIDN_LIBS $LIBS"
+        AC_LINK_IFELSE([
+          LIBIDN_LINK_TEST
+        ], [
+          HAVE_LIBIDN=yes
+          AC_MSG_NOTICE([using static libidn])
+        ], [
+          HAVE_LIBIDN=no
+          AC_MSG_NOTICE([libidn is installed but unusable])
+          LIBIDN_CFLAGS=
+          LIBIDN_LIBS=
+          CFLAGS=$__save_CFLAGS
+          LIBS=$__save_LIBS
+        ])
+      ], [
+        HAVE_LIBIDN=no
+      ])
+    ])
+
+    CFLAGS=$__save_CFLAGS
+    LIBS=$__save_LIBS
+
+    AS_IF([test "$HAVE_LIBIDN" = "yes"], [
+      runtime_CFLAGS=$LIBIDN_CFLAGS
+      runtime_LIBS=$LIBIDN_LIBS
+    ],
+    [test "$enable_runtime" = "libidn"], [
+      AC_MSG_ERROR([You requested libidn but it is not installed or usable.])
     ])
   ])
 
-  CFLAGS=$__save_CFLAGS
-  LIBS=$__save_LIBS
-
-  if test "x$HAVE_LIBIDN" = "xyes"; then
-    runtime_CFLAGS=$LIBIDN_CFLAGS
-    runtime_LIBS=$LIBIDN_LIBS
-  else
-    if test "$enable_runtime" = "libidn"; then
-      AC_MSG_ERROR([You requested libidn but it is not installed or usable.])
-    fi
-  fi
-fi
 
 # last fallback is noruntime/nobuiltin
-if test "$enable_runtime" = "auto"; then
-  enable_runtime=no
-fi
+AS_IF([test "$enable_runtime" = "auto"], [enable_runtime=no])
 
 dnl If we use libidn or libidn2, we also need libiconv and libunistring. libicucore also needs iconv
-if test "x$enable_runtime" = "xlibidn2" -o "x$enable_runtime" = "xlibidn" -o "x$enable_runtime" = "xlibicucore"; then
+AS_IF(
+  [test "$enable_runtime" = "libidn2" -o "$enable_runtime" = "libidn" -o "$enable_runtime" = "libicucore"],
+  [
   __save_LIBS=$LIBS
 
   LIBS=$LIBICONV
@@ -527,23 +529,24 @@ if test "x$enable_runtime" = "xlibidn2" -o "x$enable_runtime" = "xlibidn" -o "x$
   LIBS=$__save_LIBS
   runtime_LIBS="$runtime_LIBS $LTLIBICONV"
 
-  if test "x$enable_runtime" != "xlibicucore"; then
-    LIBS=$LIBUNISTRING
-    AC_LINK_IFELSE([
-      AC_LANG_PROGRAM([char u8_tolower (void);], [u8_tolower ();])
-    ], [:], [
-      AC_MSG_ERROR([You requested libidn2|libidn but libunistring is not installed.])
+    AS_IF([test "$enable_runtime" != "libicucore"], [
+      LIBS=$LIBUNISTRING
+      AC_LINK_IFELSE([
+        AC_LANG_PROGRAM([char u8_tolower (void);], [u8_tolower ();])
+      ], [:], [
+        AC_MSG_ERROR([You requested libidn2|libidn but libunistring is not installed.])
+      ])
+      LIBS=$__save_LIBS
+      runtime_LIBS="$runtime_LIBS $LTLIBUNISTRING"
     ])
-    LIBS=$__save_LIBS
-    runtime_LIBS="$runtime_LIBS $LTLIBUNISTRING"
-  fi
-fi
+  ])
 
-AM_CONDITIONAL([WITH_LIBICU], test "x$enable_runtime" = "xlibicu")
-AM_CONDITIONAL([WITH_LIBICUCORE], test "x$enable_runtime" = "xlibicucore")
-AM_CONDITIONAL([WITH_LIBIDN2], test "x$enable_runtime" = "xlibidn2")
-AM_CONDITIONAL([WITH_LIBIDN], test "x$enable_runtime" = "xlibidn")
-AM_CONDITIONAL([ENABLE_BUILTIN], test "x$enable_builtin" = "xyes")
+
+AM_CONDITIONAL([WITH_LIBICU], test "$enable_runtime" = "libicu")
+AM_CONDITIONAL([WITH_LIBICUCORE], test "$enable_runtime" = "libicucore")
+AM_CONDITIONAL([WITH_LIBIDN2], test "$enable_runtime" = "libidn2")
+AM_CONDITIONAL([WITH_LIBIDN], test "$enable_runtime" = "libidn")
+AM_CONDITIONAL([ENABLE_BUILTIN], test "$enable_builtin" = "yes")
 
 dnl libpsl.pc
 libpsl_pc_Cflags=
@@ -553,22 +556,31 @@ libpsl_pc_Libs_private=
 libpsl_pc_Requires=
 libpsl_pc_Requires_private=
 
-if test "$enable_runtime" = libidn2; then
-  libpsl_pc_Libs_private="$LTLIBUNISTRING $LTLIBICONV $LIBS"
-  libpsl_pc_Requires_private=libidn2
-elif test "$enable_runtime" = libidn; then
-  libpsl_pc_Libs_private="$LTLIBUNISTRING $LTLIBICONV $LIBS"
-  libpsl_pc_Requires_private=libidn
-elif test "$enable_runtime" = libicu; then
-  if test "x$HAVE_LIBICU_PC" = xyes; then
-    libpsl_pc_Libs_private="$LIBS"
-    libpsl_pc_Requires_private=icu-uc
-  else
-    libpsl_pc_Libs_private="$LIBICU_LIBS $LIBS"
-  fi
-elif test "$enable_runtime" = libicucore; then
-  libpsl_pc_Libs_private="-licucore $LTLIBICONV $LIBS"
-fi
+AS_IF(
+  [test "$enable_runtime" = libidn2],
+  [
+    libpsl_pc_Libs_private="$LTLIBUNISTRING $LTLIBICONV $LIBS"
+    libpsl_pc_Requires_private=libidn2
+  ],
+  [test "$enable_runtime" = libidn],
+  [
+    libpsl_pc_Libs_private="$LTLIBUNISTRING $LTLIBICONV $LIBS"
+    libpsl_pc_Requires_private=libidn
+  ],
+  [test "$enable_runtime" = libicu],
+  [
+    AS_IF([test "$HAVE_LIBICU_PC" = yes], [
+      libpsl_pc_Libs_private="$LIBS"
+      libpsl_pc_Requires_private=icu-uc
+    ], [
+      libpsl_pc_Libs_private="$LIBICU_LIBS $LIBS"
+    ])
+  ],
+  [test "$enable_runtime" = libicucore],
+  [
+    libpsl_pc_Libs_private="-licucore $LTLIBICONV $LIBS"
+  ])
+
 
 dnl On Windows we use pkgconf-specific Cflags.private to pass -DPSL_STATIC
 AS_CASE([${host}],
@@ -593,18 +605,18 @@ AC_ARG_ENABLE(valgrind-tests,
   [ac_enable_valgrind=$enableval],
   [ac_enable_valgrind=no])
 
-if test "${ac_enable_valgrind}" = "yes" ; then
+AS_IF([test "${ac_enable_valgrind}" = "yes"], [
   AC_CHECK_PROG(HAVE_VALGRIND, valgrind, yes, no)
-  if test "$HAVE_VALGRIND" = "yes" ; then
+  AS_IF([test "$HAVE_VALGRIND" = "yes"], [
     VALGRIND_ENVIRONMENT="valgrind --error-exitcode=1 --leak-check=yes --show-reachable=yes --track-origins=yes"
     AC_SUBST(VALGRIND_ENVIRONMENT)
     TESTS_INFO="Test suite will be run under Valgrind"
-  else
+  ], [
     TESTS_INFO="Valgrind not found"
-  fi
-else
+  ])
+], [
   TESTS_INFO="Valgrind testing not enabled"
-fi
+])
 
 # Check for distribution-wide PSL file
 AC_ARG_WITH(psl-distfile,
