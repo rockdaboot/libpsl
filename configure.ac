@@ -101,7 +101,7 @@ AM_CONDITIONAL([FUZZING], [test "$enable_fuzzing" = "yes"])
 AC_ARG_ENABLE([cfi],
   [AS_HELP_STRING([--enable-cfi], [Turn on clang's Control Flow Integrity (CFI)])], [
     AS_IF([test "$enable_cfi" = yes], [
-      CFLAGS="$CFLAGS -B/usr/bin/gold -fsanitize=cfi -flto -fvisibility=default -fno-sanitize-trap=all"
+      SANITIZER_CFLAGS="$SANITIZER_CFLAGS -B/usr/bin/gold -fsanitize=cfi -flto -fvisibility=default -fno-sanitize-trap=all"
       AC_LINK_IFELSE([
         AC_LANG_PROGRAM([], [])
       ], [], [
@@ -114,7 +114,7 @@ AC_ARG_ENABLE([ubsan],
   [AS_HELP_STRING([--enable-ubsan], [Turn on Undefined Behavior Sanitizer (UBSan)])], [
     AS_IF([test "$enable_ubsan" = yes], [
       dnl Set basic UBSAN compiler flags. Add your own to CFLAGS.
-      CFLAGS="$CFLAGS -fsanitize=undefined -fno-sanitize-recover=undefined"
+      SANITIZER_CFLAGS="$SANITIZER_CFLAGS -fsanitize=undefined -fno-sanitize-recover=undefined"
     ])
   ], [enable_ubsan=no])
 
@@ -122,8 +122,8 @@ AC_ARG_ENABLE([asan],
   [AS_HELP_STRING([--enable-asan], [Turn on Address Sanitizer (ASan)])], [
     AS_IF([test "$enable_asan" = yes], [
       dnl Set basic ASAN compiler flags. Add your own to CFLAGS.
-      CFLAGS="$CFLAGS -fsanitize=address -fno-omit-frame-pointer"
-      AX_CHECK_COMPILE_FLAG([-fsanitize-address-use-after-scope], [CFLAGS="$CFLAGS -fsanitize-address-use-after-scope"])
+      SANITIZER_CFLAGS="$SANITIZER_CFLAGS -fsanitize=address -fno-omit-frame-pointer"
+      AX_CHECK_COMPILE_FLAG([-fsanitize-address-use-after-scope], [SANITIZER_CFLAGS="$SANITIZER_CFLAGS -fsanitize-address-use-after-scope"])
     ])
   ], [enable_asan=no])
 
@@ -196,7 +196,7 @@ dnl We should not use plain *FLAGS since they belong to the user.
 dnl We can temporary modify them for configuration checks, but then we need to
 dnl restore them to their original values.
 AM_CPPFLAGS="-I\$(top_builddir)/include -I\$(top_srcdir)/include"
-AM_CFLAGS=
+AM_CFLAGS="$AM_CFLAGS $SANITIZER_CFLAGS"
 AM_LDFLAGS=
 
 AC_SUBST([AM_CPPFLAGS])
@@ -223,7 +223,7 @@ dnl required to link against static library.
 
 dnl Compiler flags required to use $enable_runtime (when != "no")
 runtime_CFLAGS=
-dnl Libraries required to use $enable_runitme (when != "no")
+dnl Libraries required to use $enable_runtime (when != "no")
 runtime_LIBS=
 
 AC_SUBST([runtime_CFLAGS])
