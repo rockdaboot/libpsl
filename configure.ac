@@ -1,5 +1,5 @@
 m4_define([libpsl_version], m4_normalize(m4_include(version.txt)))
-AC_INIT([libpsl], libpsl_version, [tim.ruehsen@gmx.de], [libpsl], [https://github.com/rockdaboot/libpsl])
+AC_INIT([libpsl], [libpsl_version], [tim.ruehsen@gmx.de], [libpsl], [https://github.com/rockdaboot/libpsl])
 AC_PREREQ([2.59])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([1.10 no-define foreign dist-lzip])
@@ -38,10 +38,10 @@ gl_LIBUNISTRING
 dnl
 dnl Generate version defines for include file
 dnl
-AC_SUBST([LIBPSL_VERSION_MAJOR], [`echo $VERSION|cut -d'.' -f1`])
-AC_SUBST([LIBPSL_VERSION_MINOR], [`echo $VERSION|cut -d'.' -f2`])
-AC_SUBST([LIBPSL_VERSION_PATCH], [`echo $VERSION|cut -d'.' -f3`])
-AC_SUBST([LIBPSL_VERSION_NUMBER], [`printf '0x%02x%02x%02x' $LIBPSL_VERSION_MAJOR $LIBPSL_VERSION_MINOR $LIBPSL_VERSION_PATCH`])
+AC_SUBST([LIBPSL_VERSION_MAJOR], [$(echo $VERSION | cut -d'.' -f1)])
+AC_SUBST([LIBPSL_VERSION_MINOR], [$(echo $VERSION | cut -d'.' -f2)])
+AC_SUBST([LIBPSL_VERSION_PATCH], [$(echo $VERSION | cut -d'.' -f3)])
+AC_SUBST([LIBPSL_VERSION_NUMBER], [$(printf '0x%02x%02x%02x' $LIBPSL_VERSION_MAJOR $LIBPSL_VERSION_MINOR $LIBPSL_VERSION_PATCH)])
 AC_CONFIG_FILES([include/libpsl.h])
 
 dnl
@@ -72,8 +72,7 @@ dnl
 dnl enable creation of man pages
 dnl
 AC_ARG_ENABLE([man],
-  [AS_HELP_STRING([--enable-man], [generate man pages [default=auto]])],
-  [
+  [AS_HELP_STRING([--enable-man], [generate man pages [default=auto]])], [
     AS_IF([test "$enable_man" = yes], [
       AC_PATH_PROG([XSLTPROC], [xsltproc])
       AS_IF([test -z "$XSLTPROC"], [
@@ -85,16 +84,14 @@ AC_ARG_ENABLE([man],
 AM_CONDITIONAL([ENABLE_MAN], [test "$enable_man" = "yes"])
 
 dnl src/psl-make-dafsa needs python 2.7+
-AS_IF([! test -f src/suffixes_dafsa.h -a -f tests/psl.dafsa -a -f tests/psl_ascii.dafsa],
-  [
-    AM_PATH_PYTHON([2.7],, [AC_MSG_ERROR([python 2.7+ is required to convert the PSL data])])
-  ])
+AS_IF([test ! -f src/suffixes_dafsa.h || test ! -f tests/psl.dafsa || test ! -f tests/psl_ascii.dafsa], [
+  AM_PATH_PYTHON([2.7],, [AC_MSG_ERROR([python 2.7+ is required to convert the PSL data])])
+])
 
 PKG_PROG_PKG_CONFIG
 
 AC_ARG_ENABLE([fuzzing],
-  [AS_HELP_STRING([--enable-fuzzing], [Turn on fuzzing build (for developers)])],
-  [
+  [AS_HELP_STRING([--enable-fuzzing], [Turn on fuzzing build (for developers)])], [
     enable_fuzzing=yes
     AC_SUBST([LIB_FUZZING_ENGINE])
     AC_DEFINE([FUZZING], 1, [Define to 1 if this is a fuzzing build])
@@ -102,8 +99,7 @@ AC_ARG_ENABLE([fuzzing],
 AM_CONDITIONAL([FUZZING], [test "$enable_fuzzing" = "yes"])
 
 AC_ARG_ENABLE([cfi],
-  [AS_HELP_STRING([--enable-cfi], [Turn on clang's Control Flow Integrity (CFI)])],
-  [
+  [AS_HELP_STRING([--enable-cfi], [Turn on clang's Control Flow Integrity (CFI)])], [
     AS_IF([test "$enable_cfi" = yes], [
       CFLAGS="$CFLAGS -B/usr/bin/gold -fsanitize=cfi -flto -fvisibility=default -fno-sanitize-trap=all"
       AC_LINK_IFELSE([
@@ -115,8 +111,7 @@ AC_ARG_ENABLE([cfi],
   ], [enable_cfi=no])
 
 AC_ARG_ENABLE([ubsan],
-  [AS_HELP_STRING([--enable-ubsan], [Turn on Undefined Behavior Sanitizer (UBSan)])],
-  [
+  [AS_HELP_STRING([--enable-ubsan], [Turn on Undefined Behavior Sanitizer (UBSan)])], [
     AS_IF([test "$enable_ubsan" = yes], [
       dnl Set basic UBSAN compiler flags. Add your own to CFLAGS.
       CFLAGS="$CFLAGS -fsanitize=undefined -fno-sanitize-recover=undefined"
@@ -124,8 +119,7 @@ AC_ARG_ENABLE([ubsan],
   ], [enable_ubsan=no])
 
 AC_ARG_ENABLE([asan],
-  [AS_HELP_STRING([--enable-asan], [Turn on Address Sanitizer (ASan)])],
-  [
+  [AS_HELP_STRING([--enable-asan], [Turn on Address Sanitizer (ASan)])], [
     AS_IF([test "$enable_asan" = yes], [
       dnl Set basic ASAN compiler flags. Add your own to CFLAGS.
       CFLAGS="$CFLAGS -fsanitize=address -fno-omit-frame-pointer"
@@ -145,11 +139,10 @@ dnl 4. If any interfaces have been added, removed, or changed since the last upd
 dnl 5. If any interfaces have been added since the last public release, then increment age.
 dnl 6. If any existing interfaces have been removed or changed since the last public release, then set age to 0.
 AC_SUBST([LIBPSL_SO_VERSION], m4_normalize(m4_include([libtool_version_info.txt])))
-AC_SUBST([LIBPSL_VERSION], $VERSION)
+AC_SUBST([LIBPSL_VERSION], [$VERSION])
 
 dnl Check for enable/disable runtime PSL data
-AC_ARG_ENABLE(runtime,
-  [
+AC_ARG_ENABLE([runtime], [
   --enable-runtime[[=IDNA library]]
       Specify the IDNA library used for libpsl run-time conversions:
         libidn2 [[default]]: IDNA2008 library (also needs libunistring)
@@ -157,42 +150,41 @@ AC_ARG_ENABLE(runtime,
         libicucore:        IDNA2008 UTS#46 library shipped with Apple OSes
         libidn:            IDNA2003 library (also needs libunistring)
   --disable-runtime        Do not link runtime IDNA functionality
-  ], [
-    AS_IF(
-      [test "$enableval" = "libidn2" -o "$enableval" = "yes"],
-      [enable_runtime=libidn2; AC_DEFINE([WITH_LIBIDN2], [1], [generate PSL data using libidn2])],
-      [test "$enableval" = "libicu"],
-      [enable_runtime=libicu; AC_DEFINE([WITH_LIBICU], [1], [generate PSL data using libicu])],
-      [test "$enableval" = "libicucore"],
-      [enable_runtime=libicucore; AC_DEFINE([WITH_LIBICUCORE], [1], [generate PSL data using libicucore])],
-      [test "$enableval" = "libidn"],
-      [enable_runtime=libidn; AC_DEFINE([WITH_LIBIDN], [1], [generate PSL data using libidn])],
-      [test "$enableval" = "no"],
-      [enable_runtime=no],
-      [AC_MSG_ERROR([Unknown value $enableval for --enable-runtime])] )
-  ], [
-    dnl this is the default if neither --enable-runtime nor --disable-runtime were specified
-    enable_runtime=auto
-  ])
+], [
+  AS_IF(
+    [test "$enableval" = "libidn2" || test "$enableval" = "yes"],
+    [enable_runtime=libidn2; AC_DEFINE([WITH_LIBIDN2], [1], [generate PSL data using libidn2])],
+    [test "$enableval" = "libicu"],
+    [enable_runtime=libicu; AC_DEFINE([WITH_LIBICU], [1], [generate PSL data using libicu])],
+    [test "$enableval" = "libicucore"],
+    [enable_runtime=libicucore; AC_DEFINE([WITH_LIBICUCORE], [1], [generate PSL data using libicucore])],
+    [test "$enableval" = "libidn"],
+    [enable_runtime=libidn; AC_DEFINE([WITH_LIBIDN], [1], [generate PSL data using libidn])],
+    [test "$enableval" = "no"],
+    [enable_runtime=no],
+    [AC_MSG_ERROR([Unknown value $enableval for --enable-runtime])] )
+], [
+  dnl this is the default if neither --enable-runtime nor --disable-runtime were specified
+  enable_runtime=auto
+])
 
 dnl Check for enable/disable builtin PSL data
-AC_ARG_ENABLE(builtin,
-  [
+AC_ARG_ENABLE([builtin], [
   --enable-builtin         Generate built-in PSL data
   --disable-builtin        Do not generate built-in PSL data
-  ], [
-    AS_IF(
-      [test "$enableval" = "yes"],
-      [enable_builtin=yes],
-      [test "$enableval" = "libidn" -o "$enableval" = "libidn2" -o "$enableval" = "libicu"],
-      [AC_MSG_WARN([--enable-builtin=$enableval is deprecated, use --enable-builtin (enabled by default)]); enable_builtin=yes],
-      [test "$enableval" = "no"],
-      [enable_builtin=no],
-      [AC_MSG_ERROR(Unknown value $enableval)] )
-  ], [
-    dnl this is the default if neither --enable-builtin nor --disable-builtin were specified
-    enable_builtin=yes
-  ])
+], [
+  AS_IF(
+    [test "$enableval" = "yes"],
+    [enable_builtin=yes],
+    [test "$enableval" = "libidn" || test "$enableval" = "libidn2" || test "$enableval" = "libicu"],
+    [AC_MSG_WARN([--enable-builtin=$enableval is deprecated, use --enable-builtin (enabled by default)]); enable_builtin=yes],
+    [test "$enableval" = "no"],
+    [enable_builtin=no],
+    [AC_MSG_ERROR([Unknown value $enableval])] )
+], [
+  dnl this is the default if neither --enable-builtin nor --disable-builtin were specified
+  enable_builtin=yes
+])
 
 AS_IF([test "$enable_builtin" = "yes"], [
   AC_DEFINE([ENABLE_BUILTIN], [1], [Generate built-in PSL data])
@@ -239,8 +231,7 @@ AC_SUBST([runtime_LIBS])
 
 dnl Check for libicucore
 AS_IF(
-  [test "$enable_runtime" = "libicucore" || { test "$host_vendor" = "apple" -a "$enable_runtime" = "auto"; }],
-  [
+  [test "$enable_runtime" = "libicucore" || { test "$host_vendor" = "apple" && test "$enable_runtime" = "auto"; }], [
     HAVE_LIBICUCORE=no
 
     dnl Check if we can link against libicucore
@@ -257,17 +248,17 @@ AS_IF(
         enable_runtime=libicucore
         AC_DEFINE([WITH_LIBICUCORE], [1], [generate PSL data using libicucore])
       ])
-    ],
-    [test "$enable_runtime" = "libicucore"], [
-      AC_MSG_ERROR([You requested libicucore but it is not available or usable.])
+    ], [
+      AS_IF([test "$enable_runtime" = "libicucore"], [
+        AC_MSG_ERROR([You requested libicucore but it is not available or usable.])
+      ])
     ])
   ])
 
 
 dnl Check for libidn2
 AS_IF(
-  [test "$enable_runtime" = "libidn2" -o "$enable_runtime" = "auto"],
-  [
+  [test "$enable_runtime" = "libidn2" || test "$enable_runtime" = "auto"], [
     HAVE_LIBIDN2=no
 
     dnl Save CFLAGS and LIBS so we can restore them later
@@ -341,8 +332,7 @@ AS_IF(
 
 dnl Check for libicu
 AS_IF(
-  [test "$enable_runtime" = "libicu" -o "$enable_runtime" = "auto"],
-  [
+  [test "$enable_runtime" = "libicu" || test "$enable_runtime" = "auto"], [
     HAVE_LIBICU=no
     dnl Whether we found libicu using pkg-config
     HAVE_LIBICU_PC=no
@@ -442,8 +432,7 @@ AS_IF(
 
 dnl Check for libidn
 AS_IF(
-  [test "$enable_runtime" = "libidn"],
-  [
+  [test "$enable_runtime" = "libidn"], [
     HAVE_LIBIDN=no
 
     dnl Save CFLAGS and LIBS so we can restore them later
@@ -515,18 +504,17 @@ AS_IF([test "$enable_runtime" = "auto"], [enable_runtime=no])
 
 dnl If we use libidn or libidn2, we also need libiconv and libunistring. libicucore also needs iconv
 AS_IF(
-  [test "$enable_runtime" = "libidn2" -o "$enable_runtime" = "libidn" -o "$enable_runtime" = "libicucore"],
-  [
-  __save_LIBS=$LIBS
+  [test "$enable_runtime" = "libidn2" || test "$enable_runtime" = "libidn" || test "$enable_runtime" = "libicucore"], [
+    __save_LIBS=$LIBS
 
-  LIBS=$LIBICONV
-  AC_LINK_IFELSE([
-    AC_LANG_PROGRAM([#include <iconv.h>], [iconv_open ("", "");])
-  ], [:], [
-    AC_MSG_ERROR([You requested libidn2|libidn|libicucore but libiconv is not installed.])
-  ])
-  LIBS=$__save_LIBS
-  runtime_LIBS="$runtime_LIBS $LTLIBICONV"
+    LIBS=$LIBICONV
+    AC_LINK_IFELSE([
+      AC_LANG_PROGRAM([#include <iconv.h>], [iconv_open ("", "");])
+    ], [:], [
+      AC_MSG_ERROR([You requested libidn2|libidn|libicucore but libiconv is not installed.])
+    ])
+    LIBS=$__save_LIBS
+    runtime_LIBS="$runtime_LIBS $LTLIBICONV"
 
     AS_IF([test "$enable_runtime" != "libicucore"], [
       LIBS=$LIBUNISTRING
@@ -541,11 +529,11 @@ AS_IF(
   ])
 
 
-AM_CONDITIONAL([WITH_LIBICU], test "$enable_runtime" = "libicu")
-AM_CONDITIONAL([WITH_LIBICUCORE], test "$enable_runtime" = "libicucore")
-AM_CONDITIONAL([WITH_LIBIDN2], test "$enable_runtime" = "libidn2")
-AM_CONDITIONAL([WITH_LIBIDN], test "$enable_runtime" = "libidn")
-AM_CONDITIONAL([ENABLE_BUILTIN], test "$enable_builtin" = "yes")
+AM_CONDITIONAL([WITH_LIBICU], [test "$enable_runtime" = "libicu"])
+AM_CONDITIONAL([WITH_LIBICUCORE], [test "$enable_runtime" = "libicucore"])
+AM_CONDITIONAL([WITH_LIBIDN2], [test "$enable_runtime" = "libidn2"])
+AM_CONDITIONAL([WITH_LIBIDN], [test "$enable_runtime" = "libidn"])
+AM_CONDITIONAL([ENABLE_BUILTIN], [test "$enable_builtin" = "yes"])
 
 dnl libpsl.pc
 libpsl_pc_Cflags=
@@ -556,27 +544,20 @@ libpsl_pc_Requires=
 libpsl_pc_Requires_private=
 
 AS_IF(
-  [test "$enable_runtime" = libidn2],
-  [
+  [test "$enable_runtime" = libidn2], [
     libpsl_pc_Libs_private="$LTLIBUNISTRING $LTLIBICONV $LIBS"
     libpsl_pc_Requires_private=libidn2
-  ],
-  [test "$enable_runtime" = libidn],
-  [
+  ], [test "$enable_runtime" = libidn], [
     libpsl_pc_Libs_private="$LTLIBUNISTRING $LTLIBICONV $LIBS"
     libpsl_pc_Requires_private=libidn
-  ],
-  [test "$enable_runtime" = libicu],
-  [
+  ], [test "$enable_runtime" = libicu], [
     AS_IF([test "$HAVE_LIBICU_PC" = yes], [
       libpsl_pc_Libs_private="$LIBS"
       libpsl_pc_Requires_private=icu-uc
     ], [
       libpsl_pc_Libs_private="$LIBICU_LIBS $LIBS"
     ])
-  ],
-  [test "$enable_runtime" = libicucore],
-  [
+  ], [test "$enable_runtime" = libicucore], [
     libpsl_pc_Libs_private="-licucore $LTLIBICONV $LIBS"
   ])
 
@@ -585,7 +566,8 @@ dnl On Windows we use pkgconf-specific Cflags.private to pass -DPSL_STATIC
 AS_CASE([${host}],
   [*-mingw32 | *-mingw64 | *-windows], [
     libpsl_pc_Cflags_private='Cflags.private: -DPSL_STATIC'
-    libpsl_pc_Requires='pkgconf'])
+    libpsl_pc_Requires='pkgconf'
+  ])
 
 AC_SUBST([libpsl_pc_Cflags])
 AC_SUBST([libpsl_pc_Cflags_private])
@@ -595,20 +577,20 @@ AC_SUBST([libpsl_pc_Requires])
 AC_SUBST([libpsl_pc_Requires_private])
 
 dnl Check for clock_gettime() used for performance measurement
-AC_SEARCH_LIBS(clock_gettime, rt)
+AC_SEARCH_LIBS([clock_gettime], [rt])
 
 dnl Check for valgrind
 ac_enable_valgrind=no
-AC_ARG_ENABLE(valgrind-tests,
+AC_ARG_ENABLE([valgrind-tests],
   AS_HELP_STRING([--enable-valgrind-tests], [enable using Valgrind for tests]),
   [ac_enable_valgrind=$enableval],
   [ac_enable_valgrind=no])
 
 AS_IF([test "${ac_enable_valgrind}" = "yes"], [
-  AC_CHECK_PROG(HAVE_VALGRIND, valgrind, yes, no)
+  AC_CHECK_PROG([HAVE_VALGRIND], [valgrind], [yes], [no])
   AS_IF([test "$HAVE_VALGRIND" = "yes"], [
     VALGRIND_ENVIRONMENT="valgrind --error-exitcode=1 --leak-check=yes --show-reachable=yes --track-origins=yes"
-    AC_SUBST(VALGRIND_ENVIRONMENT)
+    AC_SUBST([VALGRIND_ENVIRONMENT])
     TESTS_INFO="Test suite will be run under Valgrind"
   ], [
     TESTS_INFO="Valgrind not found"
@@ -618,29 +600,31 @@ AS_IF([test "${ac_enable_valgrind}" = "yes"], [
 ])
 
 dnl Check for distribution-wide PSL file
-AC_ARG_WITH(psl-distfile,
+AC_ARG_WITH([psl-distfile],
   AS_HELP_STRING([--with-psl-distfile=[PATH]], [path to distribution-wide PSL file]),
-  PSL_DISTFILE=$withval AC_SUBST(PSL_DISTFILE))
+  [PSL_DISTFILE=$withval],
+  [PSL_DISTFILE=])
+AC_SUBST([PSL_DISTFILE])
 
 dnl Check for custom PSL file
-AC_ARG_WITH(psl-file,
+AC_ARG_WITH([psl-file],
   AS_HELP_STRING([--with-psl-file=[PATH]], [path to PSL file]),
-  PSL_FILE=$withval,
-  PSL_FILE="\$(top_srcdir)/list/public_suffix_list.dat")
-AC_SUBST(PSL_FILE)
+  [PSL_FILE=$withval],
+  [PSL_FILE="\$(top_srcdir)/list/public_suffix_list.dat"])
+AC_SUBST([PSL_FILE])
 
 dnl Check for custom PSL test file
-AC_ARG_WITH(psl-testfile,
+AC_ARG_WITH([psl-testfile],
   AS_HELP_STRING([--with-psl-testfile=[PATH]], [path to PSL test file]),
-  PSL_TESTFILE=$withval,
-  PSL_TESTFILE="\$(top_srcdir)/list/tests/tests.txt")
-AC_SUBST(PSL_TESTFILE)
+  [PSL_TESTFILE=$withval],
+  [PSL_TESTFILE="\$(top_srcdir)/list/tests/tests.txt"])
+AC_SUBST([PSL_TESTFILE])
 
 AC_CHECK_FUNCS([clock_gettime fmemopen nl_langinfo])
 AC_CHECK_DECLS([localtime_r])
 
 dnl check for dirent.h
-AC_HEADER_DIRENT
+AC_CHECK_HEADERS([dirent.h])
 
 dnl Override the template file name of the generated .pc file, so that there
 dnl is no need to rename the template file when the API version changes.
