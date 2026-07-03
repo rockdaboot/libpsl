@@ -21,9 +21,12 @@ jobs:
   coverage:
     name: Generate & Deploy Coverage
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps: deployment.outputs.page_url }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install dependencies
         run: |
@@ -53,10 +56,10 @@ jobs:
           echo '<html><body><h1>libpsl Artifacts</h1><ul><li><a href="docs/">Dokumentation</a></li><li><a href="lcov/">Coverage Report</a></li></ul></body></html>' > public/index.html
 
       - name: Upload Pages Artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: public/
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
