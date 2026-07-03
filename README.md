@@ -39,7 +39,12 @@ The original DAFSA code is from the [Chromium Project](https://code.google.com/p
 
 ## API Documentation
 
-You find the current API documentation [here](https://rockdaboot.github.io/libpsl).
+You find the current API documentation [here](https://rockdaboot.github.io/libpsl/docs/).
+
+
+## Code Coverage
+
+You can view the code coverage report [here](https://rockdaboot.github.io/libpsl/lcov/).
 
 
 ## Quick API example
