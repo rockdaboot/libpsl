@@ -1,0 +1,62 @@
+name: Deploy Docs & Coverage
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  coverage:
+    name: Generate & Deploy Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y autoconf automake autopoint libtool gtk-doc-tools xsltproc lcov gettext
+
+      - name: Bootstrap & Configure for Docs
+        run: |
+          ./autogen.sh
+          ./configure --enable-gtk-doc
+
+      - name: Build Documentation
+        run: |
+          make -C docs/libpsl
+          mkdir -p public/docs
+          cp -r docs/libpsl/html/* public/docs/
+
+      - name: Generate Coverage Report
+        run: |
+          make -j$(nproc) check-coverage
+          mkdir -p public/lcov
+          cp -r lcov/* public/lcov/
+
+      # Generate root page
+      - name: Structure Pages Artifact
+        run: |
+          echo '<html><body><h1>libpsl Artifacts</h1><ul><li><a href="docs/">Dokumentation</a></li><li><a href="lcov/">Coverage Report</a></li></ul></body></html>' > public/index.html
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public/
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
