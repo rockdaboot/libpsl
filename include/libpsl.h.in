@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2014-2024 Tim Ruehsen
+ * Copyright (C) 2014-@COPYRIGHT_YEAR@ Tim Rühsen and Libpsl Contributors.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -22,9 +22,6 @@
  * This file is part of libpsl.
  *
  * Header file for libpsl library routines
- *
- * Changelog
- * 20.03.2014  Tim Ruehsen  created
  *
  */
 

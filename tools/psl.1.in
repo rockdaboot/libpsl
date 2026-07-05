@@ -1,4 +1,4 @@
-.TH PSL "1" "July 2016" "psl 0.13.0" "User Commands"
+.TH PSL "1" "@COPYRIGHT_MONTH@ @COPYRIGHT_YEAR@" "psl @PACKAGE_VERSION@" "User Commands"
 .SH NAME
 psl \- Explore the Public Suffix List
 .SH SYNOPSIS
@@ -61,7 +61,7 @@ load PSL data from file
 https://publicsuffix.org/
 https://github.com/rockdaboot/libpsl
 .SH COPYRIGHT
-libpsl and `psl' are copyright \(co 2014\-2016 Tim Ruehsen under an
+libpsl and `psl' are copyright \(co Tim Rühsen and Libpsl contributors under an
 MIT-style License.
 .br
 This documentation was written by Daniel Kahn Gillmor for the Debian

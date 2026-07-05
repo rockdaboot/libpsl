@@ -6,4 +6,9 @@ psl = executable('psl', 'psl.c',
   install : true,
 )
 
-install_man('psl.1')
+psl_man = configure_file(
+  input : 'psl.1.in',
+  output : 'psl.1',
+  configuration : _cdata)
+
+install_man(psl_man)

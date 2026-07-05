@@ -1,4 +1,10 @@
-Copyright (C) 2014-2026 Tim Rühsen
+/*
+ * SPDX-License-Identifier: MIT
+ *
+ * See the LICENSE file in the root directory for details and copyrights.
+ *
+ * This file is part of libpsl.
+ */
 
 24.06.2026 Release V0.22.0
   * Allow building from tarball without Python
