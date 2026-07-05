@@ -154,6 +154,13 @@ if cc.get_id() == 'msvc'
   endif
 endif
 
+# Shared configuration data for copyright date and version
+_cdata = configuration_data()
+_cdata.set('PACKAGE_VERSION', meson.project_version())
+copyright_date = run_command(['date', '+%B %Y'], check: true).stdout().strip()
+_cdata.set('COPYRIGHT_MONTH', copyright_date.split()[0])
+_cdata.set('COPYRIGHT_YEAR', copyright_date.split()[1])
+
 subdir('include')
 subdir('src')
 subdir('tools')

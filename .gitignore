@@ -98,3 +98,4 @@ tests/test-is-public-builtin
 tests/test-is-tld
 tests/test-registrable-domain
 tools/psl
+tools/psl.1
