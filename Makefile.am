@@ -26,6 +26,7 @@ EXTRA_DIST = build-aux/config.rpath LICENSE meson.build  meson_options.txt
 dist-hook:
 	mkdir -p $(distdir)/list/tests
 	cp -p $(PSL_FILE) $(distdir)/list
+	cp -p $(PSL_DEFAULT_TESTFILES) $(distdir)/list/tests
 	cp -p $(PSL_TESTFILE) $(distdir)/list/tests
 
 clean-local:

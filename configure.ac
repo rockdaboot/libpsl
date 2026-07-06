@@ -619,6 +619,8 @@ AC_ARG_WITH([psl-testfile],
   [PSL_TESTFILE=$withval],
   [PSL_TESTFILE="\$(top_srcdir)/list/tests/tests.txt"])
 AC_SUBST([PSL_TESTFILE])
+AC_SUBST([PSL_DEFAULT_TESTFILES],
+  ["\$(top_srcdir)/list/tests/test_psl.txt \$(top_srcdir)/list/tests/tests.txt"])
 
 AC_CHECK_FUNCS([clock_gettime fmemopen nl_langinfo])
 AC_CHECK_DECLS([localtime_r])
