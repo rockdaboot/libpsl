@@ -6,6 +6,13 @@
  * This file is part of libpsl.
  */
 
+12.07.2026 Release V0.23.0
+  * Using libidn as runtime requires explicit config
+  * Properly handle leading dot in domains (see also https://curl.se/docs/CVE-2026-8924.html)
+  * Cleanups to configure.ac
+  * Add test coverage report link to README.md
+  * Simplify license headers to reduce maintenance overhead in the long run
+
 24.06.2026 Release V0.22.0
   * Allow building from tarball without Python
   * Add support for libcucore on Apple OSes
