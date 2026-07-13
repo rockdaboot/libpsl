@@ -4,7 +4,7 @@ if get_option('docs')
   configure_file(
     input : 'version.xml.in',
     output : 'version.xml',
-    configuration : cdata)
+    configuration : _cdata)
 
   docs = gnome.gtkdoc('libpsl',
     main_sgml: 'libpsl-docs.sgml',
