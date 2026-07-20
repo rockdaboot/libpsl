@@ -518,7 +518,7 @@ def to_cxx_plus(data, codecs):
   text += b'static int _psl_nexceptions = %d;\n' % psl_nexceptions
   text += b'static int _psl_nwildcards = %d;\n' % psl_nwildcards
   text += b'static const char _psl_sha1_checksum[] = "%s";\n' % bytes(sha1_file(psl_input_file), **codecs)
-  text += b'static const char _psl_filename[] = "%s";\n' % bytes(psl_input_file, **codecs)
+  text += b'static const char _psl_filename[] = "%s";\n' % bytes(os.path.basename(psl_input_file), **codecs)
   return text
 
 def words_to_whatever(words, converter, utf_mode, codecs):
