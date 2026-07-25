@@ -94,9 +94,10 @@ PKG_PROG_PKG_CONFIG
 
 AC_ARG_ENABLE([fuzzing],
   [AS_HELP_STRING([--enable-fuzzing], [Turn on fuzzing build (for developers)])], [
-    enable_fuzzing=yes
-    AC_SUBST([LIB_FUZZING_ENGINE])
-    AC_DEFINE([FUZZING], 1, [Define to 1 if this is a fuzzing build])
+    AS_IF([test "$enable_fuzzing" = yes], [
+      AC_SUBST([LIB_FUZZING_ENGINE])
+      AC_DEFINE([FUZZING], 1, [Define to 1 if this is a fuzzing build])
+    ])
   ], [enable_fuzzing=no; LIB_FUZZING_ENGINE=""])
 AM_CONDITIONAL([FUZZING], [test "$enable_fuzzing" = "yes"])
 
