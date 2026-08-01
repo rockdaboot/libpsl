@@ -6,6 +6,12 @@
  * This file is part of libpsl.
  */
 
+01.08.2026 Release V0.23.1
+  * configure: Allow explicitly disabling fuzzing
+  * configure/meson: Fix reproducible builds (regression introduced in V0.23.0)
+  * psl-make-dafsa: embed only the basename of the input file
+  * meson: also rename cdata to _cdata in docs/libpsl/meson.build
+
 12.07.2026 Release V0.23.0
   * Using libidn as runtime requires explicit config
   * Properly handle leading dot in domains (see also https://curl.se/docs/CVE-2026-8924.html)
