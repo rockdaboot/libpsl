@@ -1,9 +1,21 @@
 psl_make_dafsa = files('psl-make-dafsa')
 
-suffixes_dafsa_h = custom_target('suffixes_dafsa.h',
-  input : psl_file,
-  output : 'suffixes_dafsa.h',
-  command : [python, psl_make_dafsa, '--output-format=cxx+', '@INPUT@', '@OUTPUT@'])
+fs = import('fs')
+suffixes_dafsa_h_src = join_paths(meson.current_source_dir(), 'suffixes_dafsa.h')
+has_suffixes_dafsa_h = fs.exists(suffixes_dafsa_h_src)
+
+if has_suffixes_dafsa_h
+  suffixes_dafsa_h = suffixes_dafsa_h_src
+else
+  if not python.found()
+    error('Python is required to build suffixes_dafsa.h. Install python or provide suffixes_dafsa.h in src/')
+  endif
+
+  suffixes_dafsa_h = custom_target('suffixes_dafsa.h',
+    input : psl_file,
+    output : 'suffixes_dafsa.h',
+    command : [python, psl_make_dafsa, '--output-format=cxx+', '@INPUT@', '@OUTPUT@'])
+endif
 
 sources = [
   'lookup_string_in_fixed_set.c',
