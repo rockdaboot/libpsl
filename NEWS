@@ -6,6 +6,10 @@
  * This file is part of libpsl.
  */
 
+10.08.2026 Release V0.23.2
+  * meson: Use compatible C code instead of 'date'
+  * configure.ac: Fix typo that broke SOURCE_DATE_EPOCH for COPYRIGHT_YEAR
+
 01.08.2026 Release V0.23.1
   * configure: Allow explicitly disabling fuzzing
   * configure/meson: Fix reproducible builds (regression introduced in V0.23.0)
