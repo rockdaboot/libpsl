@@ -3,6 +3,7 @@ project('libpsl', 'c',
   meson_version : '>=0.60.0')
 
 cc = meson.get_compiler('c')
+build_cc = meson.get_compiler('c', native : true)
 
 enable_runtime = get_option('runtime')
 enable_builtin = get_option('builtin')
@@ -174,7 +175,7 @@ int main(void) {
     return 0;
 }
 '''
-copyright_cmd = cc.run(copyright_prog)
+copyright_cmd = build_cc.run(copyright_prog)
 copyright_date = copyright_cmd.stdout().strip()
 _cdata.set('COPYRIGHT_MONTH', copyright_date.split()[0])
 _cdata.set('COPYRIGHT_YEAR', copyright_date.split()[1])
