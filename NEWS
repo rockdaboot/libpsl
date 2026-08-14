@@ -6,6 +6,9 @@
  * This file is part of libpsl.
  */
 
+14.08.2026 Release V0.23.3
+  * meson: make copyright_prog work for cross builds
+
 10.08.2026 Release V0.23.2
   * meson: Use compatible C code instead of 'date'
   * configure.ac: Fix typo that broke SOURCE_DATE_EPOCH for COPYRIGHT_YEAR
