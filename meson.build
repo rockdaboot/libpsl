@@ -144,7 +144,11 @@ if psl_test_file == ''
   psl_test_file = join_paths(meson.current_source_dir(), 'list', 'tests', 'tests.txt')
 endif
 
-python = find_program('python3')
+python = find_program('python3', required : false)
+if not python.found()
+  python = find_program('python', required : false)
+endif
+
 pkgconfig = import('pkgconfig')
 
 if cc.get_id() == 'msvc'
