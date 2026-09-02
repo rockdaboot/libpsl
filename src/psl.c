@@ -1359,7 +1359,7 @@ fail:
  * psl_free:
  * @psl: PSL context pointer
  *
- * This function frees the the PSL context that has been retrieved via
+ * This function frees the PSL context that has been retrieved via
  * psl_load_fp() or psl_load_file().
  *
  * Since: 0.1
@@ -2109,7 +2109,7 @@ static int insert_file(const char *fname, const char **psl_fname, time_t *psl_mt
  * psl_latest:
  * @fname: Name of PSL file or %NULL
  *
- * This function loads the the latest available PSL data from either
+ * This function loads the latest available PSL data from either
  * - @fname (application specific filename, may be %NULL)
  * - location specified during built-time (filename from ./configure --with-psl-distfile)
  * - built-in PSL data (generated from ./configure --with-psl-file)
