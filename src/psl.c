@@ -1270,6 +1270,10 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 	 *  as of 07.10.2018, the list at https://publicsuffix.org/list/ contains ~8600 rules and 8 exceptions.
 	 */
 	psl->suffixes = vector_alloc(8*1024, suffix_compare_array);
+	if (!psl->suffixes) {
+		psl_idna_close(idna);
+		goto fail;
+	}
 	psl->utf8 = 1; /* we put UTF-8 and punycode rules in the lookup vector */
 
 	do {
