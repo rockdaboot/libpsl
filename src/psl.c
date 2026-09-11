@@ -552,7 +552,7 @@ static ssize_t utf8_to_utf32(const char *in, size_t inlen, punycode_uint *out, s
 		} else if (inleft >= 4 && (*s & 0xF8) == 0xF0) /* 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx */ {
 			if ((s[1] & 0xC0) != 0x80 || (s[2] & 0xC0) != 0x80 || (s[3] & 0xC0) != 0x80)
 				return -1;
-			out[n++] = ((*s & 0x07) << 18) | ((s[1] & 0x3F) << 12) | ((s[1] & 0x3F) << 6) | (s[2] & 0x3F);
+			out[n++] = ((*s & 0x07) << 18) | ((s[1] & 0x3F) << 12) | ((s[2] & 0x3F) << 6) | (s[3] & 0x3F);
 			s += 4;
 		} else if (!inleft) {
 			break;
