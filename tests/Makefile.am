@@ -13,7 +13,7 @@ LDADD       = $(top_builddir)/src/libpsl.la
 # ./configure'd with '--disable-builtin'
 # Do not call test-is-public-builtin here: it does not make sense.
 # Do not call test-registrable-domain here: it would fail due to missing punycode entries in PSL file.
-PSL_TESTS = test-is-public test-is-public-all test-is-cookie-domain-acceptable
+PSL_TESTS = test-is-public test-is-public-all test-is-cookie-domain-acceptable test-is-public-punycode
 
 if ENABLE_BUILTIN
   PSL_TESTS += test-is-public-builtin test-registrable-domain
@@ -30,6 +30,7 @@ common_SOURCES = common.c common.h
 test_is_public_SOURCES = test-is-public.c $(common_SOURCES)
 test_is_public_all_SOURCES = test-is-public-all.c $(common_SOURCES)
 test_is_cookie_domain_acceptable_SOURCES = test-is-cookie-domain-acceptable.c $(common_SOURCES)
+test_is_public_punycode_SOURCES = test-is-public-punycode.c $(common_SOURCES)
 
 # dafsa.psl and dafsa_ascii.psl must be created before any test is executed
 # check-local target works in parallel to the tests, so the test suite will likely fail
