@@ -259,11 +259,12 @@ static int vector_add(psl_vector_t *v, const psl_entry_t *elem)
 		memcpy(elemp, elem, sizeof(psl_entry_t));
 
 		if (v->max == v->cur) {
-			void *m = realloc(v->entry, (v->max *= 2) * sizeof(psl_entry_t *));
+			void *m = realloc(v->entry, v->max * 2 * sizeof(psl_entry_t *));
 
-			if (m)
+			if (m) {
 				v->entry = m;
-			else {
+				v->max *= 2;
+			} else {
 				free(elemp);
 				return -1;
 			}
