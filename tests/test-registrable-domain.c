@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <locale.h>
 
 #include <libpsl.h>
 #include "common.h"
@@ -77,6 +78,7 @@ static void test_psl(void)
 	char lbuf[258];
 	int er_is_null, d_is_null;
 	unsigned it;
+	static const char *tr_locales[] = { "tr_TR.UTF-8", "tr_TR.ISO-8859-9", "tr_TR" };
 
 	psl = psl_builtin();
 
@@ -116,6 +118,14 @@ static void test_psl(void)
 		lbuf[0] = '\303';
 		lbuf[1] = '\270';
 		test(psl, lbuf, NULL);
+	}
+
+	/* ASCII lowercasing must not depend on the current locale (Turkish dotless i) */
+	for (it = 0; it < sizeof(tr_locales) / sizeof(tr_locales[0]); it++) {
+		if (setlocale(LC_CTYPE, tr_locales[it])) {
+			test(psl, "WWW.FOO.GITHUB.IO", "foo.github.io");
+			setlocale(LC_CTYPE, "C");
+		}
 	}
 
 	/* special check with NULL psl context and TLD */
