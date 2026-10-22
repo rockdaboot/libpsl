@@ -1917,10 +1917,10 @@ psl_error_t psl_str_to_utf8lower(const char *str, const char *encoding, const ch
 
 			*lower = tmp;
 
-			/* convert ASCII string to lowercase */
+			/* convert ASCII string to lowercase, independent of the current locale */
 			for (p = *lower; *p; p++)
-				if (isupper(*p))
-					*p = tolower(*p);
+				if (*p >= 'A' && *p <= 'Z')
+					*p += 'a' - 'A';
 		}
 		return PSL_SUCCESS;
 	}
