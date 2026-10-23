@@ -47,6 +47,7 @@ static void test_psl(void)
 		{ "www.ck", 0, 0 }, /* exception from *.ck */
 		{ "abc.www.ck", 0, 0 },
 		{ "xxx.ck", 1, 1 },
+		{ "xxx.ck.", 1, 1 }, /* trailing dot must not matter for wildcard rules */
 		{ "www.xxx.ck", 0, 0 },
 		{ "\345\225\206\346\240\207", 1, 1 }, /* xn--czr694b or ?? */
 		{ "www.\345\225\206\346\240\207", 0, 0 },
