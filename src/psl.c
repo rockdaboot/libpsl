@@ -892,6 +892,8 @@ static int is_public_suffix(const psl_ctx_t *psl, const char *domain, int type)
 		if (psl_idna_toASCII(idna, domain, &punycode) == 0) {
 			suffix.label = punycode;
 			suffix.length = strlen(punycode);
+			if (suffix.length > 0 && punycode[suffix.length - 1] == '.')
+				suffix.length--;
 		} else {
 			/* fallback */
 
@@ -923,9 +925,9 @@ static int is_public_suffix(const psl_ctx_t *psl, const char *domain, int type)
 			/* definitely a match, no matter if the found rule is a wildcard or not */
 			goto suffix_yes;
 		}
-		if ((suffix.label = strchr(suffix.label, '.'))) {
-			suffix.label++;
-			suffix.length = strlen(suffix.label);
+		if ((p = memchr(suffix.label, '.', suffix.length))) {
+			suffix.length -= p + 1 - suffix.label;
+			suffix.label = p + 1;
 			suffix.nlabels--;
 
 			rc = LookupStringInFixedSet(dafsa, dafsa_size, suffix.label, suffix.length);
@@ -963,9 +965,9 @@ static int is_public_suffix(const psl_ctx_t *psl, const char *domain, int type)
 			goto suffix_yes;
 		}
 
-		if ((suffix.label = strchr(suffix.label, '.'))) {
-			suffix.label++;
-			suffix.length = strlen(suffix.label);
+		if ((p = memchr(suffix.label, '.', suffix.length))) {
+			suffix.length -= p + 1 - suffix.label;
+			suffix.label = p + 1;
 			suffix.nlabels--;
 
 			rule = vector_get(psl->suffixes, vector_find(psl->suffixes, &suffix));
