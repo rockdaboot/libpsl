@@ -49,6 +49,10 @@ static void test_psl(void)
 		{ "xxx.ck", 1, 1 },
 		{ "xxx.ck.", 1, 1 }, /* trailing dot must not matter for wildcard rules */
 		{ "www.xxx.ck", 0, 0 },
+		{ "xxx.yokohama.jp", 1, 1 }, /* PSL wildcard rule '*.yokohama.jp' */
+		{ "xxx.yokohama.jp.", 1, 1 }, /* trailing dot must not matter for wildcard rules */
+		{ "www.xxx.yokohama.jp", 0, 0 },
+		{ "www.xxx.yokohama.jp.", 0, 0 },
 		{ "\345\225\206\346\240\207", 1, 1 }, /* xn--czr694b or ?? */
 		{ "www.\345\225\206\346\240\207", 0, 0 },
 		{ "xn--czr694b", 1, 1 },

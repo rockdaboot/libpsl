@@ -52,6 +52,8 @@ static void test_psl(void)
 		{ "www.educ.ar", "educ.ar", 1 }, /* PSL exception rule '!educ.ar' */
 		{ "www.xxx.ck", "xxx.ck", 0 }, /* PSL wildcard rule '*.ck' */
 		{ "www.xxx.ck.", "xxx.ck.", 0 }, /* same with trailing dot */
+		{ "www.xxx.yokohama.jp", "xxx.yokohama.jp", 0 }, /* PSL wildcard rule '*.yokohama.jp' */
+		{ "www.xxx.yokohama.jp.", "xxx.yokohama.jp.", 0 }, /* same with trailing dot */
 		/* RFC6265 5.1.3: Having IP addresses, request and domain IP must be identical */
 		{ "192.1.123.2", ".1.123.2", 0 }, /* IPv4 address, partial match */
 		{ "192.1.123.2", "192.1.123.2", 1 }, /* IPv4 address, full match */

@@ -53,6 +53,10 @@ static void test_psl(void)
 		{ "xxx.ck", 1, 1 },
 		{ "xxx.ck.", 1, 1 }, /* trailing dot must not matter for wildcard rules */
 		{ "www.xxx.ck", 0, 0 },
+		{ "xxx.yokohama.jp", 1, 1 }, /* PSL wildcard rule '*.yokohama.jp' */
+		{ "xxx.yokohama.jp.", 1, 1 }, /* trailing dot must not matter for wildcard rules */
+		{ "www.xxx.yokohama.jp", 0, 0 },
+		{ "www.xxx.yokohama.jp.", 0, 0 },
 		{ "\345\225\206\346\240\207", 1, 1 }, /* xn--czr694b or ?? */
 		{ "www.\345\225\206\346\240\207", 0, 0 },
 		/* some special test follow ('name' and 'forgot.his.name' are public, but e.g. his.name is not) */
@@ -170,6 +174,46 @@ static void test_psl(void)
 	psl_free(psl);
 }
 
+/* non-ASCII domains are converted to punycode before the lookup in an ASCII DAFSA */
+static void test_psl_ascii_dafsa(void)
+{
+	static const struct test_data {
+		const char
+			*domain;
+		int
+			no_star_result;
+	} test_data[] = {
+		{ "\345\225\206\346\240\207", 1 }, /* xn--czr694b */
+		{ "\345\225\206\346\240\207.", 1 }, /* trailing dot must not matter */
+		{ "www.\345\225\206\346\240\207.", 0 },
+		{ "\303\274.ck.", 1 }, /* xn--tda.ck., PSL wildcard rule '*.ck' */
+		{ "www.\303\274.ck.", 0 },
+	};
+	unsigned it;
+	int result;
+	psl_ctx_t *psl;
+
+	if (!(psl = psl_load_file(PSL_ASCII_DAFSA))) {
+		printf("Failed to load '%s'\n", PSL_ASCII_DAFSA);
+		failed++;
+		return;
+	}
+
+	for (it = 0; it < countof(test_data); it++) {
+		const struct test_data *t = &test_data[it];
+		result = psl_is_public_suffix2(psl, t->domain, PSL_TYPE_ANY|PSL_TYPE_NO_STAR_RULE);
+
+		if (result == t->no_star_result) {
+			ok++;
+		} else {
+			failed++;
+			printf("psl_is_public_suffix2(%s, NO_STAR_RULE) on ASCII DAFSA=%d (expected %d)\n", t->domain, result, t->no_star_result);
+		}
+	}
+
+	psl_free(psl);
+}
+
 int main(int argc, const char * const *argv)
 {
 	/* if VALGRIND testing is enabled, we have to call ourselves with valgrind checking */
@@ -182,6 +226,7 @@ int main(int argc, const char * const *argv)
 	}
 
 	test_psl();
+	test_psl_ascii_dafsa();
 
 	if (failed) {
 		printf("Summary: %d out of %d tests failed\n", failed, ok + failed);
