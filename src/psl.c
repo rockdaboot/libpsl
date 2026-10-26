@@ -1703,6 +1703,17 @@ static int is_ip6(const char *s)
 /* return whether hostname is an IP address or not */
 static int isip(const char *hostname)
 {
+	char ip4[16];
+	size_t len = strlen(hostname);
+
+	/* "192.168.1.1." is the same IPv4 address as "192.168.1.1" */
+	if (len > 1 && len <= sizeof(ip4) && hostname[len - 1] == '.') {
+		memcpy(ip4, hostname, len - 1);
+		ip4[len - 1] = 0;
+		if (is_ip4(ip4))
+			return 1;
+	}
+
 	return is_ip4(hostname) || is_ip6(hostname);
 }
 

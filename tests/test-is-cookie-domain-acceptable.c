@@ -57,6 +57,8 @@ static void test_psl(void)
 		/* RFC6265 5.1.3: Having IP addresses, request and domain IP must be identical */
 		{ "192.1.123.2", ".1.123.2", 0 }, /* IPv4 address, partial match */
 		{ "192.1.123.2", "192.1.123.2", 1 }, /* IPv4 address, full match */
+		{ "192.1.123.2.", "1.123.2.", 0 }, /* IPv4 address with trailing dot, partial match */
+		{ "192.1.123.2.", "192.1.123.2.", 1 }, /* IPv4 address with trailing dot, full match */
 		{ "::1", "::1", 1 }, /* IPv6 address, full match */
 		{ "2a00:1450:4013:c01::8b", ":1450:4013:c01::8b", 0 }, /* IPv6 address, partial match */
 		{ "::ffff:192.1.123.2", "::ffff:192.1.123.2", 1 }, /* IPv6 address dotted-quad, full match */
