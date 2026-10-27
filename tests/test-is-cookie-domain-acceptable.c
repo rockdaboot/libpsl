@@ -54,6 +54,9 @@ static void test_psl(void)
 		{ "www.xxx.ck.", "xxx.ck.", 0 }, /* same with trailing dot */
 		{ "www.xxx.yokohama.jp", "xxx.yokohama.jp", 0 }, /* PSL wildcard rule '*.yokohama.jp' */
 		{ "www.xxx.yokohama.jp.", "xxx.yokohama.jp.", 0 }, /* same with trailing dot */
+#if defined(WITH_LIBIDN) || defined(WITH_LIBIDN2) || defined(WITH_LIBICU) || defined(WITH_LIBICUCORE) || defined(WITH_LIBICU_WIN)
+		{ "www.xxx.\302\255ck", "xxx.\302\255ck", 0 }, /* U+00AD (soft hyphen) is dropped by the IDNA mapping, so this is xxx.ck */
+#endif
 		/* RFC6265 5.1.3: Having IP addresses, request and domain IP must be identical */
 		{ "192.1.123.2", ".1.123.2", 0 }, /* IPv4 address, partial match */
 		{ "192.1.123.2", "192.1.123.2", 1 }, /* IPv4 address, full match */
