@@ -844,67 +844,22 @@ static void add_punycode_if_needed(psl_idna_t *idna, psl_vector_t *v, psl_entry_
 int LookupStringInFixedSet(const unsigned char* graph, size_t length, const char* key, size_t key_length);
 int GetUtfMode(const unsigned char *graph, size_t length);
 
-static int is_public_suffix(const psl_ctx_t *psl, const char *domain, int type)
+/* look up one suffix candidate (no leading/trailing dot) in the DAFSA or the rule vector */
+static int lookup_suffix(const psl_ctx_t *psl, const char *label, size_t length, int type)
 {
 	psl_entry_t suffix;
 	const char *p;
-	char *punycode = NULL;
-	size_t domain_len;
-	int need_conversion = 0;
 
-	/* this function should be called without leading dots, just make sure */
-	if (*domain == '.')
-		domain++;
-
-	/* a single leading dot needs to be handled here, so that e.g.,
-	 * co.uk and co.uk. are both detected as publicsuffix */
-	domain_len = strlen(domain);
-	if (domain_len > 0 && domain[domain_len - 1] == '.')
-		domain_len--;
-
+	suffix.label = label;
+	suffix.length = length;
 	suffix.nlabels = 1;
 
-	for (p = domain; p < domain + domain_len; p++) {
+	for (p = label; p < label + length; p++) {
 		if (*p == '.') {
 			if (suffix.nlabels == 255) /* weird input, avoid 8bit overflow */
 				return 0;
 			suffix.nlabels++;
 		}
-		else if (*((unsigned char *)p) >= 128)
-			need_conversion = 1; /* in case domain is non-ascii we need a toASCII conversion */
-	}
-
-	if (suffix.nlabels == 1) {
-		/* TLD, this is the prevailing '*' match. If type excludes the '*' rule, continue.
-		 */
-		if (!(type & PSL_TYPE_NO_STAR_RULE))
-			return 1;
-	}
-
-	type &= ~PSL_TYPE_NO_STAR_RULE;
-
-	if (psl->utf8 || psl == &builtin_psl)
-		need_conversion = 0;
-
-	if (need_conversion) {
-		psl_idna_t *idna = psl_idna_open();
-
-		if (psl_idna_toASCII(idna, domain, &punycode) == 0) {
-			suffix.label = punycode;
-			suffix.length = strlen(punycode);
-			if (suffix.length > 0 && punycode[suffix.length - 1] == '.')
-				suffix.length--;
-		} else {
-			/* fallback */
-
-			suffix.label = domain;
-			suffix.length = domain_len;
-		}
-
-		psl_idna_close(idna);
-	} else {
-		suffix.label = domain;
-		suffix.length = domain_len;
 	}
 
 	if (psl == &builtin_psl || psl->dafsa) {
@@ -914,16 +869,16 @@ static int is_public_suffix(const psl_ctx_t *psl, const char *domain, int type)
 		if (rc != -1) {
 			/* check for correct rule type */
 			if (type == PSL_TYPE_ICANN && !(rc & PRIV_PSL_FLAG_ICANN))
-				goto suffix_no;
+				return 0;
 			else if (type == PSL_TYPE_PRIVATE && !(rc & PRIV_PSL_FLAG_PRIVATE))
-				goto suffix_no;
+				return 0;
 
 			if (rc & PRIV_PSL_FLAG_EXCEPTION)
-				goto suffix_no;
+				return 0;
 
 			/* wildcard *.foo.bar implicitly make foo.bar a public suffix */
 			/* definitely a match, no matter if the found rule is a wildcard or not */
-			goto suffix_yes;
+			return 1;
 		}
 		if ((p = memchr(suffix.label, '.', suffix.length))) {
 			suffix.length -= p + 1 - suffix.label;
@@ -934,35 +889,35 @@ static int is_public_suffix(const psl_ctx_t *psl, const char *domain, int type)
 			if (rc != -1) {
 				/* check for correct rule type */
 				if (type == PSL_TYPE_ICANN && !(rc & PRIV_PSL_FLAG_ICANN))
-					goto suffix_no;
+					return 0;
 				else if (type == PSL_TYPE_PRIVATE && !(rc & PRIV_PSL_FLAG_PRIVATE))
-					goto suffix_no;
+					return 0;
 
 				if (rc & PRIV_PSL_FLAG_WILDCARD)
-					goto suffix_yes;
+					return 1;
 			}
 		}
 	} else {
 		psl_entry_t *rule = vector_get(psl->suffixes, 0);
 
 		if (!rule || rule->nlabels < suffix.nlabels - 1)
-			goto suffix_no;
+			return 0;
 
 		rule = vector_get(psl->suffixes, vector_find(psl->suffixes, &suffix));
 
 		if (rule) {
 			/* check for correct rule type */
 			if (type == PSL_TYPE_ICANN && !(rule->flags & PRIV_PSL_FLAG_ICANN))
-				goto suffix_no;
+				return 0;
 			else if (type == PSL_TYPE_PRIVATE && !(rule->flags & PRIV_PSL_FLAG_PRIVATE))
-				goto suffix_no;
+				return 0;
 
 			if (rule->flags & PRIV_PSL_FLAG_EXCEPTION)
-				goto suffix_no;
+				return 0;
 
 			/* wildcard *.foo.bar implicitly make foo.bar a public suffix */
 			/* definitely a match, no matter if the found rule is a wildcard or not */
-			goto suffix_yes;
+			return 1;
 		}
 
 		if ((p = memchr(suffix.label, '.', suffix.length))) {
@@ -975,25 +930,67 @@ static int is_public_suffix(const psl_ctx_t *psl, const char *domain, int type)
 			if (rule) {
 				/* check for correct rule type */
 				if (type == PSL_TYPE_ICANN && !(rule->flags & PRIV_PSL_FLAG_ICANN))
-					goto suffix_no;
+					return 0;
 				else if (type == PSL_TYPE_PRIVATE && !(rule->flags & PRIV_PSL_FLAG_PRIVATE))
-					goto suffix_no;
+					return 0;
 
 				if (rule->flags & PRIV_PSL_FLAG_WILDCARD)
-					goto suffix_yes;
+					return 1;
 			}
 		}
 	}
 
-suffix_no:
-	if (punycode)
-		free(punycode);
 	return 0;
+}
 
-suffix_yes:
-	if (punycode)
-		free(punycode);
-	return 1;
+static int is_public_suffix(const psl_ctx_t *psl, const char *domain, int type)
+{
+	size_t domain_len;
+	int rc = 0;
+
+	/* this function should be called without leading dots, just make sure */
+	if (*domain == '.')
+		domain++;
+
+	/* a single leading dot needs to be handled here, so that e.g.,
+	 * co.uk and co.uk. are both detected as publicsuffix */
+	domain_len = strlen(domain);
+	if (domain_len > 0 && domain[domain_len - 1] == '.')
+		domain_len--;
+
+	if (!memchr(domain, '.', domain_len)) {
+		/* TLD, this is the prevailing '*' match. If type excludes the '*' rule, continue.
+		 */
+		if (!(type & PSL_TYPE_NO_STAR_RULE))
+			return 1;
+	}
+
+	type &= ~PSL_TYPE_NO_STAR_RULE;
+
+	if (lookup_suffix(psl, domain, domain_len, type))
+		return 1;
+
+	/* A non-ASCII domain may only be listed in its ASCII/ACE form (always the case for ASCII DAFSA data),
+	 * or the IDNA mapping may change it, e.g. by dropping an invisible code point like U+00AD (soft hyphen).
+	 * The builtin and UTF-8 data also contain the ACE form of every rule, so look that up as well. */
+	if (!str_is_ascii(domain)) {
+		psl_idna_t *idna = psl_idna_open();
+		char *punycode;
+
+		if (psl_idna_toASCII(idna, domain, &punycode) == 0) {
+			size_t punycode_len = strlen(punycode);
+
+			if (punycode_len > 0 && punycode[punycode_len - 1] == '.')
+				punycode_len--;
+
+			rc = lookup_suffix(psl, punycode, punycode_len, type);
+			free(punycode);
+		}
+
+		psl_idna_close(idna);
+	}
+
+	return rc;
 }
 
 /**

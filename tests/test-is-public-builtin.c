@@ -57,6 +57,11 @@ static void test_psl(void)
 		{ "www.\345\225\206\346\240\207", 0, 0 },
 		{ "xn--czr694b", 1, 1 },
 		{ "www.xn--czr694b", 0, 0 },
+#if defined(WITH_LIBIDN) || defined(WITH_LIBIDN2) || defined(WITH_LIBICU) || defined(WITH_LIBICUCORE) || defined(WITH_LIBICU_WIN)
+		/* U+00AD (soft hyphen) is dropped by the IDNA mapping, so this is xxx.ck */
+		{ "xxx.\302\255ck", 1, 1 },
+		{ "www.xxx.\302\255ck", 0, 0 },
+#endif
 		/* some special test follow ('name' and 'forgot.his.name' are public, but e.g. his.name is not) */
 		{ "name", 1, 1 },
 		{ ".name", 1, 1 },
