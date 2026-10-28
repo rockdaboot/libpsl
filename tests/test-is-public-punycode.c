@@ -5,8 +5,8 @@
  *
  * This file is part of libpsl.
  *
- * Test case for the punycode conversion of non-ASCII rules in PSL data
- * loaded via psl_load_fp(), checked with psl_is_public_suffix()
+ * Test case for the punycode conversion of non-ASCII rules and for rules listed
+ * more than once in PSL data loaded via psl_load_fp(), checked with psl_is_public_suffix()
  *
  */
 
@@ -95,6 +95,72 @@ static void test_psl(void)
 	psl_free(psl);
 }
 
+static psl_ctx_t *load_duplicate_psl(void)
+{
+	psl_ctx_t *psl;
+	FILE *fp = tmpfile();
+
+	if (!fp)
+		return NULL;
+
+	fputs("// rules listed twice, used by test-is-public-punycode.c\n", fp);
+	fputs("tst\n", fp);
+	fputs("*.foo.tst\n", fp);
+	fputs("foo.tst\n", fp); /* plain rule after the wildcard rule */
+	fputs("*.\303\274.tst\n", fp);
+	fputs("\303\274.tst\n", fp); /* U+00FC, punycode xn--tda.tst */
+
+	rewind(fp);
+	psl = psl_load_fp(fp);
+
+	fclose(fp);
+
+	return psl;
+}
+
+/* 'foo.bar' + '*.foo.bar' must end up as one rule with both flags */
+static void test_psl_duplicates(void)
+{
+	static const struct test_data {
+		const char
+			*domain;
+		int
+			result;
+	} test_data[] = {
+		{ "foo.tst", 1 },
+		{ "x.foo.tst", 1 },
+		{ "www.x.foo.tst", 0 },
+		{ "\303\274.tst", 1 },
+		{ "x.\303\274.tst", 1 },
+		{ "www.x.\303\274.tst", 0 },
+		{ "xn--tda.tst", 1 },
+		{ "x.xn--tda.tst", 1 },
+		{ "www.x.xn--tda.tst", 0 },
+	};
+	unsigned it;
+	psl_ctx_t *psl = load_duplicate_psl();
+
+	if (!psl) {
+		printf("loading PSL data with duplicate rules failed\n");
+		failed++;
+		return;
+	}
+
+	for (it = 0; it < countof(test_data); it++) {
+		const struct test_data *t = &test_data[it];
+		int result = psl_is_public_suffix(psl, t->domain);
+
+		if (result == t->result) {
+			ok++;
+		} else {
+			failed++;
+			printf("psl_is_public_suffix(%s)=%d (expected %d)\n", t->domain, result, t->result);
+		}
+	}
+
+	psl_free(psl);
+}
+
 int main(int argc, const char * const *argv)
 {
 	/* if VALGRIND testing is enabled, we have to call ourselves with valgrind checking */
@@ -107,6 +173,7 @@ int main(int argc, const char * const *argv)
 	}
 
 	test_psl();
+	test_psl_duplicates();
 
 	if (failed) {
 		printf("Summary: %d out of %d tests failed\n", failed, ok + failed);

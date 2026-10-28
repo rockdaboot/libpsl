@@ -303,6 +303,34 @@ static int suffix_compare_array(const psl_entry_t **s1, const psl_entry_t **s2)
 	return suffix_compare(*s1, *s2);
 }
 
+/*
+ * Merge rules that are listed more than once, they are adjacent after vector_sort().
+ * Combination of exception and plain rule is ambiguous
+ * !foo.bar
+ * foo.bar
+ *
+ * Allowed:
+ * !foo.bar + *.foo.bar
+ * foo.bar + *.foo.bar
+ */
+static void suffix_merge_duplicates(psl_vector_t *v)
+{
+	int it, n;
+
+	if (!v || v->cur < 2)
+		return;
+
+	for (n = 0, it = 1; it < v->cur; it++) {
+		if (suffix_compare(v->entry[n], v->entry[it]) == 0) {
+			v->entry[n]->flags |= v->entry[it]->flags;
+			free(v->entry[it]);
+		} else
+			v->entry[++n] = v->entry[it];
+	}
+
+	v->cur = n + 1;
+}
+
 static int suffix_init(psl_entry_t *suffix, const char *rule, size_t length)
 {
 	const char *src;
@@ -1323,29 +1351,8 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 		}
 
 		if (suffix_init(&suffix, p, linep - p) == 0) {
-			int index;
-
-			if ((index = vector_find(psl->suffixes, &suffix)) >= 0) {
-				/* Found existing entry:
-				 * Combination of exception and plain rule is ambiguous
-				 * !foo.bar
-				 * foo.bar
-				 *
-				 * Allowed:
-				 * !foo.bar + *.foo.bar
-				 * foo.bar + *.foo.bar
-				 *
-				 * We do not check here, let's do it later.
-				 */
-
-				suffixp = vector_get(psl->suffixes, index);
-				suffixp->flags |= suffix.flags;
-			} else {
-				/* New entry */
-				suffixp = vector_get(psl->suffixes, vector_add(psl->suffixes, &suffix));
-			}
-
-			if (suffixp) {
+			/* the vector isn't sorted yet, duplicates are merged after sorting */
+			if ((suffixp = vector_get(psl->suffixes, vector_add(psl->suffixes, &suffix)))) {
 				suffixp->label = suffixp->label_buf; /* set label to changed address */
 				add_punycode_if_needed(idna, psl->suffixes, suffixp);
 			}
@@ -1353,6 +1360,7 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 	} while ((linep = fgets(buf, sizeof(buf), fp)));
 
 	vector_sort(psl->suffixes);
+	suffix_merge_duplicates(psl->suffixes);
 
 	psl_idna_close(idna);
 

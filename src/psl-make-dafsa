@@ -600,8 +600,7 @@ def parse_psl(infile, utf_mode, codecs):
            !foo.bar + *.foo.bar
             foo.bar + *.foo.bar
       """
-      print('Found %s/%X (now %X)' % punycode, psl[punycode], flags)
-      continue
+      flags |= psl[punycode]
 
     if utf_mode:
       psl[line] = flags
