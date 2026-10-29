@@ -5,8 +5,8 @@
  *
  * This file is part of libpsl.
  *
- * Test case for the punycode conversion of non-ASCII rules and for rules listed
- * more than once in PSL data loaded via psl_load_fp(), checked with psl_is_public_suffix()
+ * Test case for the punycode conversion of non-ASCII rules, for rules listed
+ * more than once and for long lines in PSL data loaded via psl_load_fp(), checked with psl_is_public_suffix()
  *
  */
 
@@ -161,6 +161,76 @@ static void test_psl_duplicates(void)
 	psl_free(psl);
 }
 
+static psl_ctx_t *load_long_line_psl(void)
+{
+	psl_ctx_t *psl;
+	FILE *fp = tmpfile();
+	int it;
+
+	if (!fp)
+		return NULL;
+
+	fputs("// lines longer than the line buffer, used by test-is-public-punycode.c\n", fp);
+	fputs("*.tst\n", fp);
+
+	/* comment line, the text after the first 255 bytes must not become a rule */
+	fputs("// ", fp);
+	for (it = 0; it < 252; it++)
+		fputc('x', fp);
+	fputs("!foo.tst\n", fp);
+
+	/* everything after the rule is a comment, also beyond the first 255 bytes */
+	fputs("bar.ttt", fp);
+	for (it = 0; it < 248; it++)
+		fputc(' ', fp);
+	fputs("!bar.tst\n", fp);
+
+	rewind(fp);
+	psl = psl_load_fp(fp);
+
+	fclose(fp);
+
+	return psl;
+}
+
+static void test_psl_long_lines(void)
+{
+	static const struct test_data {
+		const char
+			*domain;
+		int
+			result;
+	} test_data[] = {
+		{ "foo.tst", 1 },
+		{ "www.foo.tst", 0 },
+		{ "bar.tst", 1 },
+		{ "bar.ttt", 1 },
+		{ "www.bar.ttt", 0 },
+	};
+	unsigned it;
+	psl_ctx_t *psl = load_long_line_psl();
+
+	if (!psl) {
+		printf("loading PSL data with long lines failed\n");
+		failed++;
+		return;
+	}
+
+	for (it = 0; it < countof(test_data); it++) {
+		const struct test_data *t = &test_data[it];
+		int result = psl_is_public_suffix(psl, t->domain);
+
+		if (result == t->result) {
+			ok++;
+		} else {
+			failed++;
+			printf("psl_is_public_suffix(%s)=%d (expected %d)\n", t->domain, result, t->result);
+		}
+	}
+
+	psl_free(psl);
+}
+
 int main(int argc, const char * const *argv)
 {
 	/* if VALGRIND testing is enabled, we have to call ourselves with valgrind checking */
@@ -174,6 +244,7 @@ int main(int argc, const char * const *argv)
 
 	test_psl();
 	test_psl_duplicates();
+	test_psl_long_lines();
 
 	if (failed) {
 		printf("Summary: %d out of %d tests failed\n", failed, ok + failed);
