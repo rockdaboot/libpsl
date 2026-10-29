@@ -228,18 +228,24 @@ static void test_psl_long_label(void)
 {
 	static const struct test_data {
 		const char
-			*prefix;
+			*prefix,
+			*fill; /* repeated 'length' times after prefix */
 		int
-			length; /* number of 'a' following prefix */
+			length;
 		const char
 			*suffix;
 		int
 			result;
 	} test_data[] = {
-		{ "", 70000, ".ck", 1 }, /* PSL wildcard rule '*.ck' */
-		{ "www.", 70000, ".ck", 0 },
-		{ "", 65533, ".ck", 1 }, /* total length 65536 */
-		{ "com.", 65535, "", 0 }, /* first 3 bytes are 'com' after truncation */
+		{ "", "a", 70000, ".ck", 1 }, /* PSL wildcard rule '*.ck' */
+		{ "www.", "a", 70000, ".ck", 0 },
+		{ "", "a", 65533, ".ck", 1 }, /* total length 65536 */
+		{ "com.", "a", 65535, "", 0 }, /* first 3 bytes are 'com' after truncation */
+		/* non-ASCII names are also converted with psl_idna_toASCII() if the UTF-8 lookup fails */
+		{ "", "\303\244", 35000, ".ck", 1 }, /* U+00E4 */
+		{ "www.", "\303\244", 35000, ".ck", 0 },
+		{ "\345\225\206\346\240\207.", "a", 65535, "", 0 }, /* first 6 bytes are the TLD xn--czr694b after truncation */
+		{ "", "a", 70000, ".\345\200\213\344\272\272.\351\246\231\346\270\257", 0 }, /* rule xn--gmqw5a.xn--j6w193g */
 	};
 	const char *files[] = { PSL_FILE, PSL_ASCII_DAFSA };
 	unsigned it, it2;
@@ -261,8 +267,9 @@ static void test_psl_long_label(void)
 
 		for (it = 0; it < countof(test_data); it++) {
 			const struct test_data *t = &test_data[it];
-			size_t plen = strlen(t->prefix);
-			char *domain = malloc(plen + t->length + strlen(t->suffix) + 1);
+			size_t plen = strlen(t->prefix), flen = strlen(t->fill);
+			char *domain = malloc(plen + flen * t->length + strlen(t->suffix) + 1), *p;
+			int n;
 
 			if (!domain) {
 				failed++;
@@ -270,8 +277,9 @@ static void test_psl_long_label(void)
 			}
 
 			memcpy(domain, t->prefix, plen);
-			memset(domain + plen, 'a', t->length);
-			strcpy(domain + plen + t->length, t->suffix);
+			for (p = domain + plen, n = 0; n < t->length; n++, p += flen)
+				memcpy(p, t->fill, flen);
+			strcpy(p, t->suffix);
 
 			result = psl_is_public_suffix(ctx, domain);
 
@@ -279,7 +287,7 @@ static void test_psl_long_label(void)
 				ok++;
 			} else {
 				failed++;
-				printf("psl_is_public_suffix(%s%d*a%s)=%d (expected %d)\n", t->prefix, t->length, t->suffix, result, t->result);
+				printf("psl_is_public_suffix(%s%d*%s%s)=%d (expected %d)\n", t->prefix, t->length, t->fill, t->suffix, result, t->result);
 			}
 
 			free(domain);
