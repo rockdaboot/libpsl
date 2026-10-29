@@ -1241,7 +1241,7 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 	psl_ctx_t *psl;
 	psl_entry_t suffix, *suffixp;
 	char buf[256], *linep, *p;
-	int type = 0, is_dafsa;
+	int type = 0, is_dafsa, truncated = 0, skip;
 	psl_idna_t *idna;
 
 	if (!fp)
@@ -1305,6 +1305,11 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 	psl->utf8 = 1; /* we put UTF-8 and punycode rules in the lookup vector */
 
 	do {
+		/* fgets() splits lines that don't fit into buf, the rest of such a line must not be parsed as a rule */
+		skip = truncated;
+		truncated = !strchr(linep, '\n');
+		if (skip) continue;
+
 		while (isspace_ascii(*linep)) linep++; /* ignore leading whitespace */
 		if (!*linep) continue; /* skip empty lines */
 
