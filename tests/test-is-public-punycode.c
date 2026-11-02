@@ -185,12 +185,48 @@ static psl_ctx_t *load_long_line_psl(void)
 		fputc(' ', fp);
 	fputs("!bar.tst\n", fp);
 
+	/* leading whitespace that fills the first 255 bytes, the rule after it must not be skipped */
+	for (it = 0; it < 300; it++)
+		fputc(' ', fp);
+	fputs("baz.ttt\n", fp);
+
 	rewind(fp);
 	psl = psl_load_fp(fp);
 
 	fclose(fp);
 
 	return psl;
+}
+
+/* a rule that doesn't fit into the line buffer makes psl_load_fp() fail */
+static void test_psl_long_rule(void)
+{
+	psl_ctx_t *psl;
+	FILE *fp = tmpfile();
+	int it;
+
+	if (!fp) {
+		printf("tmpfile() failed\n");
+		failed++;
+		return;
+	}
+
+	fputs("// rule longer than the line buffer, used by test-is-public-punycode.c\n", fp);
+	for (it = 0; it < 300; it++)
+		fputc('x', fp);
+	fputs(".tst\n", fp);
+
+	rewind(fp);
+	psl = psl_load_fp(fp);
+
+	fclose(fp);
+
+	if (psl) {
+		printf("psl_load_fp() accepted a rule longer than the line buffer\n");
+		failed++;
+		psl_free(psl);
+	} else
+		ok++;
 }
 
 static void test_psl_long_lines(void)
@@ -206,6 +242,8 @@ static void test_psl_long_lines(void)
 		{ "bar.tst", 1 },
 		{ "bar.ttt", 1 },
 		{ "www.bar.ttt", 0 },
+		{ "baz.ttt", 1 },
+		{ "www.baz.ttt", 0 },
 	};
 	unsigned it;
 	psl_ctx_t *psl = load_long_line_psl();
@@ -245,6 +283,7 @@ int main(int argc, const char * const *argv)
 	test_psl();
 	test_psl_duplicates();
 	test_psl_long_lines();
+	test_psl_long_rule();
 
 	if (failed) {
 		printf("Summary: %d out of %d tests failed\n", failed, ok + failed);
