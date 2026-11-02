@@ -1241,7 +1241,7 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 	psl_ctx_t *psl;
 	psl_entry_t suffix, *suffixp;
 	char buf[256], *linep, *p;
-	int type = 0, is_dafsa, truncated = 0, skip;
+	int type = 0, is_dafsa, truncated, skip = 0;
 	psl_idna_t *idna;
 
 	if (!fp)
@@ -1305,15 +1305,21 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 	psl->utf8 = 1; /* we put UTF-8 and punycode rules in the lookup vector */
 
 	do {
-		/* fgets() splits lines that don't fit into buf, the rest of such a line must not be parsed as a rule */
-		skip = truncated;
-		truncated = !strchr(linep, '\n');
-		if (skip) continue;
+		if (skip) {
+			/* rest of a line that didn't fit into buf, after a comment or behind a rule */
+			skip = !strchr(linep, '\n');
+			continue;
+		}
+
+		/* fgets() returns a line that doesn't fit into buf in pieces */
+		truncated = !strchr(linep, '\n') && !feof(fp);
 
 		while (isspace_ascii(*linep)) linep++; /* ignore leading whitespace */
 		if (!*linep) continue; /* skip empty lines */
 
 		if (*linep == '/' && linep[1] == '/') {
+			skip = truncated; /* the rest of the line is part of the comment */
+
 			if (!type) {
 				if (strstr(linep + 2, "===BEGIN ICANN DOMAINS==="))
 					type = PRIV_PSL_FLAG_ICANN;
@@ -1330,6 +1336,15 @@ psl_ctx_t *psl_load_fp(FILE *fp)
 
 		/* parse suffix rule */
 		for (p = linep; *linep && !isspace_ascii(*linep);) linep++;
+
+		if (truncated) {
+			if (!*linep) {
+				/* the rule doesn't fit into buf */
+				psl_idna_close(idna);
+				goto fail;
+			}
+			skip = 1; /* the rest of the line is commentary */
+		}
 		*linep = 0;
 
 		if (*p == '!') {
