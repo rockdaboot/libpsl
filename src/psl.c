@@ -878,8 +878,10 @@ static int lookup_suffix(const psl_ctx_t *psl, const char *label, size_t length,
 	psl_entry_t suffix;
 	const char *p;
 
+	/* No rule is longer than label_buf, so a longer candidate can't match one exactly
+	 * (and its length would be truncated in suffix.length). */
 	suffix.label = label;
-	suffix.length = length;
+	suffix.length = length < sizeof(suffix.label_buf) ? length : 0;
 	suffix.nlabels = 1;
 
 	for (p = label; p < label + length; p++) {
@@ -893,7 +895,7 @@ static int lookup_suffix(const psl_ctx_t *psl, const char *label, size_t length,
 	if (psl == &builtin_psl || psl->dafsa) {
 		size_t dafsa_size = psl == &builtin_psl ? sizeof(kDafsa) : psl->dafsa_size;
 		const unsigned char *dafsa = psl == &builtin_psl ? kDafsa : psl->dafsa;
-		int rc = LookupStringInFixedSet(dafsa, dafsa_size, suffix.label, suffix.length);
+		int rc = suffix.length ? LookupStringInFixedSet(dafsa, dafsa_size, suffix.label, suffix.length) : -1;
 		if (rc != -1) {
 			/* check for correct rule type */
 			if (type == PSL_TYPE_ICANN && !(rc & PRIV_PSL_FLAG_ICANN))
@@ -908,12 +910,13 @@ static int lookup_suffix(const psl_ctx_t *psl, const char *label, size_t length,
 			/* definitely a match, no matter if the found rule is a wildcard or not */
 			return 1;
 		}
-		if ((p = memchr(suffix.label, '.', suffix.length))) {
-			suffix.length -= p + 1 - suffix.label;
+		if ((p = memchr(label, '.', length))) {
+			length -= p + 1 - label;
 			suffix.label = p + 1;
+			suffix.length = length < sizeof(suffix.label_buf) ? length : 0;
 			suffix.nlabels--;
 
-			rc = LookupStringInFixedSet(dafsa, dafsa_size, suffix.label, suffix.length);
+			rc = suffix.length ? LookupStringInFixedSet(dafsa, dafsa_size, suffix.label, suffix.length) : -1;
 			if (rc != -1) {
 				/* check for correct rule type */
 				if (type == PSL_TYPE_ICANN && !(rc & PRIV_PSL_FLAG_ICANN))
@@ -931,7 +934,7 @@ static int lookup_suffix(const psl_ctx_t *psl, const char *label, size_t length,
 		if (!rule || rule->nlabels < suffix.nlabels - 1)
 			return 0;
 
-		rule = vector_get(psl->suffixes, vector_find(psl->suffixes, &suffix));
+		rule = suffix.length ? vector_get(psl->suffixes, vector_find(psl->suffixes, &suffix)) : NULL;
 
 		if (rule) {
 			/* check for correct rule type */
@@ -948,12 +951,13 @@ static int lookup_suffix(const psl_ctx_t *psl, const char *label, size_t length,
 			return 1;
 		}
 
-		if ((p = memchr(suffix.label, '.', suffix.length))) {
-			suffix.length -= p + 1 - suffix.label;
+		if ((p = memchr(label, '.', length))) {
+			length -= p + 1 - label;
 			suffix.label = p + 1;
+			suffix.length = length < sizeof(suffix.label_buf) ? length : 0;
 			suffix.nlabels--;
 
-			rule = vector_get(psl->suffixes, vector_find(psl->suffixes, &suffix));
+			rule = suffix.length ? vector_get(psl->suffixes, vector_find(psl->suffixes, &suffix)) : NULL;
 
 			if (rule) {
 				/* check for correct rule type */
