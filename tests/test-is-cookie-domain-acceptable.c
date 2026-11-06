@@ -48,6 +48,7 @@ static void test_psl(void)
 		{ "www.example.com", "example.com", 1 },
 		{ "www.example.com", "com", 0 }, /* not accepted by normalization (PSL rule 'com') */
 		{ "www.example.com", "example.org", 0 },
+		{ "notsite.example", "site.example", 0 }, /* matching text must begin at a label boundary */
 		{ "www.sa.gov.au", "sa.gov.au", 0 }, /* not accepted by normalization  (PSL rule '*.ar') */
 		{ "www.educ.ar", "educ.ar", 1 }, /* PSL exception rule '!educ.ar' */
 		{ "www.xxx.ck", "xxx.ck", 0 }, /* PSL wildcard rule '*.ck' */
