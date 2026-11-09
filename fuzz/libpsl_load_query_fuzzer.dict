@@ -1,0 +1,47 @@
+# Dictionary for libpsl_load_query_fuzzer:
+# attacker-controlled PSL data (text or DAFSA) + attacker-controlled queries.
+# Covers PSL text syntax, DAFSA magic, IDNA/punycode markers and domain shapes.
+#
+# PSL text sections
+sec_icann="// ===BEGIN ICANN DOMAINS==="
+sec_icann_end="// ===END ICANN DOMAINS==="
+sec_private="// ===BEGIN PRIVATE DOMAINS==="
+sec_private_end="// ===END PRIVATE DOMAINS==="
+comment="//"
+# rule shapes
+wildcard="*.ck"
+wildcard_jp="*.kawasaki.jp"
+exception="!www.ck"
+exception_jp="!city.kawasaki.jp"
+plain_com="com"
+plain_couk="co.uk"
+plain_idn="\xe5\x85\xac\xe5\x8f\xb8.cn"
+plain_utf8="\xc3\xbc"
+# DAFSA magic first line (16 bytes incl. newline)
+dafsa_magic=".DAFSA@PSL_0   \x0a"
+dafsa_prefix=".DAFSA@PSL_"
+# IDNA / punycode
+ace_prefix="xn--"
+ace_example="xn--fiqs8s"
+ace_bucher="xn--bcher-kva.example"
+# query/domain fragments
+dot="."
+dotdot=".."
+trailing_dot="."
+leading_dot="."
+label_www="www."
+label_ftp="ftp."
+tld_uk="uk"
+tld_jp="jp"
+dash="-"
+underscore="_"
+digit_label="123"
+long_label="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+utf8_cjk="\xe4\xb8\xad\xe5\x9b\xbd"
+utf8_umlaut="\xc3\xbc"
+percent="%2f"
+colon=":"
+at_sign="@"
+space=" "
+tab="\x09"
+cr="\x0d"
