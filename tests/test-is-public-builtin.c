@@ -121,6 +121,49 @@ static void test_psl(void)
 	*psl_builtin_sha1sum() == 0 ? failed++ : ok++;
 }
 
+/* a file in the current directory that just has the (relative) name of the built-in PSL file must not be used */
+static void test_psl_latest_cwd(void)
+{
+	const char *fname = psl_builtin_filename();
+	psl_ctx_t *psl;
+	FILE *fp;
+	int result;
+
+	if (!*fname || *fname == '/' || *fname == '\\' || (fname[0] && fname[1] == ':')) {
+		printf("psl_builtin_filename()=%s is not relative, skipping\n", fname);
+		return;
+	}
+
+	if ((fp = fopen(fname, "r"))) {
+		fclose(fp);
+		printf("%s already exists in the current directory, skipping\n", fname);
+		return;
+	}
+
+	if (!(fp = fopen(fname, "w"))) {
+		printf("Failed to create %s in the current directory, skipping\n", fname);
+		return;
+	}
+	fputs("// ===BEGIN ICANN DOMAINS===\nplanted.example\n// ===END ICANN DOMAINS===\n", fp);
+	fclose(fp);
+
+	if ((result = psl_builtin_outdated())) {
+		failed++;
+		printf("psl_builtin_outdated()=%d with %s in the current directory (expected 0)\n", result, fname);
+	} else
+		ok++;
+
+	psl = psl_latest(NULL);
+	if ((result = psl_is_public_suffix(psl, "planted.example"))) {
+		failed++;
+		printf("psl_latest(NULL) loaded %s from the current directory\n", fname);
+	} else
+		ok++;
+	psl_free(psl);
+
+	remove(fname);
+}
+
 int main(int argc, const char * const *argv)
 {
 	/* if VALGRIND testing is enabled, we have to call ourselves with valgrind checking */
@@ -133,6 +176,7 @@ int main(int argc, const char * const *argv)
 	}
 
 	test_psl();
+	test_psl_latest_cwd();
 
 	if (failed) {
 		printf("Summary: %d out of %d tests failed\n", failed, ok + failed);

@@ -1549,6 +1549,24 @@ const char *psl_builtin_filename(void)
 	return _psl_filename;
 }
 
+/*
+ * psl-make-dafsa only embeds the basename of the file the built-in data has been created from
+ * (and autotools passes a path relative to the build directory by default).
+ * Such a name would be looked up in the current working directory of the application,
+ * so the file is only checked if its name is an absolute path.
+ */
+static int is_absolute_path(const char *fname)
+{
+#ifdef _WIN32
+	if (fname[0] && fname[1] == ':')
+		fname += 2; /* skip drive letter */
+
+	return *fname == '/' || *fname == '\\';
+#else
+	return *fname == '/';
+#endif
+}
+
 /**
  * psl_builtin_outdated:
  *
@@ -1556,7 +1574,8 @@ const char *psl_builtin_filename(void)
  * If it is, it might be a good idea for the application to reload the PSL.
  * The mtime is taken as reference.
  *
- * If the PSL file does not exist, it is assumed that the built-in data is not outdated.
+ * If the PSL file does not exist or its name is not an absolute path,
+ * it is assumed that the built-in data is not outdated.
  *
  * Returns: 1 if the built-in is outdated, 0 otherwise.
  *
@@ -1566,7 +1585,7 @@ int psl_builtin_outdated(void)
 {
 	struct_stat st;
 
-	if (func_sys_stat(_psl_filename, &st) == 0 && st.st_mtime > _psl_file_time)
+	if (is_absolute_path(_psl_filename) && func_sys_stat(_psl_filename, &st) == 0 && st.st_mtime > _psl_file_time)
 		return 1;
 
 	return 0;
@@ -2156,7 +2175,7 @@ static int insert_file(const char *fname, const char **psl_fname, time_t *psl_mt
  * - @fname (application specific filename, may be %NULL)
  * - location specified during built-time (filename from ./configure --with-psl-distfile)
  * - built-in PSL data (generated from ./configure --with-psl-file)
- * - location of built-in data (filename from ./configure --with-psl-file)
+ * - location of built-in data (filename from ./configure --with-psl-file, if it is an absolute path)
  *
  * If none of the above is available, the function returns %NULL.
  *
@@ -2178,7 +2197,8 @@ psl_ctx_t *psl_latest(const char *fname)
 	/* create array of PSL files reverse sorted by mtime (latest first) */
 	ntimes = insert_file(fname, psl_fname, psl_mtime, 0);
 	ntimes = insert_file(_psl_dist_filename, psl_fname, psl_mtime, ntimes);
-	ntimes = insert_file(_psl_filename, psl_fname, psl_mtime, ntimes);
+	if (is_absolute_path(_psl_filename))
+		ntimes = insert_file(_psl_filename, psl_fname, psl_mtime, ntimes);
 
 	/* load PSL data from the latest file, falling back to the second recent, ... */
 	for (psl = NULL, it = 0; it < ntimes; it++) {
