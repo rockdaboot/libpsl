@@ -729,12 +729,16 @@ static int psl_idna_toASCII(psl_idna_t *idna, const char *utf8, char **ascii)
 		char lookupname_buf[128] = "", *lookupname = lookupname_buf;
 		UErrorCode status = 0;
 		UIDNAInfo info = UIDNA_INFO_INITIALIZER;
-		UChar utf16_dst[128], utf16_src_buf[128];
-		UChar *utf16_src = utf16_src_buf;
+		UChar utf16_dst_buf[128], utf16_src_buf[128];
+		UChar *utf16_src = utf16_src_buf, *utf16_dst = utf16_dst_buf;
 		int32_t utf16_src_length, bytes_written;
 		int32_t utf16_dst_length;
 
+		/* U_BUFFER_OVERFLOW_ERROR: the result doesn't fit into the stack buffer,
+		 * the needed length is returned and we convert again into a heap buffer */
 		u_strFromUTF8(utf16_src, countof(utf16_src_buf), &utf16_src_length, utf8, -1, &status);
+		if (status == U_BUFFER_OVERFLOW_ERROR)
+			status = U_ZERO_ERROR;
 		if (!U_SUCCESS(status)) goto cleanup; /* UTF-8 to UTF-16 conversion failed */
 
 		if (utf16_src_length >= (int) countof(utf16_src_buf)) {
@@ -747,10 +751,20 @@ static int psl_idna_toASCII(psl_idna_t *idna, const char *utf8, char **ascii)
 			utf16_src[utf16_src_length] = 0; /* u_strFromUTF8() doesn't 0-terminate if dest is filled up */
 		}
 
-		utf16_dst_length = uidna_nameToASCII((UIDNA *)idna, utf16_src, utf16_src_length, utf16_dst, countof(utf16_dst), &info, &status);
+		utf16_dst_length = uidna_nameToASCII((UIDNA *)idna, utf16_src, utf16_src_length, utf16_dst, countof(utf16_dst_buf), &info, &status);
+		if (status == U_BUFFER_OVERFLOW_ERROR) {
+			status = U_ZERO_ERROR;
+
+			utf16_dst = malloc(utf16_dst_length * sizeof(UChar));
+			if (!utf16_dst) goto cleanup;
+
+			utf16_dst_length = uidna_nameToASCII((UIDNA *)idna, utf16_src, utf16_src_length, utf16_dst, utf16_dst_length, &info, &status);
+		}
 		if (!U_SUCCESS(status)) goto cleanup; /* to ASCII conversion failed */
 
 		u_strToUTF8(lookupname, sizeof(lookupname_buf), &bytes_written, utf16_dst, utf16_dst_length, &status);
+		if (status == U_BUFFER_OVERFLOW_ERROR)
+			status = U_ZERO_ERROR;
 		if (!U_SUCCESS(status)) goto cleanup; /* UTF-16 to UTF-8 conversion failed */
 
 		if (bytes_written >= (int) sizeof(lookupname_buf)) {
@@ -776,6 +790,8 @@ static int psl_idna_toASCII(psl_idna_t *idna, const char *utf8, char **ascii)
 cleanup:
 		if (lookupname != lookupname_buf)
 			free(lookupname);
+		if (utf16_dst != utf16_dst_buf)
+			free(utf16_dst);
 		if (utf16_src != utf16_src_buf)
 			free(utf16_src);
 	}

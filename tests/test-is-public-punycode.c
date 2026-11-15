@@ -6,7 +6,7 @@
  * This file is part of libpsl.
  *
  * Test case for the punycode conversion of non-ASCII rules, for rules listed
- * more than once and for long lines in PSL data loaded via psl_load_fp(), checked with psl_is_public_suffix()
+ * more than once, for long lines and for long names with PSL data loaded via psl_load_fp(), checked with psl_is_public_suffix()
  *
  */
 
@@ -229,6 +229,97 @@ static void test_psl_long_rule(void)
 		ok++;
 }
 
+#if defined(WITH_LIBICU) || defined(WITH_LIBICUCORE) || defined(WITH_LIBICU_WIN)
+static psl_ctx_t *load_long_name_psl(void)
+{
+	psl_ctx_t *psl;
+	FILE *fp = tmpfile();
+	int it;
+
+	if (!fp)
+		return NULL;
+
+	fputs("// wildcard rules for long names, used by test-is-public-punycode.c\n", fp);
+	fputs("*.tst\n", fp);
+
+	/* *.<60 x a>.<50 x b>.tst */
+	fputs("*.", fp);
+	for (it = 0; it < 60; it++)
+		fputc('a', fp);
+	fputc('.', fp);
+	for (it = 0; it < 50; it++)
+		fputc('b', fp);
+	fputs(".tst\n", fp);
+
+	rewind(fp);
+	psl = psl_load_fp(fp);
+
+	fclose(fp);
+
+	return psl;
+}
+
+/* append n copies of s */
+static char *repeat(char *p, const char *s, int n)
+{
+	size_t len = strlen(s);
+
+	while (n-- > 0) {
+		memcpy(p, s, len);
+		p += len;
+	}
+	*p = 0;
+
+	return p;
+}
+
+static void check_long_name(const psl_ctx_t *psl, const char *domain, int expected)
+{
+	int result = psl_is_public_suffix(psl, domain);
+
+	if (result == expected) {
+		ok++;
+	} else {
+		failed++;
+		printf("psl_is_public_suffix(<%u bytes>)=%d (expected %d)\n", (unsigned) strlen(domain), result, expected);
+	}
+}
+
+/* names longer than 128 UTF-16 units before or after the IDNA mapping,
+ * U+00AD (soft hyphen) is dropped by the mapping */
+static void test_psl_long_names(void)
+{
+	char domain[512], *p;
+	psl_ctx_t *psl = load_long_name_psl();
+
+	if (!psl) {
+		printf("loading PSL data for long names failed\n");
+		failed++;
+		return;
+	}
+
+	/* xxx.<123 x U+00AD>tst is xxx.tst, 130 UTF-16 units before the mapping */
+	p = repeat(domain, "xxx.", 1);
+	p = repeat(p, "\302\255", 123);
+	repeat(p, "tst", 1);
+	check_long_name(psl, domain, 1);
+	check_long_name(psl, "www.xxx.\302\255tst", 0);
+
+	/* www.<63 x c>.<U+00AD><60 x a>.<50 x b>.tst, 179 bytes after the mapping without 'www.' */
+	p = repeat(domain, "www.", 1);
+	p = repeat(p, "c", 63);
+	p = repeat(p, ".\302\255", 1);
+	p = repeat(p, "a", 60);
+	p = repeat(p, ".", 1);
+	p = repeat(p, "b", 50);
+	repeat(p, ".tst", 1);
+	check_long_name(psl, domain + 4, 1);
+	check_long_name(psl, domain, 0);
+
+	psl_free(psl);
+}
+#endif
+
 static void test_psl_long_lines(void)
 {
 	static const struct test_data {
@@ -284,6 +375,9 @@ int main(int argc, const char * const *argv)
 	test_psl_duplicates();
 	test_psl_long_lines();
 	test_psl_long_rule();
+#if defined(WITH_LIBICU) || defined(WITH_LIBICUCORE) || defined(WITH_LIBICU_WIN)
+	test_psl_long_names();
+#endif
 
 	if (failed) {
 		printf("Summary: %d out of %d tests failed\n", failed, ok + failed);
