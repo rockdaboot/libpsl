@@ -169,7 +169,7 @@ static int GetReturnValue(const unsigned char* offset,
 	int* return_value)
 {
 	CHECK_LT(offset, end);
-	if (!multibyte_start && (*offset & 0xE0) == 0x80) {
+	if (!multibyte_start && (*offset & 0xF0) == 0x80) {
 		*return_value = *offset & 0x0F;
 		return 1;
 	}
