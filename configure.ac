@@ -612,9 +612,10 @@ AC_SUBST([PSL_DISTFILE])
 dnl Check for custom PSL file
 AC_ARG_WITH([psl-file],
   AS_HELP_STRING([--with-psl-file=[PATH]], [path to PSL file]),
-  [PSL_FILE=$withval],
-  [PSL_FILE="\$(top_srcdir)/list/public_suffix_list.dat"])
+  [PSL_FILE=$withval; PSL_MAKE_DAFSA_FLAGS=--keep-path],
+  [PSL_FILE="\$(top_srcdir)/list/public_suffix_list.dat"; PSL_MAKE_DAFSA_FLAGS=])
 AC_SUBST([PSL_FILE])
+AC_SUBST([PSL_MAKE_DAFSA_FLAGS])
 
 dnl Check for custom PSL test file
 AC_ARG_WITH([psl-testfile],

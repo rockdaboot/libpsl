@@ -1550,16 +1550,16 @@ const char *psl_builtin_filename(void)
 }
 
 /*
- * psl-make-dafsa only embeds the basename of the file the built-in data has been created from
- * (and autotools passes a path relative to the build directory by default).
+ * psl-make-dafsa only embeds the basename of the default PSL file the built-in data has been created from,
+ * and a PSL file configured explicitly (kept as given) may still be a relative path.
  * Such a name would be looked up in the current working directory of the application,
  * so the file is only checked if its name is an absolute path.
  */
 static int is_absolute_path(const char *fname)
 {
 #ifdef _WIN32
-	if (fname[0] && fname[1] == ':')
-		fname += 2; /* skip drive letter */
+	if (((*fname >= 'a' && *fname <= 'z') || (*fname >= 'A' && *fname <= 'Z')) && fname[1] == ':')
+		fname += 2; /* skip drive letter, "C:foo" is relative to the cwd of drive C: */
 
 	return *fname == '/' || *fname == '\\';
 #else

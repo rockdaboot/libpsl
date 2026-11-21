@@ -23,7 +23,7 @@ libpsl_la_LIBADD   = $(runtime_LIBS) $(LTLIBINTL) @INTL_MACOSX_LIBS@
 # Build rule for suffix_dafsa.c
 # PSL_FILE can be set by ./configure --with-psl-file=[PATH]
 suffixes_dafsa.h: $(PSL_FILE) $(srcdir)/psl-make-dafsa
-	$(PYTHON) $(srcdir)/psl-make-dafsa --output-format=cxx+ "$(PSL_FILE)" suffixes_dafsa.h
+	$(PYTHON) $(srcdir)/psl-make-dafsa --output-format=cxx+ $(PSL_MAKE_DAFSA_FLAGS) "$(PSL_FILE)" suffixes_dafsa.h
 
 bin_SCRIPTS = psl-make-dafsa
 
