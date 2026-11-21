@@ -11,10 +11,16 @@ else
     error('Python is required to build suffixes_dafsa.h. Install python or provide suffixes_dafsa.h in src/')
   endif
 
+  # keep the full path of an explicitly configured PSL file, the default one is only embedded by its basename
+  psl_make_dafsa_args = ['--output-format=cxx+']
+  if get_option('psl_file') != ''
+    psl_make_dafsa_args += '--keep-path'
+  endif
+
   suffixes_dafsa_h = custom_target('suffixes_dafsa.h',
     input : psl_file,
     output : 'suffixes_dafsa.h',
-    command : [python, psl_make_dafsa, '--output-format=cxx+', '@INPUT@', '@OUTPUT@'])
+    command : [python, psl_make_dafsa, psl_make_dafsa_args, '@INPUT@', '@OUTPUT@'])
 endif
 
 sources = [

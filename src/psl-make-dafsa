@@ -518,7 +518,8 @@ def to_cxx_plus(data, codecs):
   text += b'static int _psl_nexceptions = %d;\n' % psl_nexceptions
   text += b'static int _psl_nwildcards = %d;\n' % psl_nwildcards
   text += b'static const char _psl_sha1_checksum[] = "%s";\n' % bytes(sha1_file(psl_input_file), **codecs)
-  text += b'static const char _psl_filename[] = "%s";\n' % bytes(os.path.basename(psl_input_file), **codecs)
+  psl_filename = psl_input_file if psl_keep_path else os.path.basename(psl_input_file)
+  text += b'static const char _psl_filename[] = "%s";\n' % bytes(psl_filename, **codecs)
   return text
 
 def words_to_whatever(words, converter, utf_mode, codecs):
@@ -621,6 +622,7 @@ def usage():
   print('  --output-format=binary  Write DAFSA binary data')
   print('  --encoding=ascii        7-bit ASCII mode')
   print('  --encoding=utf-8        UTF-8 mode (default)')
+  print('  --keep-path             Embed the input file name as given, not just its basename (cxx+)')
   exit(1)
 
 
@@ -629,9 +631,12 @@ def main():
   if len(sys.argv) < 3:
     usage()
 
+  global psl_keep_path
+
   converter = words_to_cxx
   parser = parse_psl
   utf_mode = True
+  psl_keep_path = False
 
   codecs = dict()
   if sys.version_info.major > 2:
@@ -666,6 +671,8 @@ def main():
       else:
         print("Unknown encoding '%s'" % value)
         return 1
+    elif arg == '--keep-path':
+      psl_keep_path = True
     else:
       usage()
 
